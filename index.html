@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Studio — controle seus jobs UGC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blush:#F3E7DD;
+    --lilac:#FAF4ED;
+    --magenta:#8E3B52;
+    --magenta-deep:#6B2A3D;
+    --magenta-tint:#F1E0E3;
+    --rose:#C98FA0;
+    --paper:#FFFFFF;
+    --ink:#3A2B2A;
+    --ink-soft:#8A746E;
+    --ink-faint:#BBA89F;
+    --line:#EBDFD3;
+    --sage:#7DA88B;
+    --sage-deep:#4E7A5C;
+    --sage-tint:#E3EFE6;
+    --amber:#C99A3E;
+    --amber-deep:#9C7724;
+    --amber-tint:#F6EDD8;
+    --slate:#8C8AA8;
+    --slate-tint:#EBEAF4;
+    --danger:#A8434C;
+    --danger-tint:#F2DCDD;
+    --radius-s:8px;
+    --radius-m:14px;
+    --radius-l:20px;
+    --shadow-soft:0 1px 2px rgba(58,43,42,0.04), 0 8px 24px -12px rgba(58,43,42,0.12);
+  }
+  html, body{height:100%;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--lilac);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  ::selection{background:var(--magenta-tint); color:var(--magenta-deep);}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  a{color:inherit;}
+
+  /* ---- layout shell ---- */
+  #app{display:flex; height:100vh; overflow:hidden;}
+
+  .sidebar{
+    width:248px;
+    flex-shrink:0;
+    background:var(--paper);
+    border-right:1px solid var(--line);
+    padding:28px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:28px;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand-mark{
+    width:36px;height:36px;border-radius:10px;
+    background:var(--magenta);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff; font-family:'Fraunces',serif; font-weight:700; font-size:17px;
+    flex-shrink:0;
+    overflow:hidden;
+    background-size:cover;
+    background-position:center;
+  }
+  .brand-name{font-size:17px; font-weight:600;}
+  .brand-sub{font-size:11px; color:var(--ink-faint); margin-top:1px;}
+
+  .nav{display:flex; flex-direction:column; gap:2px;}
+  .nav-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 12px;
+    border-radius:var(--radius-s);
+    font-size:14px; font-weight:500;
+    color:var(--ink-soft);
+    border:none; background:transparent;
+    text-align:left; width:100%;
+    transition:background .12s ease, color .12s ease;
+  }
+  .nav-item:hover{background:var(--lilac); color:var(--ink);}
+  .nav-item.active{background:var(--magenta-tint); color:var(--magenta-deep);}
+  .nav-item .ico{width:16px; text-align:center; font-size:14px;}
+
+  .sidebar-foot{
+    margin-top:auto;
+    font-size:11.5px;
+    color:var(--ink-faint);
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  .sync-dot{
+    display:inline-block; width:7px; height:7px; border-radius:50%;
+    margin-right:5px; vertical-align:middle; position:relative; top:-1px;
+  }
+  .sync-dot.ok{background:var(--sage);}
+  .sync-dot.pending{background:var(--amber);}
+  .sync-dot.off{background:var(--ink-faint);}
+  #syncUserEmail{font-size:11px; color:var(--ink-soft); margin-top:4px; word-break:break-all;}
+  #btnCloudAuth{width:100%; justify-content:center; margin-top:10px; font-size:12.5px;}
+
+  .main{flex:1; min-width:0; padding:36px 44px 60px; height:100vh; overflow-y:auto;}
+  .page-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:24px; gap:16px; flex-wrap:wrap;
+  }
+  .page-head h1{font-size:26px; margin:0 0 4px;}
+  .page-sub{color:var(--ink-soft); font-size:14px; margin:0;}
+
+  .btn{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:10px 16px;
+    border-radius:var(--radius-s);
+    border:1px solid var(--line);
+    background:var(--paper);
+    font-size:13.5px; font-weight:600;
+    color:var(--ink);
+    transition:transform .08s ease, background .12s ease, border-color .12s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{background:var(--lilac);}
+  .btn:active{transform:scale(0.98);}
+  .btn-primary{
+    background:var(--magenta); border-color:var(--magenta); color:#fff;
+  }
+  .btn-primary:hover{background:var(--magenta-deep); border-color:var(--magenta-deep);}
+  .btn-ghost{border-color:transparent; background:transparent;}
+  .btn-ghost:hover{background:var(--lilac);}
+  .btn-sm{padding:6px 11px; font-size:12.5px; border-radius:7px;}
+  .btn-danger-text{color:var(--danger); border-color:var(--danger-tint); background:var(--danger-tint);}
+  .btn-danger-text:hover{background:#ecc4cb;}
+
+  /* ---- metric cards ---- */
+  .metrics{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+    gap:14px; margin-bottom:32px;
+  }
+  .metric-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-l);
+    padding:18px 20px; box-shadow:var(--shadow-soft);
+  }
+  .metric-label{font-size:12px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin:0 0 8px;}
+  .metric-value{font-family:'Fraunces',serif; font-size:26px; font-weight:600; margin:0; color:var(--ink);}
+  .metric-value.coral{color:var(--magenta-deep);}
+  .metric-value.sage{color:var(--sage-deep);}
+  .metric-value.amber{color:var(--amber-deep);}
+  .metric-foot{font-size:12px; color:var(--ink-faint); margin-top:6px;}
+
+  /* ---- section ---- */
+  .section{margin-bottom:36px;}
+  .section-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+  .section-head h2{font-size:18px; margin:0;}
+
+  /* ---- pill filters (platform tabs) ---- */
+  .pill-tabs{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px;}
+  .pill-tab{
+    padding:8px 16px; border-radius:999px; border:1px solid var(--line);
+    background:var(--paper); font-size:13px; font-weight:600; color:var(--ink-soft);
+  }
+  .pill-tab:hover{background:var(--lilac);}
+  .pill-tab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  /* ---- kanban ---- */
+  .kanban{display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; align-items:flex-start; height:calc(100vh - 270px); min-height:340px;}
+  .kanban-col{
+    flex:0 0 270px; width:270px;
+    display:flex; flex-direction:column; height:100%;
+  }
+  .kanban-col-head{display:flex; align-items:baseline; gap:6px; margin-bottom:12px; padding:0 2px; flex-shrink:0;}
+  .kanban-col-title{font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .kanban-col-count{font-size:11.5px; color:var(--ink-faint);}
+  .kanban-col-body{
+    display:flex; flex-direction:column; gap:10px;
+    background:rgba(255,255,255,0.5);
+    border:1.5px dashed var(--line); border-radius:var(--radius-m);
+    padding:10px; min-height:90px;
+    flex:1; overflow-y:auto;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .kanban-col-body.drag-over{background:var(--magenta-tint); border-color:var(--magenta);}
+  .kanban-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-m);
+    padding:14px 14px; box-shadow:var(--shadow-soft);
+    cursor:grab; transition:border-color .12s ease, opacity .12s ease, transform .12s ease;
+  }
+  .kanban-card:hover{border-color:var(--magenta);}
+  .kanban-card.dragging{opacity:0.4; transform:scale(0.97);}
+  .kanban-card-title{font-size:15px; font-weight:600; margin:0 0 8px; font-family:'Fraunces',serif;}
+  .kanban-tags{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .tag{
+    display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px;
+    font-size:11px; font-weight:600; white-space:nowrap;
+  }
+  .tag-platform{background:var(--slate-tint); color:#54527a;}
+  .tag-value{font-size:12.5px; font-weight:700; color:var(--ink);}
+  .tag-deadline{background:var(--danger-tint); color:var(--danger);}
+  .kanban-add{
+    border:none; background:transparent; color:var(--ink-faint); font-size:13px;
+    text-align:left; padding:6px 4px; font-weight:500; flex-shrink:0;
+  }
+  .kanban-add:hover{color:var(--magenta-deep);}
+
+  .empty{
+    text-align:center; padding:50px 20px;
+    color:var(--ink-faint); font-size:14px;
+    border:1.5px dashed var(--line); border-radius:var(--radius-l);
+    background:var(--paper);
+  }
+  .empty .ico-big{font-size:26px; margin-bottom:10px; display:block;}
+
+  /* ---- table ---- */
+  .table-wrap{background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-l); overflow:hidden; box-shadow:var(--shadow-soft);}
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th{
+    text-align:left; padding:12px 16px; font-size:11.5px; font-weight:600;
+    color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em;
+    background:var(--lilac); border-bottom:1px solid var(--line);
+  }
+  td{padding:14px 16px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr.row-clickable:hover{background:var(--lilac);}
+  .name-cell{font-weight:600; font-family:'Fraunces',serif; font-size:14.5px;}
+
+  /* ---- modal ---- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(53,43,54,0.38);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    z-index:50; overflow-y:auto;
+  }
+  .modal{
+    background:var(--paper); border-radius:var(--radius-l);
+    width:100%; max-width:520px; max-height:88vh; overflow-y:auto;
+    padding:28px 28px 24px; box-shadow:0 24px 60px -16px rgba(53,43,54,0.4);
+  }
+  .modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .modal-head h2{font-size:19px; margin:0;}
+  .modal-close{
+    width:30px; height:30px; border-radius:50%; border:none; background:var(--lilac);
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:15px;
+  }
+  .modal-close:hover{background:var(--line);}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:12.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;}
+  .field input, .field select, .field textarea{
+    width:100%; padding:10px 12px; border-radius:var(--radius-s);
+    border:1px solid var(--line); background:var(--lilac); color:var(--ink);
+    font-size:14px; outline:none; transition:border-color .12s ease, background .12s ease;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:var(--magenta); background:var(--paper);
+  }
+  .field textarea{resize:vertical; min-height:64px;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .field-row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:10px; margin-top:22px; flex-wrap:wrap;}
+
+  .detail-funnel{display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 18px;}
+  .detail-step{
+    padding:6px 10px; border-radius:7px; font-size:11.5px; font-weight:600;
+    background:var(--lilac); color:var(--ink-faint); border:1px solid transparent;
+  }
+  .detail-step.active{background:var(--magenta); color:#fff;}
+  .detail-step.past{background:var(--magenta-tint); color:var(--magenta-deep);}
+  .detail-step.paid{background:var(--sage); color:#fff;}
+  .detail-step.cancelled{background:var(--danger); color:#fff;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:#fff; padding:11px 20px; border-radius:999px;
+    font-size:13.5px; font-weight:500; opacity:0; pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease; z-index:100;
+    box-shadow:0 12px 30px -8px rgba(0,0,0,0.4);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .sr-only{position:absolute; width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+  /* ---- agenda (calendar) ---- */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  .cal-nav{display:flex; align-items:center; gap:10px;}
+  .cal-title{font-size:18px; min-width:170px; text-align:center;}
+  .cal-grid{
+    display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
+  }
+  .cal-dow{font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-faint); text-align:center; padding-bottom:6px; letter-spacing:.04em;}
+  .cal-cell{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-s);
+    min-height:92px; padding:7px; display:flex; flex-direction:column; gap:4px;
+  }
+  .cal-cell.empty-cell{background:transparent; border:none;}
+  .cal-cell.today{border-color:var(--magenta); border-width:1.5px;}
+  .cal-daynum{font-size:12.5px; font-weight:600; color:var(--ink-soft);}
+  .cal-cell.today .cal-daynum{color:var(--magenta-deep);}
+  .cal-job-chip{
+    font-size:10.5px; font-weight:600; padding:2px 6px; border-radius:5px;
+    background:var(--magenta-tint); color:var(--magenta-deep);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;
+  }
+  .cal-job-chip.paid{background:var(--sage-tint); color:var(--sage-deep);}
+  .cal-job-chip.cancelled{background:var(--danger-tint); color:var(--danger); text-decoration:line-through;}
+
+  /* ---- checklist (week kanban) ---- */
+  .week-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  .week-nav{display:flex; align-items:center; gap:10px;}
+  .week-title{font-size:16px; min-width:170px; text-align:center;}
+  .week-kanban{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; align-items:flex-start;}
+  .week-col{flex:0 0 230px; width:230px;}
+  .week-col-head{margin-bottom:10px; padding:0 2px;}
+  .week-col-dow{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .week-col-date{font-size:13px; font-weight:600; color:var(--ink);}
+  .week-col.is-today .week-col-date{color:var(--magenta-deep);}
+  .week-col-body{
+    background:rgba(255,255,255,0.5); border:1.5px dashed var(--line); border-radius:var(--radius-m);
+    padding:10px; min-height:120px; display:flex; flex-direction:column; gap:12px;
+  }
+  .week-cat-label{
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-faint); margin:2px 0 6px 2px;
+  }
+  .week-cat-label.cat-work{color:var(--magenta-deep);}
+  .week-cat-label.cat-personal{color:var(--sage-deep);}
+  .check-list{display:flex; flex-direction:column; gap:6px;}
+  .check-item{
+    display:flex; align-items:flex-start; gap:9px;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-s);
+    padding:9px 10px; box-shadow:var(--shadow-soft);
+  }
+  .check-box{
+    width:19px; height:19px; border-radius:6px; border:1.5px solid var(--line);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    background:var(--paper); color:#fff; font-size:12px; transition:all .12s ease;
+    margin-top:1px;
+  }
+  .check-box.checked{background:var(--sage); border-color:var(--sage);}
+  .check-text{flex:1; font-size:13px; min-width:0; line-height:1.4; word-break:break-word;}
+  .check-item.checked .check-text{color:var(--ink-faint); text-decoration:line-through;}
+  .check-del{
+    border:none; background:transparent; color:var(--ink-faint); font-size:13px; padding:2px;
+    flex-shrink:0; line-height:1;
+  }
+  .check-del:hover{color:var(--danger);}
+  .week-add{
+    border:none; background:transparent; color:var(--ink-faint); font-size:12.5px;
+    text-align:left; padding:4px 2px; font-weight:500;
+  }
+  .week-add:hover{color:var(--magenta-deep);}
+  .check-empty-day{font-size:12px; color:var(--ink-faint); padding:2px;}
+
+  @media (max-width:880px){
+    .sidebar{position:fixed; left:0; top:0; z-index:40; transform:translateX(-100%); transition:transform .2s ease; box-shadow:0 0 40px rgba(0,0,0,0.2);}
+    .sidebar.open{transform:translateX(0);}
+    .main{padding:20px 16px 60px;}
+    .mobile-bar{display:flex !important;}
+    .field-row,.field-row-3{grid-template-columns:1fr;}
+    .check-add-row{flex-wrap:wrap;}
+  }
+  .mobile-bar{
+    display:none; align-items:center; gap:12px; margin-bottom:18px;
+  }
+  .mobile-bar button{
+    width:38px;height:38px;border-radius:10px;border:1px solid var(--line); background:var(--paper);
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+  }
+
+  :focus-visible{outline:2px solid var(--magenta); outline-offset:2px;}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <nav class="sidebar" id="sidebar" aria-label="Navegação principal">
+    <div class="brand">
+      <div class="brand-mark" id="brandMark"></div>
+      <div>
+        <div class="brand-name">Studio</div>
+        <div class="brand-sub">controle de jobs UGC</div>
+      </div>
+    </div>
+    <div class="nav" id="navList">
+      <button class="nav-item" data-route="dashboard"><span class="ico">◐</span> painel</button>
+      <button class="nav-item" data-route="prospects"><span class="ico">✉</span> prospecção</button>
+      <button class="nav-item" data-route="jobs"><span class="ico">▤</span> trabalhos</button>
+      <button class="nav-item" data-route="agenda"><span class="ico">▦</span> agenda</button>
+      <button class="nav-item" data-route="checklist"><span class="ico">✓</span> checklist</button>
+      <button class="nav-item" data-route="brands"><span class="ico">🌸</span> marcas</button>
+      <button class="nav-item" data-route="platforms"><span class="ico">🌷</span> plataformas</button>
+      <button class="nav-item" data-route="payments"><span class="ico">$</span> pagamentos</button>
+      <button class="nav-item" data-route="metrics"><span class="ico">🌼</span> métricas</button>
+      <button class="nav-item" data-route="contracts"><span class="ico">▢</span> contratos</button>
+    </div>
+    <div class="sidebar-foot" id="syncFoot">
+      <div id="syncStatusText"><span class="sync-dot off"></span>Carregando...</div>
+      <div id="syncUserEmail" style="display:none;"></div>
+      <button class="btn btn-sm btn-ghost" id="btnCloudAuth" type="button" style="display:none;">Entrar com Google</button>
+    </div>
+  </nav>
+
+  <main class="main" id="main">
+    <div class="mobile-bar">
+      <button id="menuBtn" aria-label="Abrir menu">☰</button>
+      <strong id="mobileTitle">painel</strong>
+    </div>
+    <div id="pageContent"></div>
+  </main>
+
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------------- constants ---------------- */
+var STATUS_FLOW = [
+  {key:"prospeccao", label:"Prospecção"},
+  {key:"followup", label:"Follow-up"},
+  {key:"negociacao", label:"Negociação"},
+  {key:"contrato", label:"Contrato fechado"},
+  {key:"aguardando_produto", label:"Aguardando produto"},
+  {key:"roteiro", label:"Roteiro"},
+  {key:"gravacao", label:"Gravação"},
+  {key:"edicao", label:"Edição"},
+  {key:"aprovacao", label:"Enviado p/ aprovação"},
+  {key:"alteracoes", label:"Alterações"},
+  {key:"aguardando_pagamento", label:"Aguardando pagamento"},
+  {key:"pago", label:"Pago / finalizado"}
+];
+var STATUS_CANCELLED = "cancelado";
+var STATUS_INDEX = {};
+STATUS_FLOW.forEach(function(s,i){ STATUS_INDEX[s.key] = i; });
+var KANBAN_STATUSES = STATUS_FLOW.concat([{key:STATUS_CANCELLED,label:"Cancelado"}]);
+
+var CONTENT_TYPES = ["Vídeo UGC","Foto UGC","Vídeo + Foto","Stories","Reels","Outro"];
+var PAYMENT_METHODS = ["PIX","Transferência","Permuta","Boleto","Outro"];
+var CURRENCIES = [
+  {code:"BRL", symbol:"R$", label:"R$ BRL"},
+  {code:"USD", symbol:"US$", label:"US$ USD"},
+  {code:"EUR", symbol:"€", label:"€ EUR"}
+];
+
+var PROSPECT_STATUS_FLOW = [
+  {key:"pendente", label:"Pendente"},
+  {key:"enviado", label:"Enviado"},
+  {key:"followup1", label:"Follow-up 1"},
+  {key:"followup2", label:"Follow-up 2"},
+  {key:"respondeu", label:"Respondeu"},
+  {key:"negociando", label:"Negociando"},
+  {key:"fechou", label:"Fechou"},
+  {key:"recusou", label:"Recusou"}
+];
+
+var STORE = {
+  jobs: "ugc_jobs_v2",
+  brands: "ugc_brands_v2",
+  platforms: "ugc_platforms_v2",
+  checklist: "ugc_checklist_v2",
+  expenses: "ugc_expenses_v1",
+  prospects: "ugc_prospects_v1",
+  contractProfile: "ugc_contract_profile_v1"
+};
+
+var state = {
+  route: "dashboard",
+  jobs: [],
+  brands: [],
+  platforms: [],
+  checklist: [],
+  expenses: [],
+  prospects: [],
+  contractProfile: null,
+  loaded: false,
+  jobFilterPlatform: "",
+  calMonth: new Date().getMonth(),
+  calYear: new Date().getFullYear(),
+  weekOffset: 0,
+  paymentsTab: "receitas",
+  metricsRange: "month"
+};
+
+/* Cole aqui as credenciais do Firebase (veja instruções no final desta resposta). */
+var FIREBASE_CONFIG = {
+  apiKey: "COLOQUE_SUA_API_KEY",
+  authDomain: "seu-projeto.firebaseapp.com",
+  projectId: "seu-projeto",
+  storageBucket: "seu-projeto.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:0000000000000000000000"
+};
+
+var cloudUser = null;
+var cloudDb = null;
+var cloudUnsubscribe = null;
+var cloudSaveTimer = null;
+var cloudSyncStatus = "off";
+var applyingRemote = false;
+
+/* ---------------- storage helpers ---------------- */
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+function ensureArray(val){
+  if(Array.isArray(val)) return val;
+  if(val && typeof val === 'object') return [val];
+  return [];
+}
+
+var storageAdapter = (function(){
+  var lsAvailable = false;
+  try{
+    localStorage.setItem('__ugc_test__', '1');
+    localStorage.removeItem('__ugc_test__');
+    lsAvailable = true;
+  }catch(e){ lsAvailable = false; }
+
+  function lsGet(key){
+    if(!lsAvailable) return null;
+    try{ return localStorage.getItem(key); }catch(e){ return null; }
+  }
+  function lsSet(key, val){
+    if(!lsAvailable) return Promise.reject(new Error('localStorage unavailable'));
+    try{ localStorage.setItem(key, val); return Promise.resolve(); }catch(e){ return Promise.reject(e); }
+  }
+  if(typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function'){
+    return {
+      get: function(key, shared){ return window.storage.get(key, shared); },
+      set: function(key, val, shared){ return window.storage.set(key, val, shared); }
+    };
+  }
+  return {
+    get: function(key){ return Promise.resolve({ value: lsGet(key) }); },
+    set: lsSet
+  };
+})();
+
+var saveQueue = Promise.resolve();
+
+async function loadKey(key){
+  try{
+    var r = await storageAdapter.get(key, false);
+    var raw = r && r.value != null && r.value !== '' ? r.value : null;
+    if(!raw) return [];
+    return ensureArray(JSON.parse(raw));
+  }catch(e){ return []; }
+}
+async function loadKeyObj(key){
+  try{
+    var r = await storageAdapter.get(key, false);
+    var raw = r && r.value != null && r.value !== '' ? r.value : null;
+    if(!raw) return null;
+    var parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+  }catch(e){ return null; }
+}
+function saveKey(key, val){
+  var payload = JSON.stringify(val);
+  saveQueue = saveQueue.then(function(){
+    return storageAdapter.set(key, payload, false);
+  }).catch(function(){
+    showToast("Não foi possível salvar. Tente novamente.");
+  }).then(function(){
+    if(!applyingRemote) scheduleCloudSync();
+  });
+  return saveQueue;
+}
+function saveKeyQuiet(key, val){
+  return storageAdapter.set(key, JSON.stringify(val), false);
+}
+function isCloudConfigured(){
+  return FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.apiKey.indexOf("COLOQUE") === -1;
+}
+function hasLocalData(){
+  return state.jobs.length > 0 || state.brands.length > 0 || state.prospects.length > 0 ||
+    state.checklist.length > 0 || state.expenses.length > 0 || !!state.contractProfile;
+}
+function setCloudSyncStatus(status, text){
+  cloudSyncStatus = status;
+  var el = document.getElementById('syncStatusText');
+  if(!el) return;
+  el.innerHTML = '<span class="sync-dot '+status+'"></span>' + escapeHtml(text);
+}
+function updateSyncUI(){
+  var btn = document.getElementById('btnCloudAuth');
+  var emailEl = document.getElementById('syncUserEmail');
+  if(!btn || !emailEl) return;
+
+  if(!isCloudConfigured()){
+    setCloudSyncStatus('off', 'Salvo neste navegador. Configure Firebase para sincronizar entre dispositivos.');
+    btn.style.display = 'none';
+    emailEl.style.display = 'none';
+    return;
+  }
+
+  btn.style.display = 'inline-flex';
+  if(cloudUser){
+    emailEl.style.display = 'block';
+    emailEl.textContent = cloudUser.email || 'Conta conectada';
+    btn.textContent = 'Sair';
+    if(cloudSyncStatus === 'pending'){
+      setCloudSyncStatus('pending', 'Salvando na nuvem...');
+    } else {
+      setCloudSyncStatus('ok', 'Sincronizado em todos os dispositivos');
+    }
+  } else {
+    emailEl.style.display = 'none';
+    btn.textContent = 'Entrar com Google';
+    setCloudSyncStatus('off', 'Entre para sincronizar entre celular e computador');
+  }
+}
+function setupCloudAuthUI(){
+  var btn = document.getElementById('btnCloudAuth');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    if(!isCloudConfigured()){
+      showToast('Configure o Firebase no arquivo antes de usar a nuvem.');
+      return;
+    }
+    if(cloudUser){
+      firebase.auth().signOut().catch(function(){
+        showToast('Não foi possível sair. Tente novamente.');
+      });
+      return;
+    }
+    setCloudSyncStatus('pending', 'Abrindo login...');
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch(function(err){
+      if(err && err.code === 'auth/popup-closed-by-user'){
+        updateSyncUI();
+        return;
+      }
+      showToast('Erro ao entrar: ' + ((err && err.message) ? err.message : 'tente novamente'));
+      updateSyncUI();
+    });
+  });
+}
+function getCloudDocRef(){
+  if(!cloudUser || !cloudDb) return null;
+  return cloudDb.collection('users').doc(cloudUser.uid).collection('data').doc('main');
+}
+function getStatePayload(){
+  return {
+    jobs: state.jobs,
+    brands: state.brands,
+    platforms: state.platforms,
+    checklist: state.checklist,
+    expenses: state.expenses,
+    prospects: state.prospects,
+    contractProfile: state.contractProfile,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+}
+function scheduleCloudSync(){
+  if(!cloudUser || !cloudDb || applyingRemote) return;
+  clearTimeout(cloudSaveTimer);
+  setCloudSyncStatus('pending', 'Salvando na nuvem...');
+  cloudSaveTimer = setTimeout(function(){ pushAllToCloud(); }, 700);
+}
+function pushAllToCloud(){
+  var ref = getCloudDocRef();
+  if(!ref) return Promise.resolve();
+  return ref.set(getStatePayload(), {merge: true}).then(function(){
+    updateSyncUI();
+  }).catch(function(){
+    setCloudSyncStatus('off', 'Falha ao sincronizar. Dados salvos neste navegador.');
+    showToast('Falha ao sincronizar na nuvem.');
+  });
+}
+function persistAllLocalQuiet(){
+  applyingRemote = true;
+  return Promise.all([
+    saveKeyQuiet(STORE.jobs, state.jobs),
+    saveKeyQuiet(STORE.brands, state.brands),
+    saveKeyQuiet(STORE.platforms, state.platforms),
+    saveKeyQuiet(STORE.checklist, state.checklist),
+    saveKeyQuiet(STORE.expenses, state.expenses),
+    saveKeyQuiet(STORE.prospects, state.prospects),
+    saveKeyQuiet(STORE.contractProfile, state.contractProfile)
+  ]).finally(function(){ applyingRemote = false; });
+}
+function applyRemoteData(data){
+  if(!data) return;
+  applyingRemote = true;
+  state.jobs = ensureArray(data.jobs);
+  state.brands = ensureArray(data.brands);
+  state.platforms = ensureArray(data.platforms);
+  state.checklist = ensureArray(data.checklist);
+  state.expenses = ensureArray(data.expenses);
+  state.prospects = ensureArray(data.prospects);
+  state.contractProfile = data.contractProfile && typeof data.contractProfile === 'object' && !Array.isArray(data.contractProfile)
+    ? data.contractProfile : null;
+  applyingRemote = false;
+}
+function subscribeCloudData(){
+  if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+  var ref = getCloudDocRef();
+  if(!ref) return;
+
+  cloudUnsubscribe = ref.onSnapshot(function(snap){
+    if(snap.metadata.hasPendingWrites) return;
+
+    if(!snap.exists()){
+      if(hasLocalData()){
+        pushAllToCloud();
+      }
+      updateSyncUI();
+      return;
+    }
+
+    applyRemoteData(snap.data());
+    persistAllLocalQuiet().then(function(){
+      if(state.loaded){
+        document.getElementById('modalRoot').innerHTML = '';
+        render();
+      }
+      updateSyncUI();
+    });
+  }, function(){
+    setCloudSyncStatus('off', 'Sem conexão. Usando cópia local.');
+  });
+}
+function initCloudSync(){
+  if(!isCloudConfigured() || typeof firebase === 'undefined'){
+    updateSyncUI();
+    return Promise.resolve();
+  }
+
+  if(!firebase.apps.length){
+    firebase.initializeApp(FIREBASE_CONFIG);
+  }
+  cloudDb = firebase.firestore();
+
+  return new Promise(function(resolve){
+    var ready = false;
+    firebase.auth().onAuthStateChanged(function(user){
+      cloudUser = user;
+      if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
+
+      if(user){
+        subscribeCloudData();
+      } else {
+        updateSyncUI();
+      }
+      if(!ready){
+        ready = true;
+        resolve();
+      }
+    });
+  });
+}
+async function loadAll(){
+  state.jobs = await loadKey(STORE.jobs);
+  state.brands = await loadKey(STORE.brands);
+  state.platforms = await loadKey(STORE.platforms);
+  state.checklist = await loadKey(STORE.checklist);
+  state.expenses = await loadKey(STORE.expenses);
+  state.prospects = await loadKey(STORE.prospects);
+  state.contractProfile = await loadKeyObj(STORE.contractProfile);
+  if(state.platforms.length===0){
+    var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Prospecção ativa","Inbound","Outros"];
+    state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
+    await saveKey(STORE.platforms, state.platforms);
+  }
+  state.loaded = true;
+}
+function saveJobs(){ return saveKey(STORE.jobs, state.jobs); }
+function saveBrands(){ return saveKey(STORE.brands, state.brands); }
+function savePlatforms(){ return saveKey(STORE.platforms, state.platforms); }
+function saveChecklist(){ return saveKey(STORE.checklist, state.checklist); }
+function saveExpenses(){ return saveKey(STORE.expenses, state.expenses); }
+function saveProspects(){ return saveKey(STORE.prospects, state.prospects); }
+function saveContractProfile(){ return saveKey(STORE.contractProfile, state.contractProfile); }
+
+/* ---------------- utils ---------------- */
+function escapeHtml(str){
+  if(str===undefined||str===null) return "";
+  return String(str).replace(/[&<>"']/g, function(c){
+    return ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c];
+  });
+}
+function fmtDate(iso){
+  if(!iso) return "—";
+  var d = new Date(iso+"T00:00:00");
+  if(isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+}
+function daysUntil(iso){
+  if(!iso) return null;
+  var d = new Date(iso+"T00:00:00");
+  if(isNaN(d.getTime())) return null;
+  var today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((d-today)/86400000);
+}
+function brandById(id){ return state.brands.find(function(b){return b.id===id;}); }
+function platformById(id){ return state.platforms.find(function(p){return p.id===id;}); }
+function statusLabel(key){
+  if(key===STATUS_CANCELLED) return "Cancelado";
+  var s = STATUS_FLOW.find(function(x){return x.key===key;});
+  return s ? s.label : key;
+}
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(function(){ t.classList.remove('show'); }, 2400);
+}
+function parseMoneyGuess(v){
+  if(!v) return 0;
+  var cleaned = String(v).replace(/[^\d,.\-]/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.');
+  var n = parseFloat(cleaned);
+  return isNaN(n) ? 0 : n;
+}
+function fmtBRL(n){
+  try{ return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  catch(e){ return 'R$ ' + n.toFixed(2); }
+}
+function fmtCurrency(n, currencyCode){
+  currencyCode = currencyCode || 'BRL';
+  try{ return n.toLocaleString('pt-BR',{style:'currency',currency:currencyCode}); }
+  catch(e){
+    var c = CURRENCIES.find(function(c){return c.code===currencyCode;});
+    return (c?c.symbol:'R$') + ' ' + n.toFixed(2);
+  }
+}
+
+/* ---------------- installments helpers ---------------- */
+function jobTotalValue(job){
+  if(job.paymentType==='split' && job.installments && job.installments.length>0){
+    return job.installments.reduce(function(s,inst){ return s+parseMoneyGuess(inst.value); }, 0);
+  }
+  return parseMoneyGuess(job.value);
+}
+function jobPaidValue(job){
+  if(job.paymentType==='split' && job.installments && job.installments.length>0){
+    return job.installments.filter(function(i){return i.paid;}).reduce(function(s,inst){ return s+parseMoneyGuess(inst.value); }, 0);
+  }
+  return job.status==='pago' ? parseMoneyGuess(job.value) : 0;
+}
+function jobPendingValue(job){
+  return jobTotalValue(job) - jobPaidValue(job);
+}
+function buildInstallments(splitMode, totalValue, videoCount, customRows){
+  var total = parseMoneyGuess(totalValue);
+  if(splitMode==='half'){
+    var half = (total/2);
+    return [
+      {id:uid(), label:'Entrada (50%)', value: half.toFixed(2), dueDate:'', paid:false, paidDate:''},
+      {id:uid(), label:'Final (50%)', value: (total-half).toFixed(2), dueDate:'', paid:false, paidDate:''}
+    ];
+  }
+  if(splitMode==='per_video'){
+    var n = Math.max(1, parseInt(videoCount,10) || 1);
+    var per = total/n;
+    var rows = [];
+    for(var i=0;i<n;i++){
+      rows.push({id:uid(), label:'Vídeo '+(i+1), value: per.toFixed(2), dueDate:'', paid:false, paidDate:''});
+    }
+    return rows;
+  }
+  if(splitMode==='custom' && customRows){
+    return customRows;
+  }
+  return [];
+}
+
+/* ---------------- routing ---------------- */
+function navigate(route){
+  document.getElementById('modalRoot').innerHTML = '';
+  state.route = route;
+  document.querySelectorAll('.nav-item').forEach(function(el){
+    el.classList.toggle('active', el.getAttribute('data-route')===route);
+  });
+  var titles = {dashboard:"painel", prospects:"prospecção", jobs:"trabalhos", agenda:"agenda", checklist:"checklist", brands:"marcas", platforms:"plataformas", payments:"pagamentos", metrics:"métricas", contracts:"contratos"};
+  document.getElementById('mobileTitle').textContent = titles[route] || route;
+  document.getElementById('sidebar').classList.remove('open');
+  render();
+}
+document.getElementById('navList').addEventListener('click', function(e){
+  var btn = e.target.closest('.nav-item');
+  if(btn) navigate(btn.getAttribute('data-route'));
+});
+document.getElementById('menuBtn').addEventListener('click', function(){
+  document.getElementById('sidebar').classList.toggle('open');
+});
+
+/* ---------------- shared bits ---------------- */
+function metricCard(label, value, tone, foot){
+  return '<div class="metric-card"><p class="metric-label">'+escapeHtml(label)+'</p>' +
+    '<p class="metric-value '+(tone||'')+'">'+ (typeof value==='number'?value:escapeHtml(value)) +'</p>' +
+    (foot ? '<p class="metric-foot">'+escapeHtml(foot)+'</p>' : '') +
+    '</div>';
+}
+function emptyState(msg, btnId, btnLabel){
+  return '<div class="empty"><span class="ico-big">◇</span>' + escapeHtml(msg) +
+    (btnId ? '<div style="margin-top:14px;"><button class="btn btn-primary btn-sm" id="'+btnId+'">'+escapeHtml(btnLabel||'+ Adicionar')+'</button></div>' : '') +
+    '</div>';
+}
+
+/* ---------------- render: dashboard ---------------- */
+function renderDashboard(){
+  var jobs = state.jobs;
+  var summary = financeSummary();
+  var activeJobsCount = jobs.filter(function(j){ return j.status!==STATUS_CANCELLED && j.status!=="pago"; }).length;
+  var awaitingPayment = jobs.filter(function(j){ return j.status==="aguardando_pagamento"; });
+  var pendingChecks = state.checklist.filter(function(c){ return !c.done; }).length;
+  var openProspects = state.prospects.filter(function(p){ return p.status!=='fechou' && p.status!=='recusou'; }).length;
+
+  var upcoming = jobs
+    .filter(function(j){ return j.status!==STATUS_CANCELLED && j.status!=="pago" && j.deadline; })
+    .map(function(j){ return {job:j, d:daysUntil(j.deadline)}; })
+    .filter(function(x){ return x.d!==null; })
+    .sort(function(a,b){ return a.d-b.d; })
+    .slice(0,5);
+
+  var html = '';
+  html += '<div class="page-head"><div><h1>Painel</h1><p class="page-sub">Visão geral dos seus jobs e marcas.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewJobTop"><span>+</span> Novo trabalho</button></div>';
+
+  html += '<div class="metrics">';
+  html += metricCard("Trabalhos ativos", activeJobsCount, "", "");
+  html += metricCard("A receber", fmtBRL(summary.pendente), "coral", "em andamento");
+  html += metricCard("Aguardando pagamento", awaitingPayment.length, "amber", "");
+  html += metricCard("Recebido", fmtBRL(summary.recebido), "sage", "");
+  html += metricCard("Prospecções abertas", openProspects, "", "");
+  html += metricCard("Tarefas pendentes", pendingChecks, "", "no checklist");
+  html += '</div>';
+
+  html += '<div class="section"><div class="section-head"><h2>Próximos prazos</h2>' +
+    '<button class="btn btn-ghost btn-sm" data-route="agenda">ver agenda</button></div>';
+  if(upcoming.length===0){
+    html += emptyState("Nenhum prazo por aqui ainda.");
+  } else {
+    html += '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">';
+    upcoming.forEach(function(x){ html += dashboardJobRow(x.job); });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+  var btnTop = document.getElementById('btnNewJobTop');
+  if(btnTop) btnTop.addEventListener('click', function(){ openJobModal(null); });
+  document.querySelectorAll('[data-job-row]').forEach(function(el){
+    el.addEventListener('click', function(){ openJobModal(el.getAttribute('data-job-row')); });
+  });
+  document.querySelectorAll('[data-route]').forEach(function(el){
+    if(el.classList.contains('nav-item')) return;
+    el.addEventListener('click', function(){ navigate(el.getAttribute('data-route')); });
+  });
+}
+
+function dashboardJobRow(job){
+  var brand = brandById(job.brandId);
+  var d = daysUntil(job.deadline);
+  var deadlineText = d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : 'em '+d+'d';
+  return '<div class="kanban-card" data-job-row="'+job.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">' +
+    '<div><p class="kanban-card-title" style="margin-bottom:2px;">'+escapeHtml(job.title||'Job sem título')+'</p>' +
+    '<span style="font-size:12.5px; color:var(--ink-soft);">'+escapeHtml(brand?brand.name:'sem marca')+'</span></div>' +
+    '<span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span>' +
+  '</div>';
+}
+
+/* ---------------- render: prospects ---------------- */
+function renderProspects(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Prospecção</h1><p class="page-sub">Gerencie seus contatos com marcas, do primeiro DM até o fechamento.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewProspect"><span>+</span> Nova prospecção</button></div>';
+
+  html += '<div class="kanban" id="prospectKanban"></div>';
+  document.getElementById('pageContent').innerHTML = html;
+  document.getElementById('btnNewProspect').addEventListener('click', function(){ openProspectModal(null); });
+  renderProspectKanban();
+}
+
+function renderProspectKanban(){
+  var wrap = document.getElementById('prospectKanban');
+  var html = '';
+  PROSPECT_STATUS_FLOW.forEach(function(s){
+    var items = state.prospects.filter(function(p){ return p.status===s.key; });
+    html += '<div class="kanban-col">' +
+      '<div class="kanban-col-head"><span class="kanban-col-title">'+escapeHtml(s.label)+'</span><span class="kanban-col-count">('+items.length+')</span></div>' +
+      '<div class="kanban-col-body" data-prospect-col="'+s.key+'">';
+    items.forEach(function(p){ html += prospectCardHtml(p); });
+    html += '<button class="kanban-add" data-new-prospect-status="'+s.key+'">+ Adicionar</button>';
+    html += '</div></div>';
+  });
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.kanban-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      if(card.classList.contains('dragging')) return;
+      openProspectModal(card.getAttribute('data-prospect-id'));
+    });
+    card.addEventListener('dragstart', function(e){
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-prospect-id'));
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function(){ card.classList.remove('dragging'); });
+  });
+  wrap.querySelectorAll('[data-new-prospect-status]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openProspectModal(null, btn.getAttribute('data-new-prospect-status')); });
+  });
+  wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
+    col.addEventListener('dragover', function(e){ e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', function(){ col.classList.remove('drag-over'); });
+    col.addEventListener('drop', function(e){
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      var pId = e.dataTransfer.getData('text/plain');
+      var newStatus = col.getAttribute('data-prospect-col');
+      var p = state.prospects.find(function(x){ return x.id===pId; });
+      if(p && p.status!==newStatus){
+        moveProspectToStatus(p, newStatus);
+      }
+    });
+  });
+}
+
+function prospectCardHtml(p){
+  var platform = platformById(p.platformId);
+  return '<div class="kanban-card" draggable="true" data-prospect-id="'+p.id+'">' +
+    '<p class="kanban-card-title">'+escapeHtml(p.brandName)+'</p>' +
+    '<div class="kanban-tags">' +
+      (platform ? '<span class="tag tag-platform">'+escapeHtml(platform.name)+'</span>' : '') +
+      (p.contact ? '<span class="tag" style="background:var(--lilac); color:var(--ink-soft);">'+escapeHtml(p.contact)+'</span>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+function moveProspectToStatus(p, newStatus){
+  p.status = newStatus;
+  saveProspects();
+  if(newStatus==='fechou'){
+    convertProspectToJob(p);
+    showToast('Prospecção fechada — trabalho criado em "Contrato fechado".');
+  } else {
+    showToast('Movido para "'+ (PROSPECT_STATUS_FLOW.find(function(s){return s.key===newStatus;})||{}).label +'".');
+  }
+  renderProspectKanban();
+}
+
+function convertProspectToJob(p){
+  // find or create a brand with this name
+  var brand = state.brands.find(function(b){ return b.name.toLowerCase()===p.brandName.toLowerCase(); });
+  if(!brand){
+    brand = {id:uid(), name:p.brandName, contact:p.contact||'', notes:'Criada automaticamente a partir da prospecção.', createdAt:Date.now()};
+    state.brands.push(brand);
+    saveBrands();
+  }
+  var alreadyExists = state.jobs.some(function(j){ return j.prospectId===p.id; });
+  if(alreadyExists) return;
+  state.jobs.push({
+    id: uid(),
+    title: p.brandName,
+    brandId: brand.id,
+    platformId: p.platformId || '',
+    status: 'contrato',
+    contentType: '',
+    videoCount: null,
+    photoCount: null,
+    deadline: '',
+    payDate: '',
+    paymentMethod: '',
+    value: '',
+    notes: p.notes || '',
+    prospectId: p.id,
+    createdAt: Date.now()
+  });
+  saveJobs();
+}
+
+function openProspectModal(prospectId, presetStatus){
+  var p = prospectId ? state.prospects.find(function(x){ return x.id===prospectId; }) : null;
+  var isNew = !p;
+
+  var platformOptions = '<option value="">— nenhuma —</option>' + state.platforms.map(function(pl){
+    return '<option value="'+pl.id+'" '+(p&&p.platformId===pl.id?'selected':'')+'>'+escapeHtml(pl.name)+'</option>';
+  }).join('');
+
+  var statusOptions = PROSPECT_STATUS_FLOW.map(function(s){
+    return '<option value="'+s.key+'" '+((p?p.status:presetStatus)===s.key?'selected':'')+'>'+escapeHtml(s.label)+'</option>';
+  }).join('');
+
+  var modalHtml =
+    '<div class="overlay" id="prospOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<div class="modal-head"><h2>'+(isNew?'Nova prospecção':'Editar prospecção')+'</h2>' +
+          '<button class="modal-close" id="prospModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="pBrandName">Nome da marca</label><input id="pBrandName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(p?p.brandName:'')+'" /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="pContact">Contato</label><input id="pContact" type="text" placeholder="DM Instagram, email..." value="'+escapeHtml(p?p.contact:'')+'" /></div>' +
+          '<div class="field"><label for="pPlatform">Plataforma</label><select id="pPlatform">'+platformOptions+'</select></div>' +
+        '</div>' +
+        '<div class="field"><label for="pStatus">Status</label><select id="pStatus">'+statusOptions+'</select></div>' +
+        '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Histórico da conversa, valor proposto...">'+escapeHtml(p?p.notes:'')+'</textarea></div>' +
+        '<div class="modal-actions">' +
+          (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
+          '<button class="btn btn-ghost" id="pCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="pSave">'+(isNew?'Criar prospecção':'Salvar alterações')+'</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('pBrandName').focus();
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('prospModalClose').addEventListener('click', close);
+  document.getElementById('pCancel').addEventListener('click', close);
+  document.getElementById('prospOverlay').addEventListener('click', function(e){ if(e.target.id==='prospOverlay') close(); });
+
+  if(!isNew){
+    document.getElementById('pDelete').addEventListener('click', function(){
+      if(confirm('Excluir esta prospecção?')){
+        state.prospects = state.prospects.filter(function(x){ return x.id!==p.id; });
+        saveProspects(); close(); showToast('Prospecção excluída.'); render();
+      }
+    });
+  }
+
+  document.getElementById('pSave').addEventListener('click', function(){
+    var brandName = document.getElementById('pBrandName').value.trim();
+    if(!brandName){ showToast('Dá um nome pra marca.'); return; }
+    var newStatus = document.getElementById('pStatus').value;
+    var data = {
+      brandName: brandName,
+      contact: document.getElementById('pContact').value.trim(),
+      platformId: document.getElementById('pPlatform').value,
+      notes: document.getElementById('pNotes').value.trim()
+    };
+    if(isNew){
+      data.id = uid();
+      data.status = newStatus;
+      data.createdAt = Date.now();
+      state.prospects.push(data);
+      saveProspects();
+      close();
+      if(newStatus==='fechou'){ convertProspectToJob(data); showToast('Prospecção criada e trabalho gerado.'); }
+      else showToast('Prospecção criada.');
+      render();
+    } else {
+      var statusChanged = p.status!==newStatus;
+      Object.assign(p, data);
+      saveProspects();
+      close();
+      if(statusChanged && newStatus==='fechou'){
+        convertProspectToJob(p);
+        showToast('Prospecção fechada — trabalho criado.');
+      } else {
+        showToast('Alterações salvas.');
+      }
+      render();
+    }
+  });
+}
+
+/* ---------------- render: jobs (kanban) ---------------- */
+function renderJobs(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Trabalhos</h1><p class="page-sub">Do primeiro contato ao pagamento, organizados por etapa.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewJob"><span>+</span> Novo trabalho</button></div>';
+
+  html += '<div class="pill-tabs" id="platformTabs">' +
+    '<button class="pill-tab '+(state.jobFilterPlatform===''?'active':'')+'" data-plat="">Todas</button>' +
+    state.platforms.map(function(p){
+      return '<button class="pill-tab '+(state.jobFilterPlatform===p.id?'active':'')+'" data-plat="'+p.id+'">'+escapeHtml(p.name)+'</button>';
+    }).join('') +
+  '</div>';
+
+  if(state.jobs.length===0){
+    html += emptyState("Você ainda não tem trabalhos cadastrados. Comece adicionando o primeiro.", "btnEmptyNewJob", "+ Adicionar trabalho");
+    document.getElementById('pageContent').innerHTML = html;
+    document.getElementById('btnNewJob').addEventListener('click', function(){ openJobModal(null); });
+    document.getElementById('btnEmptyNewJob').addEventListener('click', function(){ openJobModal(null); });
+    return;
+  }
+
+  html += '<div class="kanban" id="kanbanWrap"></div>';
+  document.getElementById('pageContent').innerHTML = html;
+
+  document.getElementById('btnNewJob').addEventListener('click', function(){ openJobModal(null); });
+  document.getElementById('platformTabs').addEventListener('click', function(e){
+    var btn = e.target.closest('.pill-tab');
+    if(!btn) return;
+    state.jobFilterPlatform = btn.getAttribute('data-plat');
+    renderJobs();
+  });
+  renderKanban();
+}
+
+function renderKanban(){
+  var jobs = state.jobs.filter(function(j){
+    return !state.jobFilterPlatform || j.platformId===state.jobFilterPlatform;
+  });
+  var wrap = document.getElementById('kanbanWrap');
+  var html = '';
+  KANBAN_STATUSES.forEach(function(s){
+    var colJobs = jobs.filter(function(j){ return j.status===s.key; });
+    html += '<div class="kanban-col">' +
+      '<div class="kanban-col-head"><span class="kanban-col-title">'+escapeHtml(s.label)+'</span><span class="kanban-col-count">('+colJobs.length+')</span></div>' +
+      '<div class="kanban-col-body" data-status-col="'+s.key+'">';
+    colJobs.forEach(function(j){ html += kanbanCardHtml(j); });
+    html += '<button class="kanban-add" data-new-job-status="'+s.key+'">+ Adicionar</button>';
+    html += '</div></div>';
+  });
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.kanban-card').forEach(function(card){
+    card.addEventListener('click', function(e){
+      if(card.classList.contains('dragging')) return;
+      openJobModal(card.getAttribute('data-job-id'));
+    });
+    card.addEventListener('dragstart', function(e){
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-job-id'));
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function(){
+      card.classList.remove('dragging');
+    });
+  });
+  wrap.querySelectorAll('[data-new-job-status]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openJobModal(null, btn.getAttribute('data-new-job-status')); });
+  });
+
+  wrap.querySelectorAll('[data-status-col]').forEach(function(col){
+    col.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      col.classList.add('drag-over');
+    });
+    col.addEventListener('dragleave', function(){
+      col.classList.remove('drag-over');
+    });
+    col.addEventListener('drop', function(e){
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      var jobId = e.dataTransfer.getData('text/plain');
+      var newStatus = col.getAttribute('data-status-col');
+      var job = state.jobs.find(function(j){ return j.id===jobId; });
+      if(job && job.status!==newStatus){
+        job.status = newStatus;
+        saveJobs();
+        showToast('Movido para "' + (newStatus===STATUS_CANCELLED?'Cancelado':statusLabel(newStatus)) + '".');
+        renderKanban();
+      }
+    });
+  });
+}
+
+function kanbanCardHtml(job){
+  var brand = brandById(job.brandId);
+  var platform = platformById(job.platformId);
+  var d = job.deadline ? daysUntil(job.deadline) : null;
+  var deadlineText = null;
+  if(d!==null){
+    deadlineText = d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : fmtDate(job.deadline);
+  }
+  return '<div class="kanban-card" draggable="true" data-job-id="'+job.id+'" tabindex="0" role="button" aria-label="Abrir '+escapeHtml(job.title)+'">' +
+    '<p class="kanban-card-title">'+escapeHtml(brand?brand.name:(job.title||'Sem título'))+'</p>' +
+    '<div class="kanban-tags">' +
+      (platform ? '<span class="tag tag-platform">'+escapeHtml(platform.name)+'</span>' : '') +
+      (job.value ? '<span class="tag-value">'+escapeHtml(job.value)+'</span>' : '') +
+    '</div>' +
+    (deadlineText ? '<div style="margin-top:8px;"><span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span></div>' : '') +
+  '</div>';
+}
+
+/* ---------------- render: agenda ---------------- */
+var MONTH_NAMES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+var DOW_NAMES = ["dom","seg","ter","qua","qui","sex","sáb"];
+
+function renderAgenda(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Agenda</h1><p class="page-sub">Prazos de entrega dos seus trabalhos.</p></div></div>';
+  html += '<div class="cal-head">' +
+    '<button class="btn btn-sm" id="calPrev">‹</button>' +
+    '<span class="cal-title display" id="calTitle"></span>' +
+    '<button class="btn btn-sm" id="calNext">›</button>' +
+    '<button class="btn btn-sm btn-ghost" id="calToday">hoje</button>' +
+  '</div>';
+  html += '<div class="cal-grid" id="calGrid"></div>';
+  document.getElementById('pageContent').innerHTML = html;
+
+  document.getElementById('calPrev').addEventListener('click', function(){
+    state.calMonth--; if(state.calMonth<0){state.calMonth=11; state.calYear--;}
+    renderCalGrid();
+  });
+  document.getElementById('calNext').addEventListener('click', function(){
+    state.calMonth++; if(state.calMonth>11){state.calMonth=0; state.calYear++;}
+    renderCalGrid();
+  });
+  document.getElementById('calToday').addEventListener('click', function(){
+    var now = new Date();
+    state.calMonth = now.getMonth(); state.calYear = now.getFullYear();
+    renderCalGrid();
+  });
+  renderCalGrid();
+}
+
+function renderCalGrid(){
+  document.getElementById('calTitle').textContent = MONTH_NAMES[state.calMonth] + ' de ' + state.calYear;
+  var firstDow = new Date(state.calYear, state.calMonth, 1).getDay();
+  var daysInMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  var jobsByDay = {};
+  state.jobs.forEach(function(j){
+    if(!j.deadline) return;
+    var d = new Date(j.deadline+"T00:00:00");
+    if(d.getFullYear()===state.calYear && d.getMonth()===state.calMonth){
+      var day = d.getDate();
+      (jobsByDay[day] = jobsByDay[day] || []).push(j);
+    }
+  });
+
+  var html = '';
+  DOW_NAMES.forEach(function(n){ html += '<div class="cal-dow">'+n+'</div>'; });
+  for(var i=0;i<firstDow;i++){ html += '<div class="cal-cell empty-cell"></div>'; }
+  for(var day=1; day<=daysInMonth; day++){
+    var isToday = today.getFullYear()===state.calYear && today.getMonth()===state.calMonth && today.getDate()===day;
+    html += '<div class="cal-cell '+(isToday?'today':'')+'"><span class="cal-daynum">'+day+'</span>';
+    (jobsByDay[day]||[]).forEach(function(j){
+      var brand = brandById(j.brandId);
+      var cls = j.status==='pago' ? 'paid' : j.status===STATUS_CANCELLED ? 'cancelled' : '';
+      html += '<span class="cal-job-chip '+cls+'" data-job-id="'+j.id+'" title="'+escapeHtml(brand?brand.name:'')+' — '+escapeHtml(j.title||'')+'">'+escapeHtml(j.title||(brand?brand.name:'job'))+'</span>';
+    });
+    html += '</div>';
+  }
+  document.getElementById('calGrid').innerHTML = html;
+  document.querySelectorAll('.cal-job-chip').forEach(function(chip){
+    chip.addEventListener('click', function(){ openJobModal(chip.getAttribute('data-job-id')); });
+  });
+}
+
+/* ---------------- render: checklist (week kanban) ---------------- */
+var DOW_FULL = ["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
+var DOW_SHORT = ["seg","ter","qua","qui","sex","sáb","dom"];
+
+function getWeekStart(offset){
+  var now = new Date(); now.setHours(0,0,0,0);
+  var dow = now.getDay(); // 0=sun..6=sat
+  var diffToMonday = (dow===0) ? -6 : 1-dow;
+  var monday = new Date(now);
+  monday.setDate(now.getDate() + diffToMonday + (offset*7));
+  return monday;
+}
+function isoDate(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function renderChecklist(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Checklist</h1><p class="page-sub">Tarefas da semana, separadas entre trabalho e pessoal.</p></div></div>';
+  html += '<div class="week-head">' +
+    '<div class="week-nav">' +
+      '<button class="btn btn-sm" id="weekPrev">‹</button>' +
+      '<span class="week-title display" id="weekTitle"></span>' +
+      '<button class="btn btn-sm" id="weekNext">›</button>' +
+      '<button class="btn btn-sm btn-ghost" id="weekToday">semana atual</button>' +
+    '</div>' +
+  '</div>';
+  html += '<div class="week-kanban" id="weekKanban"></div>';
+  document.getElementById('pageContent').innerHTML = html;
+
+  document.getElementById('weekPrev').addEventListener('click', function(){ state.weekOffset--; renderWeekKanban(); });
+  document.getElementById('weekNext').addEventListener('click', function(){ state.weekOffset++; renderWeekKanban(); });
+  document.getElementById('weekToday').addEventListener('click', function(){ state.weekOffset=0; renderWeekKanban(); });
+  renderWeekKanban();
+}
+
+function renderWeekKanban(){
+  var monday = getWeekStart(state.weekOffset);
+  var sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  document.getElementById('weekTitle').textContent = monday.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) + ' – ' + sunday.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+
+  var today = new Date(); today.setHours(0,0,0,0);
+  var todayIso = isoDate(today);
+
+  var wrap = document.getElementById('weekKanban');
+  var html = '';
+  for(var i=0;i<7;i++){
+    var d = new Date(monday); d.setDate(monday.getDate()+i);
+    var diso = isoDate(d);
+    var isToday = diso===todayIso;
+    html += '<div class="week-col '+(isToday?'is-today':'')+'">' +
+      '<div class="week-col-head"><div class="week-col-dow">'+DOW_FULL[i]+'</div><div class="week-col-date">'+d.getDate()+' '+d.toLocaleDateString('pt-BR',{month:'short'})+'</div></div>' +
+      '<div class="week-col-body">' +
+        weekCatBlock(diso, 'trabalho', 'cat-work', 'Trabalho') +
+        weekCatBlock(diso, 'pessoal', 'cat-personal', 'Pessoal') +
+      '</div>' +
+    '</div>';
+  }
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('[data-toggle-check]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var item = state.checklist.find(function(c){return c.id===btn.getAttribute('data-toggle-check');});
+      item.done = !item.done;
+      saveChecklist();
+      renderWeekKanban();
+    });
+  });
+  wrap.querySelectorAll('[data-del-check]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.checklist = state.checklist.filter(function(c){return c.id!==btn.getAttribute('data-del-check');});
+      saveChecklist();
+      renderWeekKanban();
+      showToast('Tarefa removida.');
+    });
+  });
+  wrap.querySelectorAll('[data-add-check]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var parts = btn.getAttribute('data-add-check').split('|');
+      promptAddCheck(parts[0], parts[1]);
+    });
+  });
+}
+
+function weekCatBlock(dateIso, category, catClass, label){
+  var items = state.checklist.filter(function(c){ return c.date===dateIso && c.category===category; })
+    .sort(function(a,b){ if(a.done!==b.done) return a.done?1:-1; return (a.createdAt||0)-(b.createdAt||0); });
+  var html = '<div><div class="week-cat-label '+catClass+'">'+label+'</div>';
+  if(items.length>0){
+    html += '<div class="check-list">' + items.map(function(c){
+      return '<div class="check-item '+(c.done?'checked':'')+'">' +
+        '<button class="check-box '+(c.done?'checked':'')+'" data-toggle-check="'+c.id+'" aria-label="Marcar como concluída">'+(c.done?'✓':'')+'</button>' +
+        '<span class="check-text">'+escapeHtml(c.text)+'</span>' +
+        '<button class="check-del" data-del-check="'+c.id+'" aria-label="Excluir tarefa">✕</button>' +
+      '</div>';
+    }).join('') + '</div>';
+  }
+  html += '<button class="week-add" data-add-check="'+dateIso+'|'+category+'">+ Adicionar</button></div>';
+  return html;
+}
+
+function promptAddCheck(dateIso, category){
+  var dLabel = new Date(dateIso+"T00:00:00").toLocaleDateString('pt-BR',{weekday:'long', day:'2-digit', month:'short'});
+  var catLabel = category==='trabalho' ? 'Trabalho' : 'Pessoal';
+  var modalHtml =
+    '<div class="overlay" id="checkOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;" aria-labelledby="checkModalTitle">' +
+        '<div class="modal-head"><h2 id="checkModalTitle">Nova tarefa</h2>' +
+          '<button class="modal-close" id="checkModalClose" aria-label="Fechar">✕</button></div>' +
+        '<p style="font-size:12.5px; color:var(--ink-soft); margin:-8px 0 16px; text-transform:capitalize;">'+escapeHtml(dLabel)+' · '+catLabel+'</p>' +
+        '<div class="field"><label for="cText">O que precisa ser feito</label>' +
+          '<input id="cText" type="text" placeholder="Ex: gravar vídeo da Domidona" /></div>' +
+        '<div class="modal-actions">' +
+          '<button class="btn btn-ghost" id="cCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="cSave">Adicionar</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('cText').focus();
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('checkModalClose').addEventListener('click', close);
+  document.getElementById('cCancel').addEventListener('click', close);
+  document.getElementById('checkOverlay').addEventListener('click', function(e){ if(e.target.id==='checkOverlay') close(); });
+  document.getElementById('cText').addEventListener('keydown', function(e){ if(e.key==='Enter') save(); });
+  document.getElementById('cSave').addEventListener('click', save);
+
+  function save(){
+    var text = document.getElementById('cText').value.trim();
+    if(!text){ showToast('Escreva o que precisa ser feito.'); return; }
+    state.checklist.push({id:uid(), text:text, date:dateIso, category:category, done:false, createdAt:Date.now()});
+    saveChecklist();
+    close();
+    renderWeekKanban();
+    showToast('Tarefa adicionada.');
+  }
+}
+
+/* ---------------- render: brands ---------------- */
+function renderBrands(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Marcas</h1><p class="page-sub">Quem te contrata e o histórico de trabalhos com cada uma.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewBrand"><span>+</span> Nova marca</button></div>';
+
+  if(state.brands.length===0){
+    html += emptyState("Você ainda não cadastrou nenhuma marca.", null, null);
+    document.getElementById('pageContent').innerHTML = html;
+    document.getElementById('btnNewBrand').addEventListener('click', function(){ openBrandModal(null); });
+    return;
+  }
+
+  html += '<div class="table-wrap"><table><thead><tr>' +
+    '<th>Marca</th><th>Contato</th><th>Trabalhos</th><th>Total combinado</th><th></th>' +
+    '</tr></thead><tbody>';
+  state.brands.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(b){
+    var brandJobs = state.jobs.filter(function(j){ return j.brandId===b.id; });
+    var total = brandJobs.reduce(function(s,j){ return s+parseMoneyGuess(j.value); }, 0);
+    html += '<tr class="row-clickable" data-brand-id="'+b.id+'">' +
+      '<td class="name-cell">'+escapeHtml(b.name)+'</td>' +
+      '<td>'+escapeHtml(b.contact||'—')+'</td>' +
+      '<td>'+brandJobs.length+'</td>' +
+      '<td>'+fmtBRL(total)+'</td>' +
+      '<td style="text-align:right;"><button class="btn btn-sm btn-ghost" data-edit-brand="'+b.id+'">editar</button></td>' +
+    '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+  document.getElementById('btnNewBrand').addEventListener('click', function(){ openBrandModal(null); });
+  document.querySelectorAll('[data-edit-brand]').forEach(function(el){
+    el.addEventListener('click', function(e){ e.stopPropagation(); openBrandModal(el.getAttribute('data-edit-brand')); });
+  });
+  document.querySelectorAll('tr[data-brand-id]').forEach(function(row){
+    row.addEventListener('click', function(){ openBrandModal(row.getAttribute('data-brand-id')); });
+  });
+}
+
+/* ---------------- render: platforms ---------------- */
+function renderPlatforms(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Plataformas</h1><p class="page-sub">Os canais e agências por onde seus jobs chegam.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewPlatform"><span>+</span> Nova plataforma</button></div>';
+
+  if(state.platforms.length===0){
+    html += emptyState("Nenhuma plataforma cadastrada ainda.", null, null);
+    document.getElementById('pageContent').innerHTML = html;
+    document.getElementById('btnNewPlatform').addEventListener('click', function(){ openPlatformModal(null); });
+    return;
+  }
+
+  html += '<div class="table-wrap"><table><thead><tr><th>Plataforma</th><th>Trabalhos</th><th></th></tr></thead><tbody>';
+  state.platforms.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(p){
+    var count = state.jobs.filter(function(j){ return j.platformId===p.id; }).length;
+    html += '<tr class="row-clickable" data-platform-id="'+p.id+'">' +
+      '<td class="name-cell">'+escapeHtml(p.name)+'</td>' +
+      '<td>'+count+'</td>' +
+      '<td style="text-align:right;"><button class="btn btn-sm btn-ghost" data-edit-platform="'+p.id+'">editar</button></td>' +
+    '</tr>';
+  });
+  html += '</tbody></table></div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+  document.getElementById('btnNewPlatform').addEventListener('click', function(){ openPlatformModal(null); });
+  document.querySelectorAll('[data-edit-platform]').forEach(function(el){
+    el.addEventListener('click', function(e){ e.stopPropagation(); openPlatformModal(el.getAttribute('data-edit-platform')); });
+  });
+  document.querySelectorAll('tr[data-platform-id]').forEach(function(row){
+    row.addEventListener('click', function(){ openPlatformModal(row.getAttribute('data-platform-id')); });
+  });
+}
+
+/* ---------------- render: payments ---------------- */
+/* ---------------- finance helpers (shared by dashboard + payments) ---------------- */
+function financeSummary(){
+  var activeJobs = state.jobs.filter(function(j){ return j.status!==STATUS_CANCELLED; });
+
+  var receivedFromJobs = 0;
+  var pendingFromJobs = 0;
+  activeJobs.forEach(function(j){
+    receivedFromJobs += jobPaidValue(j);
+    pendingFromJobs += jobPendingValue(j);
+  });
+  var previsto = receivedFromJobs + pendingFromJobs;
+
+  var paidExpenses = state.expenses.filter(function(e){ return e.paid; });
+  var unpaidExpenses = state.expenses.filter(function(e){ return !e.paid; });
+  var totalExpenses = paidExpenses.reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0);
+
+  var lucroLiquido = receivedFromJobs - totalExpenses;
+
+  return {
+    previsto: previsto,
+    recebido: receivedFromJobs,
+    pendente: pendingFromJobs,
+    despesas: totalExpenses,
+    despesasPendentes: unpaidExpenses.reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0),
+    lucroLiquido: lucroLiquido,
+    jobsFechados: activeJobs.length,
+    awaitingJobs: state.jobs.filter(function(j){ return j.status==='aguardando_pagamento'; }),
+    paidJobs: state.jobs.filter(function(j){ return j.status==='pago'; })
+  };
+}
+
+/* returns a flat list of receivable items: one row per installment, or one row per single-payment job */
+function getReceivableItems(){
+  var items = [];
+  state.jobs.filter(function(j){ return j.status!==STATUS_CANCELLED; }).forEach(function(j){
+    var brand = brandById(j.brandId);
+    if(j.paymentType==='split' && j.installments && j.installments.length>0){
+      j.installments.forEach(function(inst, idx){
+        items.push({
+          jobId:j.id, installmentId:inst.id, installmentIndex:idx,
+          label:(brand?brand.name:j.title) + ' · ' + inst.label,
+          value:parseMoneyGuess(inst.value), paid:!!inst.paid,
+          date: inst.paid ? inst.paidDate : (inst.dueDate || j.payDate || j.deadline),
+          contentType: j.contentType
+        });
+      });
+    } else {
+      items.push({
+        jobId:j.id, installmentId:null, installmentIndex:null,
+        label:(brand?brand.name:j.title),
+        value:parseMoneyGuess(j.value), paid:j.status==='pago',
+        date: j.status==='pago' ? j.payDate : (j.payDate || j.deadline),
+        contentType: j.contentType
+      });
+    }
+  });
+  return items;
+}
+
+function markReceivablePaid(jobId, installmentId){
+  var job = state.jobs.find(function(j){ return j.id===jobId; });
+  if(!job) return;
+  if(installmentId){
+    var inst = (job.installments||[]).find(function(i){ return i.id===installmentId; });
+    if(!inst) return;
+    inst.paid = true;
+    inst.paidDate = isoDate(new Date());
+    var allPaid = job.installments.every(function(i){ return i.paid; });
+    if(allPaid && job.status!=='pago'){ job.status = 'pago'; }
+  } else {
+    job.status = 'pago';
+    job.payDate = job.payDate || isoDate(new Date());
+  }
+  saveJobs();
+  showToast('Marcado como recebido.');
+}
+
+function renderPayments(){
+  var summary = financeSummary();
+  var html = '';
+  html += '<div class="page-head"><div><h1>Pagamentos</h1><p class="page-sub">Controle seus ganhos e pagamentos.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewRecord"><span>+</span> Novo registro</button></div>';
+
+  html += '<div class="metrics">';
+  html += metricCard("Previsto", fmtBRL(summary.previsto), "", "");
+  html += metricCard("Recebido", fmtBRL(summary.recebido), "sage", "");
+  html += metricCard("Pendente", fmtBRL(summary.pendente), "amber", "");
+  html += metricCard("Despesas", fmtBRL(summary.despesas), "coral", "");
+  html += metricCard("Lucro líquido", fmtBRL(summary.lucroLiquido), summary.lucroLiquido>=0?"sage":"coral", "");
+  html += '</div>';
+
+  html += '<div class="pill-tabs" id="paymentsTabs">' +
+    '<button class="pill-tab '+(state.paymentsTab==='receitas'?'active':'')+'" data-ptab="receitas">Receitas</button>' +
+    '<button class="pill-tab '+(state.paymentsTab==='despesas'?'active':'')+'" data-ptab="despesas">Despesas</button>' +
+    '<button class="pill-tab '+(state.paymentsTab==='historico'?'active':'')+'" data-ptab="historico">Histórico</button>' +
+  '</div>';
+
+  html += '<div id="paymentsListWrap"></div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+  document.getElementById('btnNewRecord').addEventListener('click', function(){ openRecordModal(); });
+  document.getElementById('paymentsTabs').addEventListener('click', function(e){
+    var btn = e.target.closest('.pill-tab');
+    if(!btn) return;
+    state.paymentsTab = btn.getAttribute('data-ptab');
+    renderPayments();
+  });
+  renderPaymentsList();
+}
+
+function receivableRowHtml(item){
+  return '<div class="kanban-card" style="display:flex; align-items:center; gap:12px; cursor:default;">' +
+    '<button class="check-box" data-mark-paid="'+item.jobId+'" data-inst-id="'+(item.installmentId||'')+'" aria-label="Marcar como recebido" style="flex-shrink:0;"></button>' +
+    '<div style="flex:1; min-width:0; cursor:pointer;" data-open-job="'+item.jobId+'">' +
+      '<p class="kanban-card-title" style="margin-bottom:4px; font-size:14px;">'+escapeHtml(item.label)+(item.contentType?' <span style="font-weight:400; color:var(--ink-soft); font-size:12.5px;">· '+escapeHtml(item.contentType)+'</span>':'')+'</p>' +
+      '<span style="font-size:12px; color:var(--ink-faint);">'+(item.date?fmtDate(item.date):'sem data')+'</span>' +
+    '</div>' +
+    '<span class="tag-value" style="font-size:15px;">'+fmtBRL(item.value)+'</span>' +
+  '</div>';
+}
+
+function receivedRowHtml(item){
+  return '<div class="kanban-card" style="display:flex; align-items:center; gap:12px; cursor:pointer;" data-open-job="'+item.jobId+'">' +
+    '<div style="flex:1; min-width:0;">' +
+      '<p class="kanban-card-title" style="margin-bottom:4px; font-size:14px;">'+escapeHtml(item.label)+'</p>' +
+      '<span class="tag" style="background:var(--sage-tint); color:var(--sage-deep);">recebido</span> ' +
+      '<span style="font-size:12px; color:var(--ink-faint);">'+(item.date?fmtDate(item.date):'')+'</span>' +
+    '</div>' +
+    '<span class="tag-value" style="font-size:15px;">'+fmtBRL(item.value)+'</span>' +
+  '</div>';
+}
+
+function expenseRowHtml(exp){
+  var statusTone = exp.paid ? {bg:'var(--sage-tint)', fg:'var(--sage-deep)', label:'pago'} : {bg:'var(--amber-tint)', fg:'var(--amber-deep)', label:'pendente'};
+  return '<div class="kanban-card" data-expense-id="'+exp.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:pointer;">' +
+    '<div style="min-width:0;">' +
+      '<p class="kanban-card-title" style="margin-bottom:6px;">'+escapeHtml(exp.description)+'</p>' +
+      '<span class="tag" style="background:'+statusTone.bg+'; color:'+statusTone.fg+';">'+statusTone.label+'</span> ' +
+      '<span style="font-size:12px; color:var(--ink-faint);">'+(exp.date?fmtDate(exp.date):'')+'</span>' +
+    '</div>' +
+    '<span class="tag-value" style="color:var(--danger);">-'+fmtCurrency(parseMoneyGuess(exp.value), exp.currency||'BRL')+'</span>' +
+  '</div>';
+}
+
+function renderPaymentsList(){
+  var wrap = document.getElementById('paymentsListWrap');
+  var html = '';
+
+  if(state.paymentsTab==='receitas'){
+    var allReceivable = getReceivableItems();
+    var pending = allReceivable.filter(function(it){ return !it.paid; })
+      .sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999'); });
+    var received = allReceivable.filter(function(it){ return it.paid; })
+      .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+
+    html += '<div class="section"><div class="section-head"><h2>A receber ('+pending.length+')</h2></div>';
+    html += pending.length===0 ? emptyState("Nada pendente por aqui.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + pending.map(receivableRowHtml).join('') + '</div>';
+    html += '</div>';
+
+    html += '<div class="section"><div class="section-head"><h2>Recebidos ('+received.length+')</h2></div>';
+    html += received.length===0 ? emptyState("Nenhum trabalho pago ainda.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + received.map(receivedRowHtml).join('') + '</div>';
+    html += '</div>';
+
+  } else if(state.paymentsTab==='despesas'){
+    var unpaid = state.expenses.filter(function(e){ return !e.paid; }).sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999'); });
+    var paid = state.expenses.filter(function(e){ return e.paid; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+
+    html += '<div class="section"><div class="section-head"><h2>Pendentes ('+unpaid.length+')</h2></div>';
+    html += unpaid.length===0 ? emptyState("Nenhuma despesa pendente.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + unpaid.map(expenseRowHtml).join('') + '</div>';
+    html += '</div>';
+
+    html += '<div class="section"><div class="section-head"><h2>Pagas ('+paid.length+')</h2></div>';
+    html += paid.length===0 ? emptyState("Nenhuma despesa registrada.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + paid.map(expenseRowHtml).join('') + '</div>';
+    html += '</div>';
+
+  } else {
+    var allItems = [];
+    getReceivableItems().filter(function(it){return it.paid;}).forEach(function(it){
+      allItems.push({type:'receita', date:it.date||'', label:it.label, value:it.value, ts:0});
+    });
+    state.expenses.filter(function(e){return e.paid;}).forEach(function(e){
+      allItems.push({type:'despesa', date:e.date||'', label:e.description, value:-parseMoneyGuess(e.value), ts:e.createdAt||0});
+    });
+    allItems.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || b.ts-a.ts; });
+
+    html += '<div class="section"><div class="section-head"><h2>Histórico</h2></div>';
+    if(allItems.length===0){
+      html += emptyState("Nenhum registro no histórico ainda.");
+    } else {
+      html += '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + allItems.map(function(it){
+        return '<div class="kanban-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:default;">' +
+          '<div><p class="kanban-card-title" style="margin-bottom:4px;">'+escapeHtml(it.label)+'</p>' +
+          '<span style="font-size:12px; color:var(--ink-faint);">'+(it.date?fmtDate(it.date):'sem data')+'</span></div>' +
+          '<span class="tag-value" style="color:'+(it.value>=0?'var(--sage-deep)':'var(--danger)')+';">'+(it.value>=0?'+':'-')+fmtBRL(Math.abs(it.value))+'</span>' +
+        '</div>';
+      }).join('') + '</div>';
+    }
+    html += '</div>';
+  }
+
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('[data-open-job]').forEach(function(el){
+    el.addEventListener('click', function(){ openJobModal(el.getAttribute('data-open-job')); });
+  });
+  wrap.querySelectorAll('[data-mark-paid]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var jobId = btn.getAttribute('data-mark-paid');
+      var instId = btn.getAttribute('data-inst-id') || null;
+      markReceivablePaid(jobId, instId);
+      renderPayments();
+    });
+  });
+  wrap.querySelectorAll('[data-expense-id]').forEach(function(card){
+    card.addEventListener('click', function(){ openExpenseModal(card.getAttribute('data-expense-id')); });
+  });
+}
+
+function openRecordModal(){
+  var modalHtml =
+    '<div class="overlay" id="recordOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">' +
+        '<div class="modal-head"><h2>Novo registro</h2><button class="modal-close" id="recordModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="rType">Tipo</label><select id="rType">' +
+          '<option value="receita">Receita (trabalho)</option>' +
+          '<option value="despesa">Despesa</option>' +
+        '</select></div>' +
+        '<div id="recordBody"></div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('recordModalClose').addEventListener('click', close);
+  document.getElementById('recordOverlay').addEventListener('click', function(e){ if(e.target.id==='recordOverlay') close(); });
+  document.getElementById('rType').addEventListener('change', updateRecordBody);
+  updateRecordBody();
+
+  function updateRecordBody(){
+    var type = document.getElementById('rType').value;
+    var body = document.getElementById('recordBody');
+    if(type==='receita'){
+      close();
+      openJobModal(null);
+    } else {
+      body.innerHTML =
+        '<div class="field"><label for="rDesc">Descrição</label><input id="rDesc" type="text" placeholder="Ex: Edição de vídeo, equipamento..." /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="rValue">Valor</label><input id="rValue" type="text" placeholder="0,00" /></div>' +
+          '<div class="field"><label for="rCurrency">Moeda</label><select id="rCurrency">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'">'+c.label+'</option>'; }).join('') + '</select></div>' +
+        '</div>' +
+        '<div class="field"><label for="rDate">Data</label><input id="rDate" type="date" /></div>' +
+        '<div class="field"><label style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="rPaid" style="width:auto;" /> já foi paga</label></div>' +
+        '<div class="modal-actions"><button class="btn btn-ghost" id="rCancel">cancelar</button><button class="btn btn-primary" id="rSave">Criar registro</button></div>';
+      document.getElementById('rCancel').addEventListener('click', close);
+      document.getElementById('rSave').addEventListener('click', function(){
+        var desc = document.getElementById('rDesc').value.trim();
+        if(!desc){ showToast('Descreva a despesa.'); return; }
+        state.expenses.push({
+          id:uid(), description:desc,
+          value: document.getElementById('rValue').value.trim(),
+          currency: document.getElementById('rCurrency').value,
+          date: document.getElementById('rDate').value,
+          paid: document.getElementById('rPaid').checked,
+          createdAt: Date.now()
+        });
+        saveExpenses();
+        close();
+        showToast('Despesa registrada.');
+        render();
+      });
+    }
+  }
+}
+
+function openExpenseModal(expenseId){
+  var exp = state.expenses.find(function(e){ return e.id===expenseId; });
+  if(!exp) return;
+  var modalHtml =
+    '<div class="overlay" id="expOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">' +
+        '<div class="modal-head"><h2>Editar despesa</h2><button class="modal-close" id="expModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="eDesc">Descrição</label><input id="eDesc" type="text" value="'+escapeHtml(exp.description)+'" /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="eValue">Valor</label><input id="eValue" type="text" value="'+escapeHtml(exp.value)+'" /></div>' +
+          '<div class="field"><label for="eCurrency">Moeda</label><select id="eCurrency">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'" '+((exp.currency||'BRL')===c.code?'selected':'')+'>'+c.label+'</option>'; }).join('') + '</select></div>' +
+        '</div>' +
+        '<div class="field"><label for="eDate">Data</label><input id="eDate" type="date" value="'+(exp.date||'')+'" /></div>' +
+        '<div class="field"><label style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="ePaid" '+(exp.paid?'checked':'')+' style="width:auto;" /> já foi paga</label></div>' +
+        '<div class="modal-actions"><button class="btn btn-danger-text" id="eDelete" style="margin-right:auto;">excluir</button><button class="btn btn-ghost" id="eCancel">cancelar</button><button class="btn btn-primary" id="eSave">Salvar</button></div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('expModalClose').addEventListener('click', close);
+  document.getElementById('eCancel').addEventListener('click', close);
+  document.getElementById('expOverlay').addEventListener('click', function(e){ if(e.target.id==='expOverlay') close(); });
+  document.getElementById('eDelete').addEventListener('click', function(){
+    if(confirm('Excluir esta despesa?')){
+      state.expenses = state.expenses.filter(function(e){ return e.id!==exp.id; });
+      saveExpenses(); close(); showToast('Despesa excluída.'); render();
+    }
+  });
+  document.getElementById('eSave').addEventListener('click', function(){
+    exp.description = document.getElementById('eDesc').value.trim() || exp.description;
+    exp.value = document.getElementById('eValue').value.trim();
+    exp.currency = document.getElementById('eCurrency').value;
+    exp.date = document.getElementById('eDate').value;
+    exp.paid = document.getElementById('ePaid').checked;
+    saveExpenses(); close(); showToast('Despesa atualizada.'); render();
+  });
+}
+
+/* ---------------- render: metrics ---------------- */
+function renderMetrics(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Métricas</h1><p class="page-sub">Relatório da sua performance como criadora.</p></div></div>';
+
+  var summary = financeSummary();
+  var ticketMedio = summary.paidJobs.length>0 ? summary.recebido/summary.paidJobs.length : 0;
+
+  html += '<div class="metrics">';
+  html += metricCard("Trabalhos fechados", summary.jobsFechados, "", "ativos no funil");
+  html += metricCard("Receita prevista", fmtBRL(summary.previsto), "", "");
+  html += metricCard("Receita recebida", fmtBRL(summary.recebido), "sage", "");
+  html += metricCard("Receita pendente", fmtBRL(summary.pendente), "amber", "");
+  html += metricCard("Ticket médio", fmtBRL(ticketMedio), "", "por trabalho pago");
+  html += metricCard("Lucro líquido", fmtBRL(summary.lucroLiquido), summary.lucroLiquido>=0?"sage":"coral", "");
+  html += '</div>';
+
+  // revenue by month (last 6 months)
+  var months = [];
+  var now = new Date();
+  for(var i=5;i>=0;i--){
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({year:d.getFullYear(), month:d.getMonth(), label:d.toLocaleDateString('pt-BR',{month:'short'})+'/'+String(d.getFullYear()).slice(2)});
+  }
+  var byMonth = months.map(function(m){
+    var jobsInMonth = state.jobs.filter(function(j){
+      if(j.status===STATUS_CANCELLED) return false;
+      var refDate = j.payDate || j.deadline;
+      if(!refDate) return false;
+      var d = new Date(refDate+"T00:00:00");
+      return d.getFullYear()===m.year && d.getMonth()===m.month;
+    });
+    var total = jobsInMonth.reduce(function(s,j){ return s+parseMoneyGuess(j.value); }, 0);
+    return {label:m.label, total:total, count:jobsInMonth.length};
+  });
+  var maxVal = Math.max.apply(null, byMonth.map(function(m){return m.total;}).concat([1]));
+
+  html += '<div class="section"><div class="section-head"><h2>Receita por trabalhos (últimos 6 meses)</h2></div>';
+  html += '<div class="table-wrap" style="padding:24px 20px;">';
+  html += '<div style="display:flex; align-items:flex-end; gap:16px; height:140px;">';
+  byMonth.forEach(function(m){
+    var h = maxVal>0 ? Math.max(6, Math.round((m.total/maxVal)*120)) : 6;
+    html += '<div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:6px; height:100%;">' +
+      '<span style="font-size:11.5px; font-weight:700; color:var(--ink);">'+fmtBRL(m.total)+'</span>' +
+      '<div style="width:100%; max-width:46px; height:'+h+'px; background:var(--magenta); border-radius:6px 6px 2px 2px; opacity:'+(m.total>0?'1':'0.25')+';"></div>' +
+      '<span style="font-size:11px; color:var(--ink-soft);">'+m.label+'</span>' +
+      '<span style="font-size:10.5px; color:var(--ink-faint);">'+m.count+' job(s)</span>' +
+    '</div>';
+  });
+  html += '</div></div></div>';
+
+  // top brands by revenue
+  var byBrand = {};
+  state.jobs.filter(function(j){return j.status==='pago';}).forEach(function(j){
+    byBrand[j.brandId] = (byBrand[j.brandId]||0) + parseMoneyGuess(j.value);
+  });
+  var topBrands = Object.keys(byBrand).map(function(id){
+    var b = brandById(id);
+    return {name:b?b.name:'—', total:byBrand[id]};
+  }).sort(function(a,b){ return b.total-a.total; }).slice(0,5);
+  var maxBrand = Math.max.apply(null, topBrands.map(function(b){return b.total;}).concat([1]));
+
+  html += '<div class="section"><div class="section-head"><h2>Marcas que mais geraram receita</h2></div>';
+  if(topBrands.length===0){
+    html += emptyState("Nenhum trabalho pago ainda pra gerar esse ranking.");
+  } else {
+    html += '<div class="table-wrap" style="padding:18px 20px; display:flex; flex-direction:column; gap:14px;">';
+    topBrands.forEach(function(b){
+      var pct = maxBrand>0 ? Math.round((b.total/maxBrand)*100) : 0;
+      html += '<div>' +
+        '<div style="display:flex; justify-content:space-between; font-size:13.5px; margin-bottom:5px;"><strong>'+escapeHtml(b.name)+'</strong><span>'+fmtBRL(b.total)+'</span></div>' +
+        '<div style="background:var(--lilac); border-radius:999px; height:7px; overflow:hidden;"><div style="width:'+pct+'%; height:100%; background:var(--magenta);"></div></div>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  }
+  html += '</div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+}
+
+/* ---------------- modal: job ---------------- */
+function openJobModal(jobId, presetStatus){
+  var job = jobId ? state.jobs.find(function(j){return j.id===jobId;}) : null;
+  var isNew = !job;
+  if(state.brands.length===0){
+    showToast("Cadastre uma marca antes de criar um trabalho.");
+    openBrandModal(null, function(){ openJobModal(jobId, presetStatus); });
+    return;
+  }
+
+  var brandOptions = '<option value="">— selecionar —</option>' + state.brands.map(function(b){
+    return '<option value="'+b.id+'" '+(job&&job.brandId===b.id?'selected':'')+'>'+escapeHtml(b.name)+'</option>';
+  }).join('');
+
+  var platformOptions = '<option value="">— nenhuma —</option>' + state.platforms.map(function(p){
+    return '<option value="'+p.id+'" '+(job&&job.platformId===p.id?'selected':'')+'>'+escapeHtml(p.name)+'</option>';
+  }).join('');
+
+  var statusOptions = STATUS_FLOW.map(function(s){
+    return '<option value="'+s.key+'" '+((job?job.status:presetStatus)===s.key?'selected':'')+'>'+escapeHtml(s.label)+'</option>';
+  }).join('') + '<option value="'+STATUS_CANCELLED+'" '+(job&&job.status===STATUS_CANCELLED?'selected':'')+'>Cancelado</option>';
+
+  var contentOptions = CONTENT_TYPES.map(function(c){
+    return '<option value="'+escapeHtml(c)+'" '+(job&&job.contentType===c?'selected':'')+'>'+escapeHtml(c)+'</option>';
+  }).join('');
+
+  var paymentOptions = PAYMENT_METHODS.map(function(c){
+    return '<option value="'+escapeHtml(c)+'" '+(job&&job.paymentMethod===c?'selected':'')+'>'+escapeHtml(c)+'</option>';
+  }).join('');
+
+  var modalHtml =
+    '<div class="overlay" id="jobOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="jobModalTitle">' +
+        '<div class="modal-head"><h2 id="jobModalTitle">'+(isNew?'Novo trabalho':'Editar trabalho')+'</h2>' +
+          '<button class="modal-close" id="jobModalClose" aria-label="Fechar">✕</button></div>' +
+
+        '<div class="field"><label for="jTitle">Título do trabalho</label>' +
+          '<input id="jTitle" type="text" placeholder="Ex: 3 vídeos para lançamento" value="'+escapeHtml(job?job.title:'')+'" /></div>' +
+
+        '<div class="field-row">' +
+          '<div class="field"><label for="jBrand">Marca *</label><select id="jBrand">'+brandOptions+'</select>' +
+            '<button type="button" class="btn btn-sm btn-ghost" id="jNewBrand" style="margin-top:8px;">+ Nova marca</button></div>' +
+          '<div class="field"><label for="jPlatform">Plataforma</label><select id="jPlatform">'+platformOptions+'</select></div>' +
+        '</div>' +
+
+        '<div class="field"><label for="jStatus">Status *</label><select id="jStatus">'+statusOptions+'</select></div>' +
+
+        '<div class="field"><label for="jContentType">Tipo de conteúdo</label><select id="jContentType">'+contentOptions+'</select></div>' +
+
+        '<div class="field-row">' +
+          '<div class="field"><label for="jVideos">Quantidade de vídeos</label><input id="jVideos" type="number" min="0" placeholder="0" value="'+(job&&job.videoCount!=null?job.videoCount:'')+'" /></div>' +
+          '<div class="field"><label for="jPhotos">Quantidade de fotos</label><input id="jPhotos" type="number" min="0" placeholder="0" value="'+(job&&job.photoCount!=null?job.photoCount:'')+'" /></div>' +
+        '</div>' +
+
+        '<div class="field-row">' +
+          '<div class="field"><label for="jDeadline">Prazo de entrega</label><input id="jDeadline" type="date" value="'+(job&&job.deadline?job.deadline:'')+'" /></div>' +
+          '<div class="field"><label for="jPayDate">Data prevista de pagamento</label><input id="jPayDate" type="date" value="'+(job&&job.payDate?job.payDate:'')+'" /></div>' +
+        '</div>' +
+
+        '<div class="field-row">' +
+          '<div class="field"><label for="jPaymentMethod">Forma de pagamento</label><select id="jPaymentMethod">'+paymentOptions+'</select></div>' +
+          '<div class="field"><label for="jValue">Valor total combinado</label><input id="jValue" type="text" placeholder="Ex: R$ 540 ou permuta" value="'+escapeHtml(job?job.value:'')+'" /></div>' +
+        '</div>' +
+
+        '<div class="field"><label>Tipo de pagamento</label>' +
+          '<div style="display:flex; gap:18px; padding:4px 2px;">' +
+            '<label style="display:flex; align-items:center; gap:7px; font-weight:500; font-size:13.5px; color:var(--ink);"><input type="radio" name="jPayType" id="jPayTypeSingle" value="single" style="width:auto;" '+((!job||job.paymentType!=='split')?'checked':'')+' /> Pagamento único</label>' +
+            '<label style="display:flex; align-items:center; gap:7px; font-weight:500; font-size:13.5px; color:var(--ink);"><input type="radio" name="jPayType" id="jPayTypeSplit" value="split" style="width:auto;" '+((job&&job.paymentType==='split')?'checked':'')+' /> Parcelado</label>' +
+          '</div>' +
+        '</div>' +
+
+        '<div id="jSplitOptions" style="display:'+((job&&job.paymentType==='split')?'block':'none')+';">' +
+          '<div class="field"><label>Dividir em</label>' +
+            '<div style="display:flex; flex-direction:column; gap:7px; padding:4px 2px;">' +
+              '<label style="display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink);"><input type="radio" name="jSplitMode" id="jSplitHalf" value="half" style="width:auto;" '+((!job||job.splitMode!=='per_video' && job.splitMode!=='custom')?'checked':'')+' /> 50% antes + 50% depois</label>' +
+              '<label style="display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink);"><input type="radio" name="jSplitMode" id="jSplitPerVideo" value="per_video" style="width:auto;" '+((job&&job.splitMode==='per_video')?'checked':'')+' /> Por vídeo (1 parcela/vídeo)</label>' +
+              '<label style="display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink);"><input type="radio" name="jSplitMode" id="jSplitCustom" value="custom" style="width:auto;" '+((job&&job.splitMode==='custom')?'checked':'')+' /> Personalizado</label>' +
+            '</div>' +
+          '</div>' +
+          '<div class="field"><label>Parcelas</label><div id="jInstallmentsPreview" class="table-wrap" style="padding:10px;"></div></div>' +
+          '<button class="btn btn-sm btn-ghost" id="jAddInstallment" type="button" style="display:none; margin:-8px 0 14px;">+ Adicionar parcela</button>' +
+        '</div>' +
+
+        '<div class="field"><label for="jNotes">Observações</label>' +
+          '<textarea id="jNotes" placeholder="Briefing, nicho, pendências...">'+escapeHtml(job?job.notes:'')+'</textarea></div>' +
+
+        '<div class="modal-actions">' +
+          (isNew ? '' : '<button class="btn btn-danger-text" id="jDelete" style="margin-right:auto;">excluir</button>') +
+          '<button class="btn btn-ghost" id="jCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="jSave">'+(isNew?'Criar trabalho':'Salvar alterações')+'</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('jTitle').focus();
+
+  document.getElementById('jNewBrand').addEventListener('click', function(){
+    openBrandModal(null, function(){ openJobModal(jobId, presetStatus); });
+  });
+
+  var workingInstallments = (job && job.installments) ? job.installments.map(function(i){ return Object.assign({}, i); }) : [];
+
+  function currentSplitMode(){
+    var checked = document.querySelector('input[name="jSplitMode"]:checked');
+    return checked ? checked.value : 'half';
+  }
+  function refreshInstallmentsForMode(){
+    var mode = currentSplitMode();
+    var total = document.getElementById('jValue').value;
+    var videos = document.getElementById('jVideos').value || 1;
+    if(mode==='custom'){
+      if(workingInstallments.length===0){
+        workingInstallments = buildInstallments('half', total, videos, null);
+      }
+    } else {
+      workingInstallments = buildInstallments(mode, total, videos, null);
+    }
+    renderInstallmentsPreview();
+  }
+  function renderInstallmentsPreview(){
+    var mode = currentSplitMode();
+    var wrap = document.getElementById('jInstallmentsPreview');
+    var addBtn = document.getElementById('jAddInstallment');
+    addBtn.style.display = mode==='custom' ? 'inline-flex' : 'none';
+    if(workingInstallments.length===0){
+      wrap.innerHTML = '<p style="font-size:12.5px; color:var(--ink-faint); margin:4px;">Defina o valor total acima para gerar as parcelas.</p>';
+      return;
+    }
+    wrap.innerHTML = workingInstallments.map(function(inst, idx){
+      return '<div style="display:flex; align-items:center; gap:8px; padding:6px 4px; '+(idx>0?'border-top:1px solid var(--line);':'')+'">' +
+        (mode==='custom'
+          ? '<input type="text" data-inst-label="'+idx+'" value="'+escapeHtml(inst.label)+'" style="flex:1; padding:7px 9px; border-radius:7px; border:1px solid var(--line); font-size:13px;" />'
+          : '<span style="flex:1; font-size:13.5px;">'+escapeHtml(inst.label)+'</span>') +
+        '<input type="text" data-inst-value="'+idx+'" value="'+escapeHtml(inst.value)+'" style="width:90px; padding:7px 9px; border-radius:7px; border:1px solid var(--line); font-size:13px;" '+(mode!=='custom'?'readonly':'')+' />' +
+        (mode==='custom' && workingInstallments.length>1 ? '<button type="button" data-inst-del="'+idx+'" style="border:none;background:transparent;color:var(--ink-faint);font-size:14px;">✕</button>' : '<span style="width:18px;"></span>') +
+      '</div>';
+    }).join('');
+
+    wrap.querySelectorAll('[data-inst-value]').forEach(function(input){
+      input.addEventListener('input', function(){
+        var idx = parseInt(input.getAttribute('data-inst-value'),10);
+        workingInstallments[idx].value = input.value;
+      });
+    });
+    wrap.querySelectorAll('[data-inst-label]').forEach(function(input){
+      input.addEventListener('input', function(){
+        var idx = parseInt(input.getAttribute('data-inst-label'),10);
+        workingInstallments[idx].label = input.value;
+      });
+    });
+    wrap.querySelectorAll('[data-inst-del]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = parseInt(btn.getAttribute('data-inst-del'),10);
+        workingInstallments.splice(idx,1);
+        renderInstallmentsPreview();
+      });
+    });
+  }
+
+  document.getElementById('jAddInstallment').addEventListener('click', function(){
+    workingInstallments.push({id:uid(), label:'Parcela '+(workingInstallments.length+1), value:'0', dueDate:'', paid:false, paidDate:''});
+    renderInstallmentsPreview();
+  });
+
+  document.getElementById('jPayTypeSingle').addEventListener('change', toggleSplitVisibility);
+  document.getElementById('jPayTypeSplit').addEventListener('change', toggleSplitVisibility);
+  function toggleSplitVisibility(){
+    var isSplit = document.getElementById('jPayTypeSplit').checked;
+    document.getElementById('jSplitOptions').style.display = isSplit ? 'block' : 'none';
+    if(isSplit) refreshInstallmentsForMode();
+  }
+  ['jSplitHalf','jSplitPerVideo','jSplitCustom'].forEach(function(id){
+    document.getElementById(id).addEventListener('change', refreshInstallmentsForMode);
+  });
+  document.getElementById('jValue').addEventListener('input', function(){
+    if(document.getElementById('jPayTypeSplit').checked && currentSplitMode()!=='custom') refreshInstallmentsForMode();
+  });
+  document.getElementById('jVideos').addEventListener('input', function(){
+    if(document.getElementById('jPayTypeSplit').checked && currentSplitMode()==='per_video') refreshInstallmentsForMode();
+  });
+
+  if(job && job.paymentType==='split'){
+    renderInstallmentsPreview();
+  }
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('jobModalClose').addEventListener('click', close);
+  document.getElementById('jCancel').addEventListener('click', close);
+  document.getElementById('jobOverlay').addEventListener('click', function(e){ if(e.target.id==='jobOverlay') close(); });
+
+  if(!isNew){
+    document.getElementById('jDelete').addEventListener('click', function(){
+      if(confirm('Excluir este trabalho? Essa ação não pode ser desfeita.')){
+        state.jobs = state.jobs.filter(function(j){return j.id!==job.id;});
+        saveJobs();
+        close();
+        showToast('Trabalho excluído.');
+        render();
+      }
+    });
+  }
+
+  document.getElementById('jSave').addEventListener('click', function(){
+    var brandId = document.getElementById('jBrand').value;
+    if(!brandId){ showToast('Selecione uma marca.'); return; }
+    var title = document.getElementById('jTitle').value.trim();
+    var videos = document.getElementById('jVideos').value;
+    var photos = document.getElementById('jPhotos').value;
+    var isSplit = document.getElementById('jPayTypeSplit').checked;
+    var splitMode = isSplit ? currentSplitMode() : null;
+    var data = {
+      title: title,
+      brandId: brandId,
+      platformId: document.getElementById('jPlatform').value,
+      status: document.getElementById('jStatus').value,
+      contentType: document.getElementById('jContentType').value,
+      videoCount: videos===''?null:parseInt(videos,10),
+      photoCount: photos===''?null:parseInt(photos,10),
+      deadline: document.getElementById('jDeadline').value,
+      payDate: document.getElementById('jPayDate').value,
+      paymentMethod: document.getElementById('jPaymentMethod').value,
+      value: document.getElementById('jValue').value.trim(),
+      paymentType: isSplit ? 'split' : 'single',
+      splitMode: splitMode,
+      installments: isSplit ? workingInstallments : [],
+      notes: document.getElementById('jNotes').value.trim()
+    };
+    if(!data.title){
+      var b = brandById(data.brandId);
+      data.title = b ? b.name : 'Trabalho sem título';
+    }
+    if(isNew){
+      data.id = uid();
+      data.createdAt = Date.now();
+      state.jobs.push(data);
+      showToast('Trabalho criado.');
+    } else {
+      Object.assign(job, data);
+      showToast('Alterações salvas.');
+    }
+    var btn = document.getElementById('jSave');
+    btn.disabled = true;
+    saveJobs().then(function(){
+      close();
+      render();
+    }).catch(function(){
+      btn.disabled = false;
+    });
+  });
+}
+
+/* ---------------- modal: brand ---------------- */
+function openBrandModal(brandId, onSavedCallback){
+  var brand = brandId ? state.brands.find(function(b){return b.id===brandId;}) : null;
+  var isNew = !brand;
+  var brandJobs = brand ? state.jobs.filter(function(j){return j.brandId===brand.id;}) : [];
+
+  var modalHtml =
+    '<div class="overlay" id="brandOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="brandModalTitle">' +
+        '<div class="modal-head"><h2 id="brandModalTitle">'+(isNew?'Nova marca':'Editar marca')+'</h2>' +
+          '<button class="modal-close" id="brandModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="bName">Nome da marca</label>' +
+          '<input id="bName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(brand?brand.name:'')+'" /></div>' +
+        '<div class="field"><label for="bContact">Contato</label>' +
+          '<input id="bContact" type="text" placeholder="Email, telefone ou @ do Instagram" value="'+escapeHtml(brand?brand.contact:'')+'" /></div>' +
+        '<div class="field"><label for="bNotes">Notas</label>' +
+          '<textarea id="bNotes" placeholder="Como te encontraram, preferências, histórico...">'+escapeHtml(brand?brand.notes:'')+'</textarea></div>' +
+        (brand ? '<p style="font-size:12.5px; color:var(--ink-faint); margin:-4px 0 16px;">'+brandJobs.length+' trabalho(s) vinculado(s) a essa marca.</p>' : '') +
+        '<div class="modal-actions">' +
+          (isNew ? '' : '<button class="btn btn-danger-text" id="bDelete" style="margin-right:auto;">excluir marca</button>') +
+          '<button class="btn btn-ghost" id="bCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="bSave">'+(isNew?'Criar marca':'Salvar alterações')+'</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('bName').focus();
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('brandModalClose').addEventListener('click', close);
+  document.getElementById('bCancel').addEventListener('click', close);
+  document.getElementById('brandOverlay').addEventListener('click', function(e){ if(e.target.id==='brandOverlay') close(); });
+
+  if(!isNew){
+    document.getElementById('bDelete').addEventListener('click', function(){
+      if(brandJobs.length>0){ showToast('Não dá pra excluir: essa marca tem trabalhos vinculados.'); return; }
+      if(confirm('Excluir esta marca?')){
+        state.brands = state.brands.filter(function(b){return b.id!==brand.id;});
+        saveBrands();
+        close();
+        showToast('Marca excluída.');
+        render();
+      }
+    });
+  }
+
+  document.getElementById('bSave').addEventListener('click', function(){
+    var name = document.getElementById('bName').value.trim();
+    if(!name){ showToast('Dá um nome pra marca antes de salvar.'); document.getElementById('bName').focus(); return; }
+    var data = {
+      name: name,
+      contact: document.getElementById('bContact').value.trim(),
+      notes: document.getElementById('bNotes').value.trim()
+    };
+    if(isNew){
+      data.id = uid(); data.createdAt = Date.now();
+      state.brands.push(data);
+      showToast('Marca criada.');
+    } else {
+      Object.assign(brand, data);
+      showToast('Alterações salvas.');
+    }
+    var btn = document.getElementById('bSave');
+    btn.disabled = true;
+    saveBrands().then(function(){
+      close();
+      render();
+      if(onSavedCallback) onSavedCallback();
+    }).catch(function(){
+      btn.disabled = false;
+    });
+  });
+}
+
+/* ---------------- modal: platform ---------------- */
+function openPlatformModal(platformId){
+  var platform = platformId ? state.platforms.find(function(p){return p.id===platformId;}) : null;
+  var isNew = !platform;
+  var count = platform ? state.jobs.filter(function(j){return j.platformId===platform.id;}).length : 0;
+
+  var modalHtml =
+    '<div class="overlay" id="platOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;" aria-labelledby="platModalTitle">' +
+        '<div class="modal-head"><h2 id="platModalTitle">'+(isNew?'Nova plataforma':'Editar plataforma')+'</h2>' +
+          '<button class="modal-close" id="platModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="pName">Nome da plataforma</label>' +
+          '<input id="pName" type="text" placeholder="Ex: Destrava UGC" value="'+escapeHtml(platform?platform.name:'')+'" /></div>' +
+        (platform ? '<p style="font-size:12.5px; color:var(--ink-faint); margin:-4px 0 16px;">'+count+' trabalho(s) nessa plataforma.</p>' : '') +
+        '<div class="modal-actions">' +
+          (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
+          '<button class="btn btn-ghost" id="pCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="pSave">'+(isNew?'Criar':'Salvar')+'</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('pName').focus();
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('platModalClose').addEventListener('click', close);
+  document.getElementById('pCancel').addEventListener('click', close);
+  document.getElementById('platOverlay').addEventListener('click', function(e){ if(e.target.id==='platOverlay') close(); });
+
+  if(!isNew){
+    document.getElementById('pDelete').addEventListener('click', function(){
+      if(count>0){ showToast('Não dá pra excluir: tem trabalhos nessa plataforma.'); return; }
+      if(confirm('Excluir esta plataforma?')){
+        state.platforms = state.platforms.filter(function(p){return p.id!==platform.id;});
+        savePlatforms();
+        close();
+        showToast('Plataforma excluída.');
+        render();
+      }
+    });
+  }
+
+  document.getElementById('pSave').addEventListener('click', function(){
+    var name = document.getElementById('pName').value.trim();
+    if(!name){ showToast('Dá um nome pra plataforma.'); return; }
+    if(isNew){
+      state.platforms.push({id:uid(), name:name, createdAt:Date.now()});
+      showToast('Plataforma criada.');
+    } else {
+      platform.name = name;
+      showToast('Alterações salvas.');
+    }
+    savePlatforms();
+    close();
+    render();
+  });
+}
+
+/* ---------------- main render dispatcher ---------------- */
+function render(){
+  if(!state.loaded){
+    document.getElementById('pageContent').innerHTML = '<p style="color:var(--ink-faint);">Carregando seus dados...</p>';
+    return;
+  }
+  if(state.route==='dashboard') renderDashboard();
+  else if(state.route==='prospects') renderProspects();
+  else if(state.route==='jobs') renderJobs();
+  else if(state.route==='agenda') renderAgenda();
+  else if(state.route==='checklist') renderChecklist();
+  else if(state.route==='brands') renderBrands();
+  else if(state.route==='platforms') renderPlatforms();
+  else if(state.route==='payments') renderPayments();
+  else if(state.route==='metrics') renderMetrics();
+  else if(state.route==='contracts') renderContracts();
+}
+
+/* ---------------- render: contracts (contract generator) ---------------- */
+function renderContracts(){
+  var prof = state.contractProfile;
+  var html = '';
+  html += '<div class="page-head"><div><h1>Contratos</h1><p class="page-sub">Cadastre seus dados uma vez e gere contratos rapidamente para cada marca.</p></div></div>';
+
+  html += '<div class="section"><div class="section-head"><h2>Seus dados (contratada)</h2>' +
+    '<button class="btn btn-sm btn-ghost" id="btnEditProfile">'+(prof?'editar':'+ cadastrar')+'</button></div>';
+
+  if(!prof){
+    html += emptyState("Você ainda não cadastrou seus dados padrão. Cadastre uma vez e use em todos os contratos.", "btnEmptyProfile", "+ Cadastrar meus dados");
+  } else {
+    html += '<div class="table-wrap" style="padding:18px 20px; font-size:13.5px; line-height:1.8;">' +
+      '<strong>'+escapeHtml(prof.name)+'</strong>'+(prof.nationality?', '+escapeHtml(prof.nationality):'')+(prof.maritalStatus?', '+escapeHtml(prof.maritalStatus):'')+', Creator UGC<br>' +
+      'CNPJ/CPF: '+escapeHtml(prof.document||'—')+'<br>' +
+      'Endereço: '+escapeHtml(prof.address||'—')+'<br>' +
+      'Chave PIX: '+escapeHtml(prof.pixKey||'—')+' · Foro: '+escapeHtml(prof.forum||'—')+
+    '</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="section"><div class="section-head"><h2>Gerar novo contrato</h2></div>';
+  if(!prof){
+    html += emptyState("Cadastre seus dados acima antes de gerar um contrato.");
+  } else {
+    html += '<div class="table-wrap" style="padding:22px 24px;">' +
+      '<div class="field-row">' +
+        '<div class="field"><label for="cBrandName">Marca contratante</label><input id="cBrandName" type="text" placeholder="Ex: Aéva cosmetics" /></div>' +
+        '<div class="field"><label for="cBrandDoc">CNPJ/CPF da marca</label><input id="cBrandDoc" type="text" placeholder="00.000.000/0000-00" /></div>' +
+      '</div>' +
+      '<div class="field"><label for="cBrandAddress">Endereço da marca</label><input id="cBrandAddress" type="text" placeholder="Endereço completo" /></div>' +
+      '<div class="field-row-3">' +
+        '<div class="field"><label for="cVideos">Qtd. vídeos</label><input id="cVideos" type="number" min="0" value="2" /></div>' +
+        '<div class="field"><label for="cPhotos">Qtd. fotos</label><input id="cPhotos" type="number" min="0" value="0" /></div>' +
+        '<div class="field"><label for="cDeadlineDays">Prazo (dias úteis)</label><input id="cDeadlineDays" type="number" min="1" value="5" /></div>' +
+      '</div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label for="cValue">Valor total (R$)</label><input id="cValue" type="text" placeholder="Ex: 540" /></div>' +
+        '<div class="field"><label for="cDate">Data do contrato</label><input id="cDate" type="date" value="'+isoDate(new Date())+'" /></div>' +
+      '</div>' +
+      '<div class="field"><label for="cCity">Cidade do contrato</label><input id="cCity" type="text" placeholder="Ex: Votorantim" value="'+escapeHtml(prof.city||'')+'" /></div>' +
+      '<div class="modal-actions" style="margin-top:8px;"><button class="btn btn-primary" id="btnGenContract">Gerar contrato (PDF)</button></div>' +
+    '</div>';
+  }
+  html += '</div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+
+  var btnEdit = document.getElementById('btnEditProfile');
+  if(btnEdit) btnEdit.addEventListener('click', function(){ openContractProfileModal(); });
+  var btnEmpty = document.getElementById('btnEmptyProfile');
+  if(btnEmpty) btnEmpty.addEventListener('click', function(){ openContractProfileModal(); });
+  var btnGen = document.getElementById('btnGenContract');
+  if(btnGen) btnGen.addEventListener('click', generateContractPdf);
+}
+
+function openContractProfileModal(){
+  var prof = state.contractProfile || {};
+  var modalHtml =
+    '<div class="overlay" id="profOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true">' +
+        '<div class="modal-head"><h2>Meus dados (contratada)</h2><button class="modal-close" id="profModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="cfName">Nome completo</label><input id="cfName" type="text" value="'+escapeHtml(prof.name||'')+'" /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="cfNationality">Nacionalidade</label><input id="cfNationality" type="text" placeholder="Ex: brasileira" value="'+escapeHtml(prof.nationality||'')+'" /></div>' +
+          '<div class="field"><label for="cfMaritalStatus">Estado civil</label><input id="cfMaritalStatus" type="text" placeholder="Ex: solteira" value="'+escapeHtml(prof.maritalStatus||'')+'" /></div>' +
+        '</div>' +
+        '<div class="field"><label for="cfDocument">CNPJ ou CPF</label><input id="cfDocument" type="text" value="'+escapeHtml(prof.document||'')+'" /></div>' +
+        '<div class="field"><label for="cfAddress">Endereço completo</label><input id="cfAddress" type="text" value="'+escapeHtml(prof.address||'')+'" /></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="cfPixKey">Chave PIX</label><input id="cfPixKey" type="text" value="'+escapeHtml(prof.pixKey||'')+'" /></div>' +
+          '<div class="field"><label for="cfCity">Cidade (sede)</label><input id="cfCity" type="text" value="'+escapeHtml(prof.city||'')+'" /></div>' +
+        '</div>' +
+        '<div class="field"><label for="cfForum">Foro (comarca)</label><input id="cfForum" type="text" placeholder="Ex: Votorantim, SP" value="'+escapeHtml(prof.forum||'')+'" /></div>' +
+        '<div class="modal-actions"><button class="btn btn-ghost" id="cfCancel">cancelar</button><button class="btn btn-primary" id="cfSave">Salvar dados</button></div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('cfName').focus();
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('profModalClose').addEventListener('click', close);
+  document.getElementById('cfCancel').addEventListener('click', close);
+  document.getElementById('profOverlay').addEventListener('click', function(e){ if(e.target.id==='profOverlay') close(); });
+  document.getElementById('cfSave').addEventListener('click', function(){
+    var name = document.getElementById('cfName').value.trim();
+    if(!name){ showToast('Informe seu nome.'); return; }
+    state.contractProfile = {
+      name: name,
+      nationality: document.getElementById('cfNationality').value.trim(),
+      maritalStatus: document.getElementById('cfMaritalStatus').value.trim(),
+      document: document.getElementById('cfDocument').value.trim(),
+      address: document.getElementById('cfAddress').value.trim(),
+      pixKey: document.getElementById('cfPixKey').value.trim(),
+      city: document.getElementById('cfCity').value.trim(),
+      forum: document.getElementById('cfForum').value.trim()
+    };
+    saveContractProfile();
+    close();
+    showToast('Dados salvos.');
+    render();
+  });
+}
+
+function generateContractPdf(){
+  var prof = state.contractProfile;
+  if(!prof){ showToast('Cadastre seus dados primeiro.'); return; }
+  if(typeof window.jspdf === 'undefined'){ showToast('Não foi possível carregar o gerador de PDF.'); return; }
+
+  var brandName = document.getElementById('cBrandName').value.trim();
+  var brandDoc = document.getElementById('cBrandDoc').value.trim();
+  var brandAddress = document.getElementById('cBrandAddress').value.trim();
+  var videos = document.getElementById('cVideos').value || '0';
+  var photos = document.getElementById('cPhotos').value || '0';
+  var deadlineDays = document.getElementById('cDeadlineDays').value || '5';
+  var value = document.getElementById('cValue').value.trim();
+  var dateStr = document.getElementById('cDate').value;
+  var city = document.getElementById('cCity').value.trim() || prof.city || '';
+
+  if(!brandName){ showToast('Informe o nome da marca contratante.'); return; }
+
+  var valueNum = parseMoneyGuess(value);
+  var half = (valueNum/2).toFixed(2).replace('.',',');
+  var dateLabel = dateStr ? new Date(dateStr+"T00:00:00").toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}) : '';
+
+  var { jsPDF } = window.jspdf;
+  var doc = new jsPDF({unit:'pt', format:'a4'});
+  var pageWidth = doc.internal.pageSize.getWidth();
+  var margin = 56;
+  var maxWidth = pageWidth - margin*2;
+  var y = 64;
+  var lineHeight = 15;
+
+  function addParagraph(text, opts){
+    opts = opts || {};
+    doc.setFont('helvetica', opts.bold ? 'bold' : 'normal');
+    doc.setFontSize(opts.size || 10.5);
+    var lines = doc.splitTextToSize(text, maxWidth);
+    lines.forEach(function(line){
+      if(y > 770){ doc.addPage(); y = 64; }
+      doc.text(line, margin, y);
+      y += lineHeight;
+    });
+    y += opts.spacingAfter!=null ? opts.spacingAfter : 8;
+  }
+  function addHeading(text){
+    if(y > 740){ doc.addPage(); y = 64; }
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text(text, margin, y);
+    y += lineHeight + 4;
+  }
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(13);
+  doc.text('CONTRATO DE PRESTAÇÃO DE SERVIÇOS UGC', pageWidth/2, y, {align:'center'});
+  y += 28;
+
+  addHeading('IDENTIFICAÇÃO DAS PARTES');
+  addParagraph('CONTRATANTE: ' + brandName + (brandDoc ? ', pessoa jurídica/física inscrita no CNPJ/CPF nº ' + brandDoc : '') + (brandAddress ? ', com sede/endereço em ' + brandAddress + '.' : '.') + ' Neste ato representada por seu representante legal.');
+  addParagraph('CONTRATADA: ' + prof.name + (prof.nationality ? ', ' + prof.nationality : '') + (prof.maritalStatus ? ', ' + prof.maritalStatus : '') + ', Creator UGC, portadora do CNPJ/CPF nº ' + (prof.document||'—') + (prof.address ? ', residente e domiciliada em ' + prof.address + '.' : '.'));
+  addParagraph('Têm, entre si, justo e contratado o que segue:', {spacingAfter:14});
+
+  addHeading('CLÁUSULA PRIMEIRA – DO OBJETO');
+  addParagraph('1.1. O presente contrato tem por objeto a prestação de serviços de criação de conteúdo digital no formato UGC (User Generated Content) pela CONTRATADA à CONTRATANTE.');
+  addParagraph('1.2. O pacote contratado inclui a entrega de:');
+  addParagraph('• ' + videos + ' vídeo(s) em formato vertical (9:16)');
+  addParagraph('• ' + photos + ' foto(s)');
+  addParagraph('• Roteirização, captação e edição do material.', {spacingAfter:14});
+
+  addHeading('CLÁUSULA SEGUNDA – DO CRONOGRAMA E LOGÍSTICA');
+  addParagraph('2.1. O prazo de entrega do material será de ' + deadlineDays + ' dias úteis, contados a partir da data de recebimento dos produtos pela CONTRATADA.');
+  addParagraph('2.2. A CONTRATANTE compromete-se a fornecer os produtos necessários para a produção, arcando integralmente com os custos de envio (frete).');
+  addParagraph('2.3. Os produtos enviados para a produção do conteúdo não serão devolvidos, caracterizando-se como bonificação e material de trabalho, salvo acordo prévio por escrito estipulando a logística reversa (também custeada pela CONTRATANTE).', {spacingAfter:14});
+
+  addHeading('CLÁUSULA TERCEIRA – DA APROVAÇÃO E AJUSTES (REFAÇÃO)');
+  addParagraph('3.1. A CONTRATADA enviará uma versão prévia do vídeo com uma MARCA D\'ÁGUA para aprovação.');
+  addParagraph('3.2. A CONTRATANTE terá o prazo de 3 (três) dias úteis para solicitar ajustes ou aprovar o material.');
+  addParagraph('3.3. Do Silêncio (Aprovação Tácita): A ausência de resposta da CONTRATANTE após o prazo de 3 dias úteis implicará na aprovação automática do material, autorizando a cobrança do valor final.');
+  addParagraph('3.4. Das Revisões: O valor contratado dá direito a 1 (uma) rodada de ajustes simples (ex: cortes, volume de música, alteração de legenda), desde que estejam dentro do roteiro aprovado previamente.');
+  addParagraph('3.5. Refação Extra: Caso a CONTRATANTE solicite alterações que fujam do briefing inicial aprovado, ou que exijam regravação completa por mudança de estratégia da marca, será cobrada uma taxa adicional de 50% do valor do vídeo por alteração.', {spacingAfter:14});
+
+  addHeading('CLÁUSULA QUARTA – DO VALOR E PAGAMENTO');
+  addParagraph('4.1. Pela prestação dos serviços, a CONTRATANTE pagará à CONTRATADA o valor total de R$ ' + (value||'—') + '.');
+  addParagraph('4.2. O pagamento será realizado da seguinte forma:');
+  addParagraph('• 50% (Sinal): R$ ' + half + ' no ato da assinatura deste contrato (para garantir a vaga na agenda e início do roteiro).');
+  addParagraph('• 50% (Final): R$ ' + half + ' após a aprovação do vídeo com marca d\'água e ANTES do envio do arquivo final em alta resolução.');
+  addParagraph('4.3. O pagamento deverá ser feito via PIX para a Chave: ' + (prof.pixKey||'—') + '.');
+  addParagraph('4.4. O atraso no pagamento do valor final acarretará multa de 2% e juros de 1% ao mês, além da suspensão do direito de uso da imagem até a regularização.', {spacingAfter:14});
+
+  addHeading('CLÁUSULA QUINTA – DOS DIREITOS DE USO E IMAGEM');
+  addParagraph('5.1. Uso Orgânico: A CONTRATANTE poderá utilizar o conteúdo em suas redes sociais oficiais e site por prazo indeterminado.');
+  addParagraph('5.2. Uso em Tráfego Pago (Ads): O uso do conteúdo para anúncios patrocinados (Dark Posts, Spark Ads) é autorizado pelo período de 4 meses a contar da entrega. Após este período, a renovação deverá ser negociada à parte.');
+  addParagraph('5.3. Proteção contra IA: Fica expressamente PROIBIDO o uso da voz ou imagem da CONTRATADA para treinamento de Inteligência Artificial, criação de avatares digitais ou "deepfakes".');
+  addParagraph('5.4. A CONTRATADA não autoriza o uso de sua imagem em contextos difamatórios, ilícitos ou que firam a moral e os bons costumes.', {spacingAfter:14});
+
+  addHeading('CLÁUSULA SEXTA – DA RESCISÃO E MULTA');
+  addParagraph('6.1. Em caso de desistência por parte da CONTRATANTE após o pagamento do sinal e início do roteiro/produção, o valor de 50% (sinal) não será devolvido, servindo como remuneração pelas horas já trabalhadas e reserva de agenda.');
+  addParagraph('6.2. Este contrato poderá ser rescindido por ambas as partes mediante aviso prévio, respeitando os direitos adquiridos e trabalhos já executados.', {spacingAfter:14});
+
+  addHeading('CLÁUSULA SÉTIMA – DO FORO');
+  addParagraph('7.1. Para dirimir quaisquer controvérsias oriundas do CONTRATO, as partes elegem o foro da comarca de ' + (prof.forum||'—') + '.', {spacingAfter:18});
+
+  addParagraph('E, por estarem assim justos e contratados, assinam o presente instrumento (sendo válida a assinatura eletrônica ou o aceite formal via e-mail/WhatsApp).', {spacingAfter:18});
+  addParagraph((city||'—') + ', ' + (dateLabel||'—') + '.', {spacingAfter:36});
+
+  if(y > 700){ doc.addPage(); y = 64; }
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10.5);
+  doc.text('_______________________________', margin, y);
+  doc.text('_______________________________', pageWidth/2 + 20, y);
+  y += 16;
+  doc.text('CONTRATANTE', margin, y);
+  doc.text('CONTRATADA (Creator)', pageWidth/2 + 20, y);
+
+  var fileName = 'contrato-' + brandName.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') + '.pdf';
+  doc.save(fileName);
+  showToast('Contrato gerado e baixado.');
+}
+
+/* ---------------- brand logo (floral illustration, embedded SVG) ---------------- */
+var BRAND_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
+  '<rect width="100" height="100" rx="22" fill="#F3E7DD"/>' +
+  '<g>' +
+    '<path d="M50 50 C38 38, 30 30, 32 18 C34 8, 46 8, 50 20 C54 8, 66 8, 68 18 C70 30, 62 38, 50 50 Z" fill="#8E3B52"/>' +
+    '<path d="M50 50 C62 42, 72 38, 82 44 C90 49, 86 60, 74 60 C84 64, 82 76, 72 75 C62 74, 56 64, 50 50 Z" fill="#6B2A3D"/>' +
+    '<path d="M50 50 C40 60, 32 70, 20 68 C10 66, 10 54, 22 52 C12 46, 18 34, 28 37 C40 40, 46 44, 50 50 Z" fill="#C98FA0"/>' +
+    '<path d="M50 50 C56 62, 58 74, 50 84 C44 92, 34 86, 38 76 C30 84, 20 76, 26 68 C34 58, 42 52, 50 50 Z" fill="#9C7724"/>' +
+    '<circle cx="50" cy="50" r="7" fill="#C99A3E"/>' +
+  '</g>' +
+'</svg>';
+
+function applyBrandLogo(){
+  var el = document.getElementById('brandMark');
+  if(!el) return;
+  var encoded = encodeURIComponent(BRAND_LOGO_SVG);
+  el.style.backgroundImage = "url('data:image/svg+xml," + encoded + "')";
+  el.textContent = '';
+}
+
+/* ---------------- init ---------------- */
+(async function init(){
+  applyBrandLogo();
+  setupCloudAuthUI();
+  navigate('dashboard');
+  await loadAll();
+  await initCloudSync();
+  updateSyncUI();
+  render();
+})();
+
+})();
+</script>
+</body>
+</html>
