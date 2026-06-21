@@ -725,7 +725,7 @@ function subscribeCloudData(){
   cloudUnsubscribe = ref.onSnapshot(function(snap){
     if(snap.metadata.hasPendingWrites) return;
 
-    if(!snap.exists()){
+    if(!snap.exists){
       if(hasLocalData()){
         pushAllToCloud();
       }
