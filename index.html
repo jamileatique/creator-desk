@@ -30,6 +30,12 @@
     --slate-tint:#EBEAF4;
     --danger:#A8434C;
     --danger-tint:#F2DCDD;
+    --plum:#6F5A8C;
+    --plum-tint:#EAE5F1;
+    --clay:#B5673B;
+    --clay-tint:#F4E4D8;
+    --teal:#3E8E8A;
+    --teal-tint:#DEEEED;
     --radius-s:8px;
     --radius-m:14px;
     --radius-l:20px;
@@ -212,9 +218,16 @@
     display:inline-flex; align-items:center; padding:3px 9px; border-radius:999px;
     font-size:11px; font-weight:600; white-space:nowrap;
   }
-  .tag-platform{background:var(--slate-tint); color:#54527a;}
+  .tag-platform{background:var(--slate-tint); color:#54527a; display:inline-flex; align-items:center; gap:5px;}
   .tag-value{font-size:12.5px; font-weight:700; color:var(--ink);}
   .tag-deadline{background:var(--danger-tint); color:var(--danger);}
+  .status-dot{display:inline-block; width:6px; height:6px; border-radius:50%; flex-shrink:0;}
+  .status-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:3px 9px; border-radius:999px;
+    font-size:11px; font-weight:600; white-space:nowrap;
+  }
+  .kanban-col-head .status-badge{padding:2px 8px;}
   .kanban-add{
     border:none; background:transparent; color:var(--ink-faint); font-size:13px;
     text-align:left; padding:6px 4px; font-weight:500; flex-shrink:0;
@@ -297,17 +310,26 @@
 
   .sr-only{position:absolute; width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 
-  /* ---- agenda (calendar) ---- */
-  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+  /* ---- agenda (intelligent calendar) ---- */
+  .cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:10px;}
   .cal-nav{display:flex; align-items:center; gap:10px;}
   .cal-title{font-size:18px; min-width:170px; text-align:center;}
+  .agenda-filters{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px;}
+  .agenda-filter-chip{
+    display:inline-flex; align-items:center; gap:6px;
+    border:1px solid var(--line); background:var(--paper); border-radius:999px;
+    padding:4px 10px 4px 8px; font-size:11.5px; font-weight:500; color:var(--ink-faint);
+    transition:all .12s ease; opacity:0.55;
+  }
+  .agenda-filter-chip.active{opacity:1; color:var(--ink); border-color:var(--rose); background:var(--lilac);}
+  .agenda-filter-chip:hover{opacity:1;}
   .cal-grid{
     display:grid; grid-template-columns:repeat(7,1fr); gap:6px;
   }
   .cal-dow{font-size:11px; font-weight:700; text-transform:uppercase; color:var(--ink-faint); text-align:center; padding-bottom:6px; letter-spacing:.04em;}
   .cal-cell{
     background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-s);
-    min-height:92px; padding:7px; display:flex; flex-direction:column; gap:4px;
+    min-height:96px; padding:7px; display:flex; flex-direction:column; gap:4px;
   }
   .cal-cell.empty-cell{background:transparent; border:none;}
   .cal-cell.today{border-color:var(--magenta); border-width:1.5px;}
@@ -315,37 +337,78 @@
   .cal-cell.today .cal-daynum{color:var(--magenta-deep);}
   .cal-job-chip{
     font-size:10.5px; font-weight:600; padding:2px 6px; border-radius:5px;
-    background:var(--magenta-tint); color:var(--magenta-deep);
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;
   }
-  .cal-job-chip.paid{background:var(--sage-tint); color:var(--sage-deep);}
-  .cal-job-chip.cancelled{background:var(--danger-tint); color:var(--danger); text-decoration:line-through;}
 
-  /* ---- checklist (week kanban) ---- */
-  .week-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:10px;}
+  /* ---- checklist (infinite week scroller) ---- */
+  .week-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:10px;}
   .week-nav{display:flex; align-items:center; gap:10px;}
   .week-title{font-size:16px; min-width:170px; text-align:center;}
-  .week-kanban{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px; align-items:flex-start;}
-  .week-col{flex:0 0 230px; width:230px;}
-  .week-col-head{margin-bottom:10px; padding:0 2px;}
-  .week-col-dow{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
-  .week-col-date{font-size:13px; font-weight:600; color:var(--ink);}
-  .week-col.is-today .week-col-date{color:var(--magenta-deep);}
-  .week-col-body{
-    background:rgba(255,255,255,0.5); border:1.5px dashed var(--line); border-radius:var(--radius-m);
-    padding:10px; min-height:120px; display:flex; flex-direction:column; gap:12px;
+
+  /* Outer viewport: clips the scrollbar so navigation feels infinite, not "scrolled" */
+  .week-scroll-viewport{
+    margin:0 -4px; padding:0 4px;
+    overflow:hidden;
   }
+  .week-kanban{
+    display:flex; gap:16px; align-items:stretch;
+    overflow-x:auto; overflow-y:hidden;
+    padding:4px 4px 22px; margin-bottom:-18px; /* hide native scrollbar below the fold */
+    scroll-behavior:smooth;
+    scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;
+  }
+  .week-kanban::-webkit-scrollbar{height:0; display:none;}
+  .week-kanban{scrollbar-width:none; -ms-overflow-style:none;}
+
+  .week-col{
+    flex:1 1 0; min-width:172px; max-width:240px;
+    scroll-snap-align:start;
+    display:flex; flex-direction:column;
+    animation:weekColIn .22s ease both;
+  }
+  @keyframes weekColIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .week-col-head{margin-bottom:12px; padding:0 3px;}
+  .week-col-dow{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);}
+  .week-col-date{font-size:14px; font-weight:600; color:var(--ink); margin-top:1px;}
+  .week-col.is-today .week-col-dow{color:var(--magenta-deep);}
+  .week-col.is-today .week-col-date{color:var(--magenta-deep);}
+  .week-col.is-today .week-col-head{position:relative;}
+  .week-col.is-today .week-col-head::after{
+    content:""; position:absolute; left:3px; bottom:-6px; width:16px; height:2.5px;
+    border-radius:2px; background:var(--magenta);
+  }
+  .week-col-body{
+    background:rgba(255,255,255,0.45); border:1.5px dashed var(--line); border-radius:var(--radius-m);
+    padding:12px; min-height:160px; flex:1;
+    display:flex; flex-direction:column; gap:16px;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  .week-col-body.drag-over{background:var(--magenta-tint); border-color:var(--magenta); border-style:solid;}
   .week-cat-label{
-    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em;
-    color:var(--ink-faint); margin:2px 0 6px 2px;
+    font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--ink-faint); margin:2px 0 8px 2px;
   }
   .week-cat-label.cat-work{color:var(--magenta-deep);}
   .week-cat-label.cat-personal{color:var(--sage-deep);}
-  .check-list{display:flex; flex-direction:column; gap:6px;}
+  .check-list{display:flex; flex-direction:column; gap:7px;}
   .check-item{
     display:flex; align-items:flex-start; gap:9px;
     background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-s);
-    padding:9px 10px; box-shadow:var(--shadow-soft);
+    padding:10px 11px; box-shadow:var(--shadow-soft);
+    cursor:grab;
+    transition:border-color .12s ease, opacity .12s ease, transform .12s ease, box-shadow .12s ease;
+  }
+  .check-item:hover{border-color:var(--rose);}
+  .check-item.dragging{opacity:0.4; transform:scale(0.96);}
+  .check-item.auto-deadline{border-color:var(--amber-tint); background:var(--amber-tint);}
+  .check-item.auto-deadline:hover{border-color:var(--amber);}
+  .check-item.auto-deadline .check-text{font-weight:500;}
+  .check-auto-tag{
+    display:inline-flex; align-items:center; font-size:9.5px; font-weight:700;
+    text-transform:uppercase; letter-spacing:.04em; color:var(--amber-deep);
+    background:#fff; border:1px solid var(--amber); border-radius:5px;
+    padding:1.5px 5px; margin-top:2px; flex-shrink:0;
   }
   .check-box{
     width:19px; height:19px; border-radius:6px; border:1.5px solid var(--line);
@@ -354,27 +417,38 @@
     margin-top:1px;
   }
   .check-box.checked{background:var(--sage); border-color:var(--sage);}
-  .check-text{flex:1; font-size:13px; min-width:0; line-height:1.4; word-break:break-word;}
+  .check-text{flex:1; font-size:13px; min-width:0; line-height:1.45; word-break:break-word;}
   .check-item.checked .check-text{color:var(--ink-faint); text-decoration:line-through;}
   .check-del{
     border:none; background:transparent; color:var(--ink-faint); font-size:13px; padding:2px;
-    flex-shrink:0; line-height:1;
+    flex-shrink:0; line-height:1; transition:color .12s ease;
   }
   .check-del:hover{color:var(--danger);}
   .week-add{
     border:none; background:transparent; color:var(--ink-faint); font-size:12.5px;
-    text-align:left; padding:4px 2px; font-weight:500;
+    text-align:left; padding:5px 3px; font-weight:500; border-radius:6px;
+    transition:color .12s ease, background .12s ease;
   }
-  .week-add:hover{color:var(--magenta-deep);}
+  .week-add:hover{color:var(--magenta-deep); background:rgba(142,59,82,0.06);}
   .check-empty-day{font-size:12px; color:var(--ink-faint); padding:2px;}
+  .week-edge-loader{
+    flex:0 0 28px; display:flex; align-items:center; justify-content:center;
+    color:var(--ink-faint); font-size:12px;
+  }
 
   @media (max-width:880px){
     .sidebar{position:fixed; left:0; top:0; z-index:40; transform:translateX(-100%); transition:transform .2s ease; box-shadow:0 0 40px rgba(0,0,0,0.2);}
     .sidebar.open{transform:translateX(0);}
     .main{padding:20px 16px 60px;}
     .mobile-bar{display:flex !important;}
+    .topbar{display:none;}
     .field-row,.field-row-3{grid-template-columns:1fr;}
     .check-add-row{flex-wrap:wrap;}
+    .week-col{flex:0 0 86%; min-width:0; max-width:none; scroll-snap-align:center;}
+    .week-kanban{scroll-snap-type:x mandatory;}
+  }
+  @media (min-width:881px) and (max-width:1180px){
+    .week-col{min-width:152px;}
   }
   .mobile-bar{
     display:none; align-items:center; gap:12px; margin-bottom:18px;
@@ -383,6 +457,49 @@
     width:38px;height:38px;border-radius:10px;border:1px solid var(--line); background:var(--paper);
     display:flex; align-items:center; justify-content:center; font-size:16px;
   }
+
+  .topbar{display:flex; justify-content:flex-end; margin-bottom:6px;}
+  .notif-bell-wrap{position:relative;}
+  .notif-bell-btn{
+    width:36px; height:36px; border-radius:10px; border:1px solid transparent; background:transparent;
+    display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--ink-soft);
+    transition:all .12s ease; position:relative;
+  }
+  .notif-bell-btn:hover{background:var(--lilac); border-color:var(--line); color:var(--ink);}
+  .notif-badge{
+    position:absolute; top:3px; right:3px; min-width:15px; height:15px; padding:0 3px;
+    border-radius:999px; background:var(--magenta); color:#fff;
+    font-size:9.5px; font-weight:700; display:flex; align-items:center; justify-content:center;
+    line-height:1; box-shadow:0 0 0 2px var(--paper);
+  }
+  .notif-panel{
+    position:fixed; width:340px; max-width:88vw; max-height:70vh; overflow-y:auto;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-m);
+    box-shadow:0 20px 50px -16px rgba(58,43,42,0.28); z-index:90;
+    animation:notifIn .15s ease both;
+  }
+  @keyframes notifIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+  .notif-panel-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px 10px; border-bottom:1px solid var(--line);
+  }
+  .notif-panel-head h3{font-size:13.5px; font-weight:700; color:var(--ink);}
+  .notif-mark-all{font-size:11.5px; color:var(--ink-faint); background:none; border:none; font-weight:500;}
+  .notif-mark-all:hover{color:var(--magenta-deep);}
+  .notif-list{padding:6px;}
+  .notif-empty{padding:32px 16px; text-align:center; color:var(--ink-faint); font-size:12.5px;}
+  .notif-item{
+    display:flex; align-items:flex-start; gap:10px; padding:10px 10px; border-radius:10px;
+    cursor:pointer; transition:background .12s ease;
+  }
+  .notif-item:hover{background:var(--lilac);}
+  .notif-item.unread{background:var(--magenta-tint);}
+  .notif-item.unread:hover{background:var(--magenta-tint);}
+  .notif-ico{font-size:15px; flex-shrink:0; margin-top:1px;}
+  .notif-text{font-size:12.5px; line-height:1.45; color:var(--ink); min-width:0;}
+  .notif-item.unread .notif-text{font-weight:600;}
+  .notif-dot-new{width:6px; height:6px; border-radius:50%; background:var(--magenta); flex-shrink:0; margin-top:6px;}
+  .notif-overlay{position:fixed; inset:0; z-index:89;}
 
   :focus-visible{outline:2px solid var(--magenta); outline-offset:2px;}
 </style>
@@ -406,6 +523,7 @@
       <button class="nav-item" data-route="dashboard"><span class="ico">◐</span> painel</button>
       <button class="nav-item" data-route="prospects"><span class="ico">✉</span> prospecção</button>
       <button class="nav-item" data-route="jobs"><span class="ico">▤</span> trabalhos</button>
+      <button class="nav-item" data-route="products"><span class="ico">📦</span> produtos</button>
       <button class="nav-item" data-route="agenda"><span class="ico">▦</span> agenda</button>
       <button class="nav-item" data-route="checklist"><span class="ico">✓</span> checklist</button>
       <button class="nav-item" data-route="brands"><span class="ico">🌸</span> marcas</button>
@@ -425,12 +543,18 @@
     <div class="mobile-bar">
       <button id="menuBtn" aria-label="Abrir menu">☰</button>
       <strong id="mobileTitle">painel</strong>
+      <div style="flex:1;"></div>
+      <div class="notif-bell-wrap" id="notifBellWrapMobile"></div>
+    </div>
+    <div class="topbar" id="topbar">
+      <div class="notif-bell-wrap" id="notifBellWrapDesktop"></div>
     </div>
     <div id="pageContent"></div>
   </main>
 
 </div>
 
+<div id="notifPanelRoot"></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="modalRoot"></div>
 
@@ -458,6 +582,62 @@ var STATUS_INDEX = {};
 STATUS_FLOW.forEach(function(s,i){ STATUS_INDEX[s.key] = i; });
 var KANBAN_STATUSES = STATUS_FLOW.concat([{key:STATUS_CANCELLED,label:"Cancelado"}]);
 
+/* Status color map: each status gets a dot color + soft tint background,
+   staying within the existing palette family (no new hues introduced outside it). */
+var STATUS_COLORS = {
+  prospeccao:           {dot:'var(--slate)',        bg:'var(--slate-tint)',   fg:'#54527a'},
+  followup:             {dot:'var(--teal)',          bg:'var(--teal-tint)',    fg:'#2d6663'},
+  negociacao:           {dot:'var(--amber)',         bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  contrato:             {dot:'var(--sage)',          bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  aguardando_produto:   {dot:'var(--clay)',          bg:'var(--clay-tint)',    fg:'var(--clay)'},
+  roteiro:              {dot:'var(--plum)',          bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  gravacao:             {dot:'#D6A24A',              bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  edicao:               {dot:'var(--plum)',          bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  aprovacao:             {dot:'var(--clay)',         bg:'var(--clay-tint)',    fg:'var(--clay)'},
+  alteracoes:           {dot:'var(--danger)',        bg:'var(--danger-tint)',  fg:'var(--danger)'},
+  aguardando_pagamento: {dot:'var(--amber)',         bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  pago:                 {dot:'var(--sage-deep)',     bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  cancelado:            {dot:'var(--ink-faint)',     bg:'var(--lilac)',        fg:'var(--ink-soft)'}
+};
+function statusColor(key){
+  return STATUS_COLORS[key] || {dot:'var(--ink-faint)', bg:'var(--lilac)', fg:'var(--ink-soft)'};
+}
+function statusBadgeHtml(key, label){
+  var c = statusColor(key);
+  return '<span class="status-badge" style="background:'+c.bg+'; color:'+c.fg+';">' +
+    '<span class="status-dot" style="background:'+c.dot+';"></span>' + escapeHtml(label) +
+  '</span>';
+}
+
+/* Platform colors: deterministic hash of the platform name into a small rotating
+   palette, so the same platform always gets the same color across sessions/devices. */
+var PLATFORM_PALETTE = [
+  {dot:'var(--magenta)',  bg:'var(--magenta-tint)', fg:'var(--magenta-deep)'},
+  {dot:'var(--sage)',     bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  {dot:'var(--amber)',    bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  {dot:'var(--slate)',    bg:'var(--slate-tint)',   fg:'#54527a'},
+  {dot:'var(--plum)',     bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  {dot:'var(--teal)',     bg:'var(--teal-tint)',    fg:'#2d6663'},
+  {dot:'var(--clay)',     bg:'var(--clay-tint)',    fg:'var(--clay)'},
+  {dot:'var(--danger)',   bg:'var(--danger-tint)',  fg:'var(--danger)'}
+];
+function hashStringToIndex(str, mod){
+  var h = 0;
+  for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+  return h % mod;
+}
+function platformColor(platformIdOrName){
+  var key = String(platformIdOrName||'');
+  return PLATFORM_PALETTE[hashStringToIndex(key, PLATFORM_PALETTE.length)];
+}
+function platformBadgeHtml(platform){
+  if(!platform) return '';
+  var c = platformColor(platform.id);
+  return '<span class="tag tag-platform" style="background:'+c.bg+'; color:'+c.fg+';">' +
+    '<span class="status-dot" style="background:'+c.dot+';"></span>' + escapeHtml(platform.name) +
+  '</span>';
+}
+
 var CONTENT_TYPES = ["Vídeo UGC","Foto UGC","Vídeo + Foto","Stories","Reels","Outro"];
 var PAYMENT_METHODS = ["PIX","Transferência","Permuta","Boleto","Outro"];
 var CURRENCIES = [
@@ -484,7 +664,10 @@ var STORE = {
   checklist: "ugc_checklist_v2",
   expenses: "ugc_expenses_v1",
   prospects: "ugc_prospects_v1",
-  contractProfile: "ugc_contract_profile_v1"
+  products: "ugc_products_v1",
+  contractProfile: "ugc_contract_profile_v1",
+  notificationsRead: "ugc_notifications_read_v1",
+  exchangeRates: "ugc_exchange_rates_v1"
 };
 
 var state = {
@@ -495,14 +678,18 @@ var state = {
   checklist: [],
   expenses: [],
   prospects: [],
+  products: [],
   contractProfile: null,
+  notificationsRead: {},
   loaded: false,
   jobFilterPlatform: "",
   calMonth: new Date().getMonth(),
   calYear: new Date().getFullYear(),
-  weekOffset: 0,
+  agendaFilters: {entregas:true, pagamentos:true, produtos:true, followup:true, pessoal:true, gravacao:true, edicao:true},
   paymentsTab: "receitas",
-  metricsRange: "month"
+  metricsRange: "month",
+  notifPanelOpen: false,
+  exchangeRates: {BRL:1, USD:5.4, EUR:5.9}
 };
 
 var FIREBASE_CONFIG = {
@@ -544,15 +731,14 @@ var storageAdapter = (function(){
     try{ return localStorage.getItem(key); }catch(e){ return null; }
   }
   function lsSet(key, val){
-    if(!lsAvailable) return Promise.reject(new Error('localStorage unavailable'));
+    if(!lsAvailable) return Promise.reject(new Error('localStorage unavailable neste navegador'));
     try{ localStorage.setItem(key, val); return Promise.resolve(); }catch(e){ return Promise.reject(e); }
   }
-  if(typeof window.storage === 'object' && window.storage && typeof window.storage.get === 'function' && typeof window.storage.set === 'function'){
-    return {
-      get: function(key, shared){ return window.storage.get(key, shared); },
-      set: function(key, val, shared){ return window.storage.set(key, val, shared); }
-    };
-  }
+  // O Creator Desk roda como site publicado (Vercel) e persiste localmente via
+  // localStorage, com Firestore por cima para sincronizar entre dispositivos.
+  // Nunca usar window.storage aqui: essa API só existe no preview de artifacts
+  // do Claude e nunca estará disponível no site real — usá-la faria todo
+  // salvamento (despesas, jobs, tudo) falhar silenciosamente em produção.
   return {
     get: function(key){ return Promise.resolve({ value: lsGet(key) }); },
     set: lsSet
@@ -580,14 +766,17 @@ async function loadKeyObj(key){
 }
 function saveKey(key, val){
   var payload = JSON.stringify(val);
-  saveQueue = saveQueue.then(function(){
-    return storageAdapter.set(key, payload, false);
-  }).catch(function(){
-    showToast("Não foi possível salvar. Tente novamente.");
-  }).then(function(){
+  // Grava localmente de imediato — essa é a operação que precisa ter sucesso
+  // ou falha visíveis na hora (é o que faz "criar despesa" funcionar ou não).
+  // A sincronização com a nuvem roda à parte, sem travar nem ser travada por ela.
+  var localSave = storageAdapter.set(key, payload, false).catch(function(err){
+    showToast("Não foi possível salvar neste navegador. Tente novamente.");
+    throw err;
+  });
+  saveQueue = saveQueue.then(function(){ return localSave; }).catch(function(){ /* já avisado acima */ });
+  return localSave.then(function(){
     if(!applyingRemote) scheduleCloudSync();
   });
-  return saveQueue;
 }
 function saveKeyQuiet(key, val){
   return storageAdapter.set(key, JSON.stringify(val), false);
@@ -598,7 +787,7 @@ function isCloudConfigured(){
 }
 function hasLocalData(){
   return state.jobs.length > 0 || state.brands.length > 0 || state.prospects.length > 0 ||
-    state.checklist.length > 0 || state.expenses.length > 0 || !!state.contractProfile;
+    state.checklist.length > 0 || state.expenses.length > 0 || state.products.length > 0 || !!state.contractProfile;
 }
 function setCloudSyncStatus(status, text){
   cloudSyncStatus = status;
@@ -672,7 +861,10 @@ function getStatePayload(){
     checklist: state.checklist,
     expenses: state.expenses,
     prospects: state.prospects,
+    products: state.products,
     contractProfile: state.contractProfile,
+    notificationsRead: state.notificationsRead,
+    exchangeRates: state.exchangeRates,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -701,7 +893,10 @@ function persistAllLocalQuiet(){
     saveKeyQuiet(STORE.checklist, state.checklist),
     saveKeyQuiet(STORE.expenses, state.expenses),
     saveKeyQuiet(STORE.prospects, state.prospects),
-    saveKeyQuiet(STORE.contractProfile, state.contractProfile)
+    saveKeyQuiet(STORE.products, state.products),
+    saveKeyQuiet(STORE.contractProfile, state.contractProfile),
+    saveKeyQuiet(STORE.notificationsRead, state.notificationsRead),
+    saveKeyQuiet(STORE.exchangeRates, state.exchangeRates)
   ]).finally(function(){ applyingRemote = false; });
 }
 function applyRemoteData(data){
@@ -713,8 +908,13 @@ function applyRemoteData(data){
   state.checklist = ensureArray(data.checklist);
   state.expenses = ensureArray(data.expenses);
   state.prospects = ensureArray(data.prospects);
+  state.products = ensureArray(data.products);
   state.contractProfile = data.contractProfile && typeof data.contractProfile === 'object' && !Array.isArray(data.contractProfile)
     ? data.contractProfile : null;
+  state.notificationsRead = data.notificationsRead && typeof data.notificationsRead === 'object' && !Array.isArray(data.notificationsRead)
+    ? data.notificationsRead : {};
+  state.exchangeRates = data.exchangeRates && typeof data.exchangeRates === 'object' && !Array.isArray(data.exchangeRates)
+    ? Object.assign({BRL:1}, data.exchangeRates) : state.exchangeRates;
   applyingRemote = false;
 }
 function subscribeCloudData(){
@@ -781,7 +981,11 @@ async function loadAll(){
   state.checklist = await loadKey(STORE.checklist);
   state.expenses = await loadKey(STORE.expenses);
   state.prospects = await loadKey(STORE.prospects);
+  state.products = await loadKey(STORE.products);
   state.contractProfile = await loadKeyObj(STORE.contractProfile);
+  state.notificationsRead = (await loadKeyObj(STORE.notificationsRead)) || {};
+  var loadedRates = await loadKeyObj(STORE.exchangeRates);
+  if(loadedRates) state.exchangeRates = Object.assign({BRL:1}, loadedRates);
   if(state.platforms.length===0){
     var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Prospecção ativa","Inbound","Outros"];
     state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
@@ -795,7 +999,10 @@ function savePlatforms(){ return saveKey(STORE.platforms, state.platforms); }
 function saveChecklist(){ return saveKey(STORE.checklist, state.checklist); }
 function saveExpenses(){ return saveKey(STORE.expenses, state.expenses); }
 function saveProspects(){ return saveKey(STORE.prospects, state.prospects); }
+function saveProducts(){ return saveKey(STORE.products, state.products); }
 function saveContractProfile(){ return saveKey(STORE.contractProfile, state.contractProfile); }
+function saveNotificationsRead(){ return saveKeyQuiet(STORE.notificationsRead, state.notificationsRead); }
+function saveExchangeRates(){ return saveKey(STORE.exchangeRates, state.exchangeRates); }
 
 /* ---------------- utils ---------------- */
 function escapeHtml(str){
@@ -850,18 +1057,30 @@ function fmtCurrency(n, currencyCode){
   }
 }
 
+/* Converts any tracked currency to BRL using the user-configured exchange rates,
+   so totals across the app (Dashboard, Pagamentos, Métricas) can sum mixed-currency
+   jobs into one meaningful number. Individual job cards still display the original
+   currency — only aggregates go through this. */
+function parseMoneyBRL(value, currencyCode){
+  var amount = parseMoneyGuess(value);
+  if(!amount) return 0;
+  var code = currencyCode || 'BRL';
+  var rate = (state.exchangeRates && state.exchangeRates[code]) || (code==='BRL' ? 1 : 1);
+  return amount * rate;
+}
+
 /* ---------------- installments helpers ---------------- */
 function jobTotalValue(job){
   if(job.paymentType==='split' && job.installments && job.installments.length>0){
-    return job.installments.reduce(function(s,inst){ return s+parseMoneyGuess(inst.value); }, 0);
+    return job.installments.reduce(function(s,inst){ return s+parseMoneyBRL(inst.value, job.currency); }, 0);
   }
-  return parseMoneyGuess(job.value);
+  return parseMoneyBRL(job.value, job.currency);
 }
 function jobPaidValue(job){
   if(job.paymentType==='split' && job.installments && job.installments.length>0){
-    return job.installments.filter(function(i){return i.paid;}).reduce(function(s,inst){ return s+parseMoneyGuess(inst.value); }, 0);
+    return job.installments.filter(function(i){return i.paid;}).reduce(function(s,inst){ return s+parseMoneyBRL(inst.value, job.currency); }, 0);
   }
-  return job.status==='pago' ? parseMoneyGuess(job.value) : 0;
+  return job.status==='pago' ? parseMoneyBRL(job.value, job.currency) : 0;
 }
 function jobPendingValue(job){
   return jobTotalValue(job) - jobPaidValue(job);
@@ -893,11 +1112,12 @@ function buildInstallments(splitMode, totalValue, videoCount, customRows){
 /* ---------------- routing ---------------- */
 function navigate(route){
   document.getElementById('modalRoot').innerHTML = '';
+  if(state.notifPanelOpen) closeNotifPanel();
   state.route = route;
   document.querySelectorAll('.nav-item').forEach(function(el){
     el.classList.toggle('active', el.getAttribute('data-route')===route);
   });
-  var titles = {dashboard:"painel", prospects:"prospecção", jobs:"trabalhos", agenda:"agenda", checklist:"checklist", brands:"marcas", platforms:"plataformas", payments:"pagamentos", metrics:"métricas", contracts:"contratos"};
+  var titles = {dashboard:"painel", prospects:"prospecção", jobs:"trabalhos", products:"produtos", agenda:"agenda", checklist:"checklist", brands:"marcas", platforms:"plataformas", payments:"pagamentos", metrics:"métricas", contracts:"contratos"};
   document.getElementById('mobileTitle').textContent = titles[route] || route;
   document.getElementById('sidebar').classList.remove('open');
   render();
@@ -1048,7 +1268,7 @@ function prospectCardHtml(p){
   return '<div class="kanban-card" draggable="true" data-prospect-id="'+p.id+'">' +
     '<p class="kanban-card-title">'+escapeHtml(p.brandName)+'</p>' +
     '<div class="kanban-tags">' +
-      (platform ? '<span class="tag tag-platform">'+escapeHtml(platform.name)+'</span>' : '') +
+      platformBadgeHtml(platform) +
       (p.contact ? '<span class="tag" style="background:var(--lilac); color:var(--ink-soft);">'+escapeHtml(p.contact)+'</span>' : '') +
     '</div>' +
   '</div>';
@@ -1066,14 +1286,29 @@ function moveProspectToStatus(p, newStatus){
   renderProspectKanban();
 }
 
+/* Finds a brand by case-insensitive name match, or creates one. Never creates duplicates.
+   Shared by prospect→job conversion and the job form's brand autocomplete. */
+function findOrCreateBrandByName(rawName, extra){
+  var name = (rawName || '').trim();
+  if(!name) return null;
+  var existing = state.brands.find(function(b){ return b.name.trim().toLowerCase()===name.toLowerCase(); });
+  if(existing) return existing;
+  extra = extra || {};
+  var brand = {
+    id: uid(),
+    name: name,
+    contact: extra.contact || '',
+    notes: extra.notes || 'Criada automaticamente ao cadastrar um trabalho.',
+    createdAt: Date.now()
+  };
+  state.brands.push(brand);
+  saveBrands();
+  return brand;
+}
+
 function convertProspectToJob(p){
   // find or create a brand with this name
-  var brand = state.brands.find(function(b){ return b.name.toLowerCase()===p.brandName.toLowerCase(); });
-  if(!brand){
-    brand = {id:uid(), name:p.brandName, contact:p.contact||'', notes:'Criada automaticamente a partir da prospecção.', createdAt:Date.now()};
-    state.brands.push(brand);
-    saveBrands();
-  }
+  var brand = findOrCreateBrandByName(p.brandName, {contact:p.contact||'', notes:'Criada automaticamente a partir da prospecção.'});
   var alreadyExists = state.jobs.some(function(j){ return j.prospectId===p.id; });
   if(alreadyExists) return;
   state.jobs.push({
@@ -1224,7 +1459,7 @@ function renderKanban(){
   KANBAN_STATUSES.forEach(function(s){
     var colJobs = jobs.filter(function(j){ return j.status===s.key; });
     html += '<div class="kanban-col">' +
-      '<div class="kanban-col-head"><span class="kanban-col-title">'+escapeHtml(s.label)+'</span><span class="kanban-col-count">('+colJobs.length+')</span></div>' +
+      '<div class="kanban-col-head">'+statusBadgeHtml(s.key, s.label)+'<span class="kanban-col-count">('+colJobs.length+')</span></div>' +
       '<div class="kanban-col-body" data-status-col="'+s.key+'">';
     colJobs.forEach(function(j){ html += kanbanCardHtml(j); });
     html += '<button class="kanban-add" data-new-job-status="'+s.key+'">+ Adicionar</button>';
@@ -1286,26 +1521,99 @@ function kanbanCardHtml(job){
   return '<div class="kanban-card" draggable="true" data-job-id="'+job.id+'" tabindex="0" role="button" aria-label="Abrir '+escapeHtml(job.title)+'">' +
     '<p class="kanban-card-title">'+escapeHtml(brand?brand.name:(job.title||'Sem título'))+'</p>' +
     '<div class="kanban-tags">' +
-      (platform ? '<span class="tag tag-platform">'+escapeHtml(platform.name)+'</span>' : '') +
-      (job.value ? '<span class="tag-value">'+escapeHtml(job.value)+'</span>' : '') +
+      platformBadgeHtml(platform) +
+      (job.value ? '<span class="tag-value">'+fmtCurrency(parseMoneyGuess(job.value), job.currency)+'</span>' : '') +
     '</div>' +
     (deadlineText ? '<div style="margin-top:8px;"><span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span></div>' : '') +
   '</div>';
 }
 
-/* ---------------- render: agenda ---------------- */
+/* ---------------- render: agenda (intelligent calendar) ---------------- */
 var MONTH_NAMES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
 var DOW_NAMES = ["dom","seg","ter","qua","qui","sex","sáb"];
 
+var AGENDA_CATEGORIES = {
+  entregas:    {label:'Entregas',         dot:'#D6455A', filterKey:'entregas'},
+  pagamentos:  {label:'Pagamentos',       dot:'#4E9B63', filterKey:'pagamentos'},
+  produtos:    {label:'Produtos',         dot:'#8868B0', filterKey:'produtos'},
+  followup:    {label:'Follow-up',        dot:'#4E7FB0', filterKey:'followup'},
+  pessoal:     {label:'Eventos pessoais', dot:'#D6A53E', filterKey:'pessoal'},
+  gravacao:    {label:'Gravações',        dot:'#E0779A', filterKey:'gravacao'},
+  edicao:      {label:'Edição',           dot:'#5BBCC2', filterKey:'edicao'}
+};
+
+/* Builds the full list of agenda events for the current month by aggregating
+   every module — nothing here is a manually-created "event", it's all derived
+   live from existing data, per the brief ("calendário não deve depender só de
+   eventos manuais"). */
+function buildAgendaEvents(year, month){
+  var events = [];
+
+  state.jobs.forEach(function(j){
+    if(j.status===STATUS_CANCELLED) return;
+    var brand = brandById(j.brandId);
+    var label = (brand?brand.name:j.title||'Trabalho');
+
+    if(j.deadline){
+      var cat = j.status==='gravacao' ? 'gravacao' : j.status==='edicao' ? 'edicao' : 'entregas';
+      events.push({date:j.deadline, category:cat, title:label+' — entrega', jobId:j.id, route:'jobs'});
+    }
+  });
+
+  getReceivableItems().forEach(function(it){
+    if(it.paid || !it.date) return;
+    events.push({date:it.date, category:'pagamentos', title:it.label+' — '+fmtCurrency(it.value, it.currency), jobId:it.jobId, route:'payments'});
+  });
+
+  state.products.forEach(function(p){
+    if(p.status==='recebido' || !p.expectedDate) return;
+    var brand = brandById(p.brandId);
+    events.push({date:p.expectedDate, category:'produtos', title:(brand?brand.name+' — ':'')+p.name, productId:p.id, route:'products'});
+  });
+
+  state.checklist.forEach(function(c){
+    if(c.done || !c.date) return;
+    var cat = c.category==='pessoal' ? 'pessoal' : null;
+    if(!cat) return; // work checklist items are already represented via job deadlines
+    events.push({date:c.date, category:'pessoal', title:c.text, checkId:c.id, route:'checklist'});
+  });
+
+  state.prospects.forEach(function(p){
+    if(p.status!=='followup1' && p.status!=='followup2') return;
+    var refDate = p.updatedAt || p.createdAt;
+    if(!refDate) return;
+    // Surface a follow-up reminder 3 days after the last touch, so it's actionable on the calendar.
+    var d = new Date(refDate);
+    d.setDate(d.getDate()+3);
+    events.push({date:isoDate(d), category:'followup', title:'Follow-up — '+p.brandName, prospectId:p.id, route:'prospects'});
+  });
+
+  return events.filter(function(e){
+    var d = new Date(e.date+"T00:00:00");
+    return d.getFullYear()===year && d.getMonth()===month;
+  });
+}
+
 function renderAgenda(){
   var html = '';
-  html += '<div class="page-head"><div><h1>Agenda</h1><p class="page-sub">Prazos de entrega dos seus trabalhos.</p></div></div>';
+  html += '<div class="page-head"><div><h1>Agenda</h1><p class="page-sub">Tudo que importa este mês, reunido automaticamente.</p></div></div>';
   html += '<div class="cal-head">' +
     '<button class="btn btn-sm" id="calPrev">‹</button>' +
     '<span class="cal-title display" id="calTitle"></span>' +
     '<button class="btn btn-sm" id="calNext">›</button>' +
     '<button class="btn btn-sm btn-ghost" id="calToday">hoje</button>' +
   '</div>';
+
+  html += '<div class="agenda-filters" id="agendaFiltersWrap">' +
+    Object.keys(AGENDA_CATEGORIES).map(function(key){
+      var c = AGENDA_CATEGORIES[key];
+      var active = state.agendaFilters[key]!==false;
+      return '<button class="agenda-filter-chip '+(active?'active':'')+'" data-agenda-filter="'+key+'">' +
+        '<span class="status-dot" style="background:'+c.dot+';"></span>' + escapeHtml(c.label) +
+      '</button>';
+    }).join('') +
+  '</div>';
+
   html += '<div class="cal-grid" id="calGrid"></div>';
   document.getElementById('pageContent').innerHTML = html;
 
@@ -1322,6 +1630,14 @@ function renderAgenda(){
     state.calMonth = now.getMonth(); state.calYear = now.getFullYear();
     renderCalGrid();
   });
+  document.getElementById('agendaFiltersWrap').addEventListener('click', function(e){
+    var chip = e.target.closest('[data-agenda-filter]');
+    if(!chip) return;
+    var key = chip.getAttribute('data-agenda-filter');
+    state.agendaFilters[key] = state.agendaFilters[key]===false ? true : false;
+    chip.classList.toggle('active', state.agendaFilters[key]!==false);
+    renderCalGrid();
+  });
   renderCalGrid();
 }
 
@@ -1331,14 +1647,14 @@ function renderCalGrid(){
   var daysInMonth = new Date(state.calYear, state.calMonth+1, 0).getDate();
   var today = new Date(); today.setHours(0,0,0,0);
 
-  var jobsByDay = {};
-  state.jobs.forEach(function(j){
-    if(!j.deadline) return;
-    var d = new Date(j.deadline+"T00:00:00");
-    if(d.getFullYear()===state.calYear && d.getMonth()===state.calMonth){
-      var day = d.getDate();
-      (jobsByDay[day] = jobsByDay[day] || []).push(j);
-    }
+  var allEvents = buildAgendaEvents(state.calYear, state.calMonth)
+    .filter(function(e){ return state.agendaFilters[e.category]!==false; });
+
+  var eventsByDay = {};
+  allEvents.forEach(function(e){
+    var d = new Date(e.date+"T00:00:00");
+    var day = d.getDate();
+    (eventsByDay[day] = eventsByDay[day] || []).push(e);
   });
 
   var html = '';
@@ -1347,92 +1663,192 @@ function renderCalGrid(){
   for(var day=1; day<=daysInMonth; day++){
     var isToday = today.getFullYear()===state.calYear && today.getMonth()===state.calMonth && today.getDate()===day;
     html += '<div class="cal-cell '+(isToday?'today':'')+'"><span class="cal-daynum">'+day+'</span>';
-    (jobsByDay[day]||[]).forEach(function(j){
-      var brand = brandById(j.brandId);
-      var cls = j.status==='pago' ? 'paid' : j.status===STATUS_CANCELLED ? 'cancelled' : '';
-      html += '<span class="cal-job-chip '+cls+'" data-job-id="'+j.id+'" title="'+escapeHtml(brand?brand.name:'')+' — '+escapeHtml(j.title||'')+'">'+escapeHtml(j.title||(brand?brand.name:'job'))+'</span>';
+    (eventsByDay[day]||[]).slice(0,4).forEach(function(e){
+      var c = AGENDA_CATEGORIES[e.category];
+      html += '<span class="cal-job-chip" style="background:'+c.dot+'22; color:'+c.dot+';" ' +
+        'data-agenda-event="1" data-route="'+e.route+'" data-job-id="'+(e.jobId||'')+'" data-product-id="'+(e.productId||'')+'" data-check-id="'+(e.checkId||'')+'" data-prospect-id="'+(e.prospectId||'')+'" ' +
+        'title="'+escapeHtml(e.title)+'">'+escapeHtml(e.title)+'</span>';
     });
+    if((eventsByDay[day]||[]).length>4){
+      html += '<span style="font-size:10px; color:var(--ink-faint); padding:1px 2px;">+'+((eventsByDay[day]||[]).length-4)+' mais</span>';
+    }
     html += '</div>';
   }
   document.getElementById('calGrid').innerHTML = html;
-  document.querySelectorAll('.cal-job-chip').forEach(function(chip){
-    chip.addEventListener('click', function(){ openJobModal(chip.getAttribute('data-job-id')); });
+  document.querySelectorAll('[data-agenda-event]').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var jobId = chip.getAttribute('data-job-id');
+      var productId = chip.getAttribute('data-product-id');
+      var checkId = chip.getAttribute('data-check-id');
+      var prospectId = chip.getAttribute('data-prospect-id');
+      var route = chip.getAttribute('data-route');
+      if(jobId) { openJobModal(jobId); return; }
+      if(productId) { openProductModal(productId); return; }
+      if(prospectId) { openProspectModal(prospectId); return; }
+      if(checkId) { navigate(route); return; }
+      navigate(route);
+    });
   });
 }
 
-/* ---------------- render: checklist (week kanban) ---------------- */
-var DOW_FULL = ["segunda","terça","quarta","quinta","sexta","sábado","domingo"];
-var DOW_SHORT = ["seg","ter","qua","qui","sex","sáb","dom"];
+/* ---------------- render: checklist (infinite day scroller) ---------------- */
+var DOW_FULL = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
 
-function getWeekStart(offset){
-  var now = new Date(); now.setHours(0,0,0,0);
-  var dow = now.getDay(); // 0=sun..6=sat
-  var diffToMonday = (dow===0) ? -6 : 1-dow;
-  var monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday + (offset*7));
-  return monday;
-}
 function isoDate(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
+function addDays(d, n){
+  var r = new Date(d);
+  r.setDate(r.getDate()+n);
+  return r;
+}
+function startOfToday(){
+  var d = new Date(); d.setHours(0,0,0,0);
+  return d;
+}
+
+/* Checklist scroller state: a contiguous window of ISO dates currently rendered.
+   Grows at either edge as the user scrolls close to it (infinite navigation). */
+var checklistScroll = {
+  startDate: null,   // Date object, inclusive
+  endDate: null,      // Date object, inclusive
+  dayWidth: null,      // measured px width of one day column (for scroll math)
+  loadingEdge: false
+};
+var CHECKLIST_INITIAL_SPAN = 7;   // days visible on first paint
+var CHECKLIST_CHUNK = 7;          // days appended per lazy-load step
+var CHECKLIST_EDGE_THRESHOLD = 320; // px from edge that triggers loading more days
 
 function renderChecklist(){
   var html = '';
-  html += '<div class="page-head"><div><h1>Checklist</h1><p class="page-sub">Tarefas da semana, separadas entre trabalho e pessoal.</p></div></div>';
+  html += '<div class="page-head"><div><h1>Checklist</h1><p class="page-sub">Tarefas do dia a dia, separadas entre trabalho e pessoal.</p></div></div>';
   html += '<div class="week-head">' +
     '<div class="week-nav">' +
-      '<button class="btn btn-sm" id="weekPrev">‹</button>' +
+      '<button class="btn btn-sm" id="weekPrev" aria-label="Dias anteriores">‹</button>' +
       '<span class="week-title display" id="weekTitle"></span>' +
-      '<button class="btn btn-sm" id="weekNext">›</button>' +
-      '<button class="btn btn-sm btn-ghost" id="weekToday">semana atual</button>' +
+      '<button class="btn btn-sm" id="weekNext" aria-label="Próximos dias">›</button>' +
+      '<button class="btn btn-sm btn-ghost" id="weekToday">hoje</button>' +
     '</div>' +
   '</div>';
-  html += '<div class="week-kanban" id="weekKanban"></div>';
+  html += '<div class="week-scroll-viewport"><div class="week-kanban" id="weekKanban"></div></div>';
   document.getElementById('pageContent').innerHTML = html;
 
-  document.getElementById('weekPrev').addEventListener('click', function(){ state.weekOffset--; renderWeekKanban(); });
-  document.getElementById('weekNext').addEventListener('click', function(){ state.weekOffset++; renderWeekKanban(); });
-  document.getElementById('weekToday').addEventListener('click', function(){ state.weekOffset=0; renderWeekKanban(); });
-  renderWeekKanban();
+  var today = startOfToday();
+  checklistScroll.startDate = addDays(today, -Math.floor(CHECKLIST_INITIAL_SPAN/2));
+  checklistScroll.endDate = addDays(checklistScroll.startDate, CHECKLIST_INITIAL_SPAN - 1);
+
+  buildChecklistDays({initial:true});
+
+  document.getElementById('weekPrev').addEventListener('click', function(){ scrollChecklistByDays(-CHECKLIST_CHUNK); });
+  document.getElementById('weekNext').addEventListener('click', function(){ scrollChecklistByDays(CHECKLIST_CHUNK); });
+  document.getElementById('weekToday').addEventListener('click', function(){ scrollChecklistToToday(); });
+
+  var scroller = document.getElementById('weekKanban');
+  scroller.addEventListener('scroll', onChecklistScroll, {passive:true});
 }
 
-function renderWeekKanban(){
-  var monday = getWeekStart(state.weekOffset);
-  var sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
-  document.getElementById('weekTitle').textContent = monday.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) + ' – ' + sunday.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+/* Returns auto checklist items derived from job deadlines (not stored separately —
+   computed live so they always reflect the source of truth in state.jobs). */
+function autoDeadlineItemsForDate(dateIso){
+  return state.jobs
+    .filter(function(j){ return j.deadline === dateIso && j.status !== STATUS_CANCELLED && j.status !== 'pago'; })
+    .map(function(j){
+      var brand = brandById(j.brandId);
+      return {
+        id: 'auto-' + j.id,
+        jobId: j.id,
+        text: (brand ? brand.name + ' — ' : '') + (j.contentType || 'Entrega'),
+        auto: true
+      };
+    });
+}
 
-  var today = new Date(); today.setHours(0,0,0,0);
+function buildChecklistDays(opts){
+  opts = opts || {};
+  var wrap = document.getElementById('weekKanban');
+  if(!wrap) return;
+  var today = startOfToday();
   var todayIso = isoDate(today);
 
-  var wrap = document.getElementById('weekKanban');
   var html = '';
-  for(var i=0;i<7;i++){
-    var d = new Date(monday); d.setDate(monday.getDate()+i);
-    var diso = isoDate(d);
-    var isToday = diso===todayIso;
-    html += '<div class="week-col '+(isToday?'is-today':'')+'">' +
-      '<div class="week-col-head"><div class="week-col-dow">'+DOW_FULL[i]+'</div><div class="week-col-date">'+d.getDate()+' '+d.toLocaleDateString('pt-BR',{month:'short'})+'</div></div>' +
-      '<div class="week-col-body">' +
-        weekCatBlock(diso, 'trabalho', 'cat-work', 'Trabalho') +
-        weekCatBlock(diso, 'pessoal', 'cat-personal', 'Pessoal') +
-      '</div>' +
-    '</div>';
+  var cursor = new Date(checklistScroll.startDate);
+  while(cursor <= checklistScroll.endDate){
+    html += checklistDayColumnHtml(cursor, todayIso);
+    cursor = addDays(cursor, 1);
   }
   wrap.innerHTML = html;
+  bindChecklistDayHandlers(wrap);
+  updateChecklistTitle();
 
+  if(opts.initial){
+    // Center on today after first paint.
+    requestAnimationFrame(function(){
+      var todayCol = wrap.querySelector('.week-col.is-today');
+      if(todayCol){
+        var target = todayCol.offsetLeft - (wrap.clientWidth - todayCol.offsetWidth)/2;
+        wrap.scrollLeft = Math.max(0, target);
+      }
+    });
+  }
+}
+
+function checklistDayColumnHtml(d, todayIso){
+  var diso = isoDate(d);
+  var isToday = diso===todayIso;
+  return '<div class="week-col '+(isToday?'is-today':'')+'" data-day-col="'+diso+'">' +
+    '<div class="week-col-head"><div class="week-col-dow">'+DOW_FULL[d.getDay()]+'</div><div class="week-col-date">'+d.getDate()+' '+d.toLocaleDateString('pt-BR',{month:'short'})+'</div></div>' +
+    '<div class="week-col-body">' +
+      weekCatBlock(diso, 'trabalho', 'cat-work', 'Trabalho') +
+      weekCatBlock(diso, 'pessoal', 'cat-personal', 'Pessoal') +
+    '</div>' +
+  '</div>';
+}
+
+function weekCatBlock(dateIso, category, catClass, label){
+  var items = state.checklist.filter(function(c){ return c.date===dateIso && c.category===category; })
+    .sort(function(a,b){ if(a.done!==b.done) return a.done?1:-1; return (a.createdAt||0)-(b.createdAt||0); });
+  var autoItems = category==='trabalho' ? autoDeadlineItemsForDate(dateIso) : [];
+
+  var html = '<div data-cat-block="'+dateIso+'|'+category+'"><div class="week-cat-label '+catClass+'">'+label+'</div>';
+  if(items.length>0 || autoItems.length>0){
+    html += '<div class="check-list">';
+    html += autoItems.map(function(a){
+      return '<div class="check-item auto-deadline" draggable="true" data-drag-item="auto" data-job-id="'+a.jobId+'" data-open-job="'+a.jobId+'">' +
+        '<span class="check-box" aria-hidden="true" style="visibility:hidden;"></span>' +
+        '<span class="check-text">'+escapeHtml(a.text)+'<br><span class="check-auto-tag">prazo</span></span>' +
+      '</div>';
+    }).join('');
+    html += items.map(function(c){
+      return '<div class="check-item '+(c.done?'checked':'')+'" draggable="true" data-drag-item="task" data-check-id="'+c.id+'">' +
+        '<button class="check-box '+(c.done?'checked':'')+'" data-toggle-check="'+c.id+'" aria-label="Marcar como concluída">'+(c.done?'✓':'')+'</button>' +
+        '<span class="check-text">'+escapeHtml(c.text)+'</span>' +
+        '<button class="check-del" data-del-check="'+c.id+'" aria-label="Excluir tarefa">✕</button>' +
+      '</div>';
+    }).join('');
+    html += '</div>';
+  }
+  html += '<button class="week-add" data-add-check="'+dateIso+'|'+category+'">+ Adicionar</button></div>';
+  return html;
+}
+
+function bindChecklistDayHandlers(wrap){
   wrap.querySelectorAll('[data-toggle-check]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var item = state.checklist.find(function(c){return c.id===btn.getAttribute('data-toggle-check');});
+      if(!item) return;
       item.done = !item.done;
       saveChecklist();
-      renderWeekKanban();
+      refreshChecklistDay(item.date);
     });
   });
   wrap.querySelectorAll('[data-del-check]').forEach(function(btn){
-    btn.addEventListener('click', function(){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var item = state.checklist.find(function(c){return c.id===btn.getAttribute('data-del-check');});
+      var dateIso = item ? item.date : null;
       state.checklist = state.checklist.filter(function(c){return c.id!==btn.getAttribute('data-del-check');});
       saveChecklist();
-      renderWeekKanban();
+      if(dateIso) refreshChecklistDay(dateIso); else buildChecklistDays();
       showToast('Tarefa removida.');
     });
   });
@@ -1442,23 +1858,193 @@ function renderWeekKanban(){
       promptAddCheck(parts[0], parts[1]);
     });
   });
+  wrap.querySelectorAll('[data-open-job]').forEach(function(el){
+    el.addEventListener('click', function(){ openJobModal(el.getAttribute('data-open-job')); });
+  });
+
+  bindChecklistDragHandlers(wrap);
 }
 
-function weekCatBlock(dateIso, category, catClass, label){
-  var items = state.checklist.filter(function(c){ return c.date===dateIso && c.category===category; })
-    .sort(function(a,b){ if(a.done!==b.done) return a.done?1:-1; return (a.createdAt||0)-(b.createdAt||0); });
-  var html = '<div><div class="week-cat-label '+catClass+'">'+label+'</div>';
-  if(items.length>0){
-    html += '<div class="check-list">' + items.map(function(c){
-      return '<div class="check-item '+(c.done?'checked':'')+'">' +
-        '<button class="check-box '+(c.done?'checked':'')+'" data-toggle-check="'+c.id+'" aria-label="Marcar como concluída">'+(c.done?'✓':'')+'</button>' +
-        '<span class="check-text">'+escapeHtml(c.text)+'</span>' +
-        '<button class="check-del" data-del-check="'+c.id+'" aria-label="Excluir tarefa">✕</button>' +
-      '</div>';
-    }).join('') + '</div>';
+/* Re-renders only the affected day column instead of the whole scroller,
+   so scroll position is preserved and nothing flickers. */
+function refreshChecklistDay(dateIso){
+  var wrap = document.getElementById('weekKanban');
+  if(!wrap) return;
+  var col = wrap.querySelector('[data-day-col="'+dateIso+'"]');
+  if(!col){ buildChecklistDays(); return; }
+  var d = new Date(dateIso+"T00:00:00");
+  var todayIso = isoDate(startOfToday());
+  var temp = document.createElement('div');
+  temp.innerHTML = checklistDayColumnHtml(d, todayIso);
+  col.replaceWith(temp.firstElementChild);
+  bindChecklistDayHandlers(wrap);
+}
+
+function updateChecklistTitle(){
+  var titleEl = document.getElementById('weekTitle');
+  if(!titleEl) return;
+  titleEl.textContent = checklistScroll.startDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
+    ' – ' + checklistScroll.endDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+}
+
+function scrollChecklistByDays(n){
+  var wrap = document.getElementById('weekKanban');
+  if(!wrap) return;
+  var col = wrap.querySelector('.week-col');
+  var step = col ? (col.getBoundingClientRect().width + 16) * n : 200*n;
+  wrap.scrollBy({left:step, behavior:'smooth'});
+}
+
+function scrollChecklistToToday(){
+  var today = startOfToday();
+  if(today < checklistScroll.startDate || today > checklistScroll.endDate){
+    checklistScroll.startDate = addDays(today, -Math.floor(CHECKLIST_INITIAL_SPAN/2));
+    checklistScroll.endDate = addDays(checklistScroll.startDate, CHECKLIST_INITIAL_SPAN - 1);
+    buildChecklistDays({initial:true});
+    return;
   }
-  html += '<button class="week-add" data-add-check="'+dateIso+'|'+category+'">+ Adicionar</button></div>';
-  return html;
+  var wrap = document.getElementById('weekKanban');
+  var todayCol = wrap.querySelector('.week-col.is-today');
+  if(todayCol){
+    var target = todayCol.offsetLeft - (wrap.clientWidth - todayCol.offsetWidth)/2;
+    wrap.scrollTo({left:Math.max(0,target), behavior:'smooth'});
+  }
+}
+
+/* Infinite scroll: as the user nears either edge, prepend/append more days
+   without resetting scroll position. */
+function onChecklistScroll(e){
+  if(checklistScroll.loadingEdge) return;
+  var wrap = e.target;
+  var nearRightEdge = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - CHECKLIST_EDGE_THRESHOLD;
+  var nearLeftEdge = wrap.scrollLeft <= CHECKLIST_EDGE_THRESHOLD;
+
+  if(nearRightEdge){
+    appendChecklistDays(CHECKLIST_CHUNK);
+  } else if(nearLeftEdge){
+    prependChecklistDays(CHECKLIST_CHUNK);
+  }
+}
+
+function appendChecklistDays(n){
+  checklistScroll.loadingEdge = true;
+  var wrap = document.getElementById('weekKanban');
+  var todayIso = isoDate(startOfToday());
+  var frag = document.createDocumentFragment();
+  var cursor = addDays(checklistScroll.endDate, 1);
+  for(var i=0;i<n;i++){
+    var temp = document.createElement('div');
+    temp.innerHTML = checklistDayColumnHtml(cursor, todayIso);
+    frag.appendChild(temp.firstElementChild);
+    cursor = addDays(cursor, 1);
+  }
+  checklistScroll.endDate = addDays(checklistScroll.endDate, n);
+  wrap.appendChild(frag);
+  bindChecklistDayHandlers(wrap);
+  updateChecklistTitle();
+  checklistScroll.loadingEdge = false;
+}
+
+function prependChecklistDays(n){
+  checklistScroll.loadingEdge = true;
+  var wrap = document.getElementById('weekKanban');
+  var todayIso = isoDate(startOfToday());
+  var prevScrollWidth = wrap.scrollWidth;
+  var prevScrollLeft = wrap.scrollLeft;
+
+  var frag = document.createDocumentFragment();
+  var cursor = addDays(checklistScroll.startDate, -n);
+  var days = [];
+  for(var i=0;i<n;i++){ days.push(addDays(cursor, i)); }
+  days.forEach(function(d){
+    var temp = document.createElement('div');
+    temp.innerHTML = checklistDayColumnHtml(d, todayIso);
+    frag.appendChild(temp.firstElementChild);
+  });
+  checklistScroll.startDate = cursor;
+  wrap.insertBefore(frag, wrap.firstChild);
+  bindChecklistDayHandlers(wrap);
+  updateChecklistTitle();
+
+  // Preserve visual scroll position since we just inserted content to the left.
+  wrap.scrollLeft = prevScrollLeft + (wrap.scrollWidth - prevScrollWidth);
+  checklistScroll.loadingEdge = false;
+}
+
+/* ---- drag and drop: move a task (or a job's deadline) to another day ---- */
+var checklistDrag = null; // {type:'task'|'auto', id, sourceDateIso}
+
+function bindChecklistDragHandlers(wrap){
+  wrap.querySelectorAll('[data-drag-item]').forEach(function(el){
+    el.addEventListener('dragstart', function(e){
+      var type = el.getAttribute('data-drag-item');
+      checklistDrag = {
+        type: type,
+        checkId: el.getAttribute('data-check-id'),
+        jobId: el.getAttribute('data-job-id')
+      };
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    el.addEventListener('dragend', function(){
+      el.classList.remove('dragging');
+      checklistDrag = null;
+    });
+  });
+
+  wrap.querySelectorAll('[data-cat-block]').forEach(function(block){
+    block.addEventListener('dragover', function(e){
+      var parts = block.getAttribute('data-cat-block').split('|');
+      var category = parts[1];
+      // Auto deadline items only belong in "trabalho" — block drops elsewhere.
+      if(checklistDrag && checklistDrag.type==='auto' && category!=='trabalho') return;
+      e.preventDefault();
+      block.closest('.week-col-body').classList.add('drag-over');
+    });
+    block.addEventListener('dragleave', function(){
+      block.closest('.week-col-body').classList.remove('drag-over');
+    });
+    block.addEventListener('drop', function(e){
+      e.preventDefault();
+      block.closest('.week-col-body').classList.remove('drag-over');
+      if(!checklistDrag) return;
+      var parts = block.getAttribute('data-cat-block').split('|');
+      var targetDate = parts[0];
+      var targetCategory = parts[1];
+
+      if(checklistDrag.type==='task'){
+        moveChecklistTask(checklistDrag.checkId, targetDate, targetCategory);
+      } else if(checklistDrag.type==='auto' && targetCategory==='trabalho'){
+        moveJobDeadline(checklistDrag.jobId, targetDate);
+      }
+      checklistDrag = null;
+    });
+  });
+}
+
+function moveChecklistTask(checkId, targetDate, targetCategory){
+  var item = state.checklist.find(function(c){ return c.id===checkId; });
+  if(!item) return;
+  var sourceDate = item.date;
+  if(item.date===targetDate && item.category===targetCategory) return;
+  item.date = targetDate;
+  item.category = targetCategory;
+  saveChecklist();
+  refreshChecklistDay(sourceDate);
+  if(targetDate!==sourceDate) refreshChecklistDay(targetDate);
+  showToast('Tarefa movida.');
+}
+
+function moveJobDeadline(jobId, targetDate){
+  var job = state.jobs.find(function(j){ return j.id===jobId; });
+  if(!job) return;
+  var sourceDate = job.deadline;
+  if(sourceDate===targetDate) return;
+  job.deadline = targetDate;
+  saveJobs();
+  if(sourceDate) refreshChecklistDay(sourceDate);
+  refreshChecklistDay(targetDate);
+  showToast('Prazo do trabalho atualizado.');
 }
 
 function promptAddCheck(dateIso, category){
@@ -1494,7 +2080,7 @@ function promptAddCheck(dateIso, category){
     state.checklist.push({id:uid(), text:text, date:dateIso, category:category, done:false, createdAt:Date.now()});
     saveChecklist();
     close();
-    renderWeekKanban();
+    refreshChecklistDay(dateIso);
     showToast('Tarefa adicionada.');
   }
 }
@@ -1517,7 +2103,7 @@ function renderBrands(){
     '</tr></thead><tbody>';
   state.brands.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(b){
     var brandJobs = state.jobs.filter(function(j){ return j.brandId===b.id; });
-    var total = brandJobs.reduce(function(s,j){ return s+parseMoneyGuess(j.value); }, 0);
+    var total = brandJobs.reduce(function(s,j){ return s+parseMoneyBRL(j.value, j.currency); }, 0);
     html += '<tr class="row-clickable" data-brand-id="'+b.id+'">' +
       '<td class="name-cell">'+escapeHtml(b.name)+'</td>' +
       '<td>'+escapeHtml(b.contact||'—')+'</td>' +
@@ -1555,7 +2141,7 @@ function renderPlatforms(){
   state.platforms.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(p){
     var count = state.jobs.filter(function(j){ return j.platformId===p.id; }).length;
     html += '<tr class="row-clickable" data-platform-id="'+p.id+'">' +
-      '<td class="name-cell">'+escapeHtml(p.name)+'</td>' +
+      '<td class="name-cell">'+platformBadgeHtml(p)+'</td>' +
       '<td>'+count+'</td>' +
       '<td style="text-align:right;"><button class="btn btn-sm btn-ghost" data-edit-platform="'+p.id+'">editar</button></td>' +
     '</tr>';
@@ -1585,11 +2171,22 @@ function financeSummary(){
   });
   var previsto = receivedFromJobs + pendingFromJobs;
 
-  var paidExpenses = state.expenses.filter(function(e){ return e.paid; });
-  var unpaidExpenses = state.expenses.filter(function(e){ return !e.paid; });
+  var realExpenses = state.expenses.filter(function(e){ return e.type!=='reembolso'; });
+  var refunds = state.expenses.filter(function(e){ return e.type==='reembolso'; });
+
+  var paidExpenses = realExpenses.filter(function(e){ return e.paid; });
+  var unpaidExpenses = realExpenses.filter(function(e){ return !e.paid; });
   var totalExpenses = paidExpenses.reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0);
 
-  var lucroLiquido = receivedFromJobs - totalExpenses;
+  var receivedRefunds = refunds.filter(function(e){ return e.paid; }).reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0);
+  var pendingRefunds = refunds.filter(function(e){ return !e.paid; }).reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0);
+
+  // Lucro líquido: tudo que entrou (trabalhos pagos + reembolsos recebidos) menos despesas pagas.
+  var lucroLiquido = (receivedFromJobs + receivedRefunds) - totalExpenses;
+  // Saldo: a mesma conta, é o resultado líquido acumulado até agora.
+  var saldo = lucroLiquido;
+  // Fluxo de caixa previsto: o que ainda vai entrar/sair, considerando pendências de ambos os lados.
+  var fluxoCaixaPrevisto = saldo + pendingFromJobs + pendingRefunds - unpaidExpenses.reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0);
 
   return {
     previsto: previsto,
@@ -1597,7 +2194,11 @@ function financeSummary(){
     pendente: pendingFromJobs,
     despesas: totalExpenses,
     despesasPendentes: unpaidExpenses.reduce(function(s,e){ return s+parseMoneyGuess(e.value); }, 0),
+    reembolsosRecebidos: receivedRefunds,
+    reembolsosPendentes: pendingRefunds,
     lucroLiquido: lucroLiquido,
+    saldo: saldo,
+    fluxoCaixaPrevisto: fluxoCaixaPrevisto,
     jobsFechados: activeJobs.length,
     awaitingJobs: state.jobs.filter(function(j){ return j.status==='aguardando_pagamento'; }),
     paidJobs: state.jobs.filter(function(j){ return j.status==='pago'; })
@@ -1614,7 +2215,7 @@ function getReceivableItems(){
         items.push({
           jobId:j.id, installmentId:inst.id, installmentIndex:idx,
           label:(brand?brand.name:j.title) + ' · ' + inst.label,
-          value:parseMoneyGuess(inst.value), paid:!!inst.paid,
+          value:parseMoneyGuess(inst.value), currency:j.currency||'BRL', paid:!!inst.paid,
           date: inst.paid ? inst.paidDate : (inst.dueDate || j.payDate || j.deadline),
           contentType: j.contentType
         });
@@ -1623,7 +2224,7 @@ function getReceivableItems(){
       items.push({
         jobId:j.id, installmentId:null, installmentIndex:null,
         label:(brand?brand.name:j.title),
-        value:parseMoneyGuess(j.value), paid:j.status==='pago',
+        value:parseMoneyGuess(j.value), currency:j.currency||'BRL', paid:j.status==='pago',
         date: j.status==='pago' ? j.payDate : (j.payDate || j.deadline),
         contentType: j.contentType
       });
@@ -1653,20 +2254,25 @@ function markReceivablePaid(jobId, installmentId){
 function renderPayments(){
   var summary = financeSummary();
   var html = '';
-  html += '<div class="page-head"><div><h1>Pagamentos</h1><p class="page-sub">Controle seus ganhos e pagamentos.</p></div>' +
-    '<button class="btn btn-primary" id="btnNewRecord"><span>+</span> Novo registro</button></div>';
+  html += '<div class="page-head"><div><h1>Pagamentos</h1><p class="page-sub">Controle seus ganhos, despesas e reembolsos.</p></div>' +
+    '<div style="display:flex; gap:8px;">' +
+    '<button class="btn btn-sm btn-ghost" id="btnExchangeRates">câmbio</button>' +
+    '<button class="btn btn-primary" id="btnNewRecord"><span>+</span> Novo registro</button>' +
+    '</div></div>';
 
   html += '<div class="metrics">';
   html += metricCard("Previsto", fmtBRL(summary.previsto), "", "");
   html += metricCard("Recebido", fmtBRL(summary.recebido), "sage", "");
   html += metricCard("Pendente", fmtBRL(summary.pendente), "amber", "");
   html += metricCard("Despesas", fmtBRL(summary.despesas), "coral", "");
-  html += metricCard("Lucro líquido", fmtBRL(summary.lucroLiquido), summary.lucroLiquido>=0?"sage":"coral", "");
+  html += metricCard("Saldo", fmtBRL(summary.saldo), summary.saldo>=0?"sage":"coral", "lucro líquido até agora");
+  html += metricCard("Fluxo de caixa previsto", fmtBRL(summary.fluxoCaixaPrevisto), summary.fluxoCaixaPrevisto>=0?"sage":"coral", "considerando pendências");
   html += '</div>';
 
   html += '<div class="pill-tabs" id="paymentsTabs">' +
     '<button class="pill-tab '+(state.paymentsTab==='receitas'?'active':'')+'" data-ptab="receitas">Receitas</button>' +
     '<button class="pill-tab '+(state.paymentsTab==='despesas'?'active':'')+'" data-ptab="despesas">Despesas</button>' +
+    '<button class="pill-tab '+(state.paymentsTab==='reembolsos'?'active':'')+'" data-ptab="reembolsos">Reembolsos</button>' +
     '<button class="pill-tab '+(state.paymentsTab==='historico'?'active':'')+'" data-ptab="historico">Histórico</button>' +
   '</div>';
 
@@ -1674,6 +2280,7 @@ function renderPayments(){
 
   document.getElementById('pageContent').innerHTML = html;
   document.getElementById('btnNewRecord').addEventListener('click', function(){ openRecordModal(); });
+  document.getElementById('btnExchangeRates').addEventListener('click', function(){ openExchangeRatesModal(); });
   document.getElementById('paymentsTabs').addEventListener('click', function(e){
     var btn = e.target.closest('.pill-tab');
     if(!btn) return;
@@ -1690,7 +2297,7 @@ function receivableRowHtml(item){
       '<p class="kanban-card-title" style="margin-bottom:4px; font-size:14px;">'+escapeHtml(item.label)+(item.contentType?' <span style="font-weight:400; color:var(--ink-soft); font-size:12.5px;">· '+escapeHtml(item.contentType)+'</span>':'')+'</p>' +
       '<span style="font-size:12px; color:var(--ink-faint);">'+(item.date?fmtDate(item.date):'sem data')+'</span>' +
     '</div>' +
-    '<span class="tag-value" style="font-size:15px;">'+fmtBRL(item.value)+'</span>' +
+    '<span class="tag-value" style="font-size:15px;">'+fmtCurrency(item.value, item.currency)+'</span>' +
   '</div>';
 }
 
@@ -1701,20 +2308,70 @@ function receivedRowHtml(item){
       '<span class="tag" style="background:var(--sage-tint); color:var(--sage-deep);">recebido</span> ' +
       '<span style="font-size:12px; color:var(--ink-faint);">'+(item.date?fmtDate(item.date):'')+'</span>' +
     '</div>' +
-    '<span class="tag-value" style="font-size:15px;">'+fmtBRL(item.value)+'</span>' +
+    '<span class="tag-value" style="font-size:15px;">'+fmtCurrency(item.value, item.currency)+'</span>' +
   '</div>';
 }
 
 function expenseRowHtml(exp){
-  var statusTone = exp.paid ? {bg:'var(--sage-tint)', fg:'var(--sage-deep)', label:'pago'} : {bg:'var(--amber-tint)', fg:'var(--amber-deep)', label:'pendente'};
+  var isRefund = exp.type==='reembolso';
+  var statusTone = exp.paid
+    ? {bg:'var(--sage-tint)', fg:'var(--sage-deep)', label: isRefund ? 'recebido' : 'pago'}
+    : {bg:'var(--amber-tint)', fg:'var(--amber-deep)', label:'pendente'};
+  var valueColor = isRefund ? 'var(--sage-deep)' : 'var(--danger)';
+  var valuePrefix = isRefund ? '+' : '-';
   return '<div class="kanban-card" data-expense-id="'+exp.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:pointer;">' +
     '<div style="min-width:0;">' +
       '<p class="kanban-card-title" style="margin-bottom:6px;">'+escapeHtml(exp.description)+'</p>' +
       '<span class="tag" style="background:'+statusTone.bg+'; color:'+statusTone.fg+';">'+statusTone.label+'</span> ' +
+      (isRefund ? '<span class="tag" style="background:var(--sage-tint); color:var(--sage-deep);">reembolso</span> ' : '') +
       '<span style="font-size:12px; color:var(--ink-faint);">'+(exp.date?fmtDate(exp.date):'')+'</span>' +
     '</div>' +
-    '<span class="tag-value" style="color:var(--danger);">-'+fmtCurrency(parseMoneyGuess(exp.value), exp.currency||'BRL')+'</span>' +
+    '<span class="tag-value" style="color:'+valueColor+';">'+valuePrefix+fmtCurrency(parseMoneyGuess(exp.value), exp.currency||'BRL')+'</span>' +
   '</div>';
+}
+
+function openExchangeRatesModal(){
+  var foreignCurrencies = CURRENCIES.filter(function(c){ return c.code!=='BRL'; });
+  var modalHtml =
+    '<div class="overlay" id="fxOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" style="max-width:400px;">' +
+        '<div class="modal-head"><h2>Taxas de câmbio</h2><button class="modal-close" id="fxModalClose" aria-label="Fechar">✕</button></div>' +
+        '<p style="font-size:12.5px; color:var(--ink-soft); margin:-8px 0 16px;">Usadas para converter trabalhos em outras moedas e somar tudo nos totais em Real.</p>' +
+        foreignCurrencies.map(function(c){
+          return '<div class="field"><label for="fx_'+c.code+'">1 '+c.code+' equivale a quantos R$</label>' +
+            '<input id="fx_'+c.code+'" type="text" inputmode="decimal" placeholder="Ex: 5,40" value="'+escapeHtml(String(state.exchangeRates[c.code]||'').replace('.',','))+'" /></div>';
+        }).join('') +
+        '<div class="modal-actions"><button class="btn btn-ghost" id="fxCancel">cancelar</button><button class="btn btn-primary" id="fxSave">Salvar taxas</button></div>' +
+      '</div>' +
+    '</div>';
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('fxModalClose').addEventListener('click', close);
+  document.getElementById('fxCancel').addEventListener('click', close);
+  document.getElementById('fxOverlay').addEventListener('click', function(e){ if(e.target.id==='fxOverlay') close(); });
+
+  document.getElementById('fxSave').addEventListener('click', function(){
+    var newRates = {BRL:1};
+    var hasInvalid = false;
+    foreignCurrencies.forEach(function(c){
+      var raw = document.getElementById('fx_'+c.code).value.trim();
+      var n = parseMoneyGuess(raw);
+      if(!raw || n<=0){ hasInvalid = true; return; }
+      newRates[c.code] = n;
+    });
+    if(hasInvalid){ showToast('Informe uma taxa válida, maior que zero, para cada moeda.'); return; }
+    state.exchangeRates = newRates;
+    var btn = document.getElementById('fxSave');
+    btn.disabled = true;
+    saveExchangeRates().then(function(){
+      close();
+      showToast('Taxas de câmbio atualizadas.');
+      render();
+    }).catch(function(){
+      btn.disabled = false;
+      showToast('Não foi possível salvar. Tente novamente.');
+    });
+  });
 }
 
 function renderPaymentsList(){
@@ -1739,8 +2396,9 @@ function renderPaymentsList(){
     html += '</div>';
 
   } else if(state.paymentsTab==='despesas'){
-    var unpaid = state.expenses.filter(function(e){ return !e.paid; }).sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999'); });
-    var paid = state.expenses.filter(function(e){ return e.paid; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+    var allExpenses = state.expenses.filter(function(e){ return e.type!=='reembolso'; });
+    var unpaid = allExpenses.filter(function(e){ return !e.paid; }).sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999'); });
+    var paid = allExpenses.filter(function(e){ return e.paid; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
 
     html += '<div class="section"><div class="section-head"><h2>Pendentes ('+unpaid.length+')</h2></div>';
     html += unpaid.length===0 ? emptyState("Nenhuma despesa pendente.")
@@ -1752,13 +2410,36 @@ function renderPaymentsList(){
       : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + paid.map(expenseRowHtml).join('') + '</div>';
     html += '</div>';
 
+  } else if(state.paymentsTab==='reembolsos'){
+    var allRefunds = state.expenses.filter(function(e){ return e.type==='reembolso'; });
+    var unpaidR = allRefunds.filter(function(e){ return !e.paid; }).sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999'); });
+    var paidR = allRefunds.filter(function(e){ return e.paid; }).sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+
+    html += '<div class="section"><div class="section-head"><h2>A receber ('+unpaidR.length+')</h2></div>';
+    html += unpaidR.length===0 ? emptyState("Nenhum reembolso pendente.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + unpaidR.map(expenseRowHtml).join('') + '</div>';
+    html += '</div>';
+
+    html += '<div class="section"><div class="section-head"><h2>Recebidos ('+paidR.length+')</h2></div>';
+    html += paidR.length===0 ? emptyState("Nenhum reembolso registrado.")
+      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + paidR.map(expenseRowHtml).join('') + '</div>';
+    html += '</div>';
+
   } else {
     var allItems = [];
     getReceivableItems().filter(function(it){return it.paid;}).forEach(function(it){
-      allItems.push({type:'receita', date:it.date||'', label:it.label, value:it.value, ts:0});
+      allItems.push({type:'receita', date:it.date||'', label:it.label, value:it.value, currency:it.currency, ts:0});
     });
     state.expenses.filter(function(e){return e.paid;}).forEach(function(e){
-      allItems.push({type:'despesa', date:e.date||'', label:e.description, value:-parseMoneyGuess(e.value), ts:e.createdAt||0});
+      var isRefund = e.type==='reembolso';
+      allItems.push({
+        type: isRefund ? 'reembolso' : 'despesa',
+        date:e.date||'',
+        label:e.description,
+        value: isRefund ? parseMoneyGuess(e.value) : -parseMoneyGuess(e.value),
+        currency: e.currency||'BRL',
+        ts:e.createdAt||0
+      });
     });
     allItems.sort(function(a,b){ return (b.date||'').localeCompare(a.date||'') || b.ts-a.ts; });
 
@@ -1768,9 +2449,9 @@ function renderPaymentsList(){
     } else {
       html += '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + allItems.map(function(it){
         return '<div class="kanban-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:default;">' +
-          '<div><p class="kanban-card-title" style="margin-bottom:4px;">'+escapeHtml(it.label)+'</p>' +
+          '<div><p class="kanban-card-title" style="margin-bottom:4px;">'+escapeHtml(it.label)+(it.type==='reembolso'?' <span style="font-weight:400; color:var(--ink-soft); font-size:12.5px;">· reembolso</span>':'')+'</p>' +
           '<span style="font-size:12px; color:var(--ink-faint);">'+(it.date?fmtDate(it.date):'sem data')+'</span></div>' +
-          '<span class="tag-value" style="color:'+(it.value>=0?'var(--sage-deep)':'var(--danger)')+';">'+(it.value>=0?'+':'-')+fmtBRL(Math.abs(it.value))+'</span>' +
+          '<span class="tag-value" style="color:'+(it.value>=0?'var(--sage-deep)':'var(--danger)')+';">'+(it.value>=0?'+':'-')+fmtCurrency(Math.abs(it.value), it.currency)+'</span>' +
         '</div>';
       }).join('') + '</div>';
     }
@@ -1801,8 +2482,9 @@ function openRecordModal(){
       '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">' +
         '<div class="modal-head"><h2>Novo registro</h2><button class="modal-close" id="recordModalClose" aria-label="Fechar">✕</button></div>' +
         '<div class="field"><label for="rType">Tipo</label><select id="rType">' +
-          '<option value="receita">Receita (trabalho)</option>' +
           '<option value="despesa">Despesa</option>' +
+          '<option value="reembolso">Reembolso</option>' +
+          '<option value="receita">Receita (trabalho)</option>' +
         '</select></div>' +
         '<div id="recordBody"></div>' +
       '</div>' +
@@ -1818,53 +2500,86 @@ function openRecordModal(){
     var type = document.getElementById('rType').value;
     var body = document.getElementById('recordBody');
     if(type==='receita'){
-      close();
-      openJobModal(null);
-    } else {
-      body.innerHTML =
-        '<div class="field"><label for="rDesc">Descrição</label><input id="rDesc" type="text" placeholder="Ex: Edição de vídeo, equipamento..." /></div>' +
-        '<div class="field-row">' +
-          '<div class="field"><label for="rValue">Valor</label><input id="rValue" type="text" placeholder="0,00" /></div>' +
-          '<div class="field"><label for="rCurrency">Moeda</label><select id="rCurrency">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'">'+c.label+'</option>'; }).join('') + '</select></div>' +
-        '</div>' +
-        '<div class="field"><label for="rDate">Data</label><input id="rDate" type="date" /></div>' +
-        '<div class="field"><label style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="rPaid" style="width:auto;" /> já foi paga</label></div>' +
-        '<div class="modal-actions"><button class="btn btn-ghost" id="rCancel">cancelar</button><button class="btn btn-primary" id="rSave">Criar registro</button></div>';
+      body.innerHTML = '<div class="field"><p style="font-size:12.5px; color:var(--ink-soft); margin:0 0 14px;">Receita vem de um trabalho cadastrado. Vamos abrir o formulário de trabalho.</p></div>' +
+        '<div class="modal-actions"><button class="btn btn-ghost" id="rCancel">cancelar</button><button class="btn btn-primary" id="rGoJob">Continuar</button></div>';
       document.getElementById('rCancel').addEventListener('click', close);
-      document.getElementById('rSave').addEventListener('click', function(){
-        var desc = document.getElementById('rDesc').value.trim();
-        if(!desc){ showToast('Descreva a despesa.'); return; }
-        state.expenses.push({
-          id:uid(), description:desc,
-          value: document.getElementById('rValue').value.trim(),
-          currency: document.getElementById('rCurrency').value,
-          date: document.getElementById('rDate').value,
-          paid: document.getElementById('rPaid').checked,
-          createdAt: Date.now()
-        });
-        saveExpenses();
+      document.getElementById('rGoJob').addEventListener('click', function(){
         close();
-        showToast('Despesa registrada.');
-        render();
+        openJobModal(null);
       });
+      return;
     }
+
+    var isRefund = type==='reembolso';
+    var descLabel = isRefund ? 'Do que é o reembolso' : 'Descrição';
+    var descPlaceholder = isRefund ? 'Ex: Devolução de frete, produto não usado...' : 'Ex: Edição de vídeo, equipamento...';
+    var paidLabel = isRefund ? 'já recebi esse valor' : 'já foi paga';
+    var saveLabel = isRefund ? 'Criar reembolso' : 'Criar despesa';
+
+    body.innerHTML =
+      '<div class="field"><label for="rDesc">'+descLabel+'</label><input id="rDesc" type="text" placeholder="'+descPlaceholder+'" /></div>' +
+      '<div class="field-row">' +
+        '<div class="field"><label for="rValue">Valor *</label><input id="rValue" type="text" inputmode="decimal" placeholder="0,00" /></div>' +
+        '<div class="field"><label for="rCurrency">Moeda</label><select id="rCurrency">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'">'+c.label+'</option>'; }).join('') + '</select></div>' +
+      '</div>' +
+      '<div class="field"><label for="rDate">Data</label><input id="rDate" type="date" /></div>' +
+      '<div class="field"><label style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="rPaid" style="width:auto;" /> '+paidLabel+'</label></div>' +
+      '<div class="modal-actions"><button class="btn btn-ghost" id="rCancel">cancelar</button><button class="btn btn-primary" id="rSave">'+saveLabel+'</button></div>';
+    document.getElementById('rCancel').addEventListener('click', close);
+    document.getElementById('rDesc').focus();
+    document.getElementById('rValue').addEventListener('keydown', function(e){ if(e.key==='Enter') document.getElementById('rSave').click(); });
+
+    document.getElementById('rSave').addEventListener('click', function(){
+      var desc = document.getElementById('rDesc').value.trim();
+      var rawValue = document.getElementById('rValue').value.trim();
+      var numericValue = parseMoneyGuess(rawValue);
+
+      if(!desc){ showToast(isRefund ? 'Descreva o reembolso.' : 'Descreva a despesa.'); document.getElementById('rDesc').focus(); return; }
+      if(!rawValue || numericValue<=0){ showToast('Informe um valor válido, maior que zero.'); document.getElementById('rValue').focus(); return; }
+
+      var btn = document.getElementById('rSave');
+      btn.disabled = true;
+
+      state.expenses.push({
+        id:uid(), description:desc,
+        value: rawValue,
+        currency: document.getElementById('rCurrency').value,
+        date: document.getElementById('rDate').value,
+        paid: document.getElementById('rPaid').checked,
+        type: isRefund ? 'reembolso' : 'despesa',
+        createdAt: Date.now()
+      });
+      saveExpenses().then(function(){
+        close();
+        showToast(isRefund ? 'Reembolso registrado.' : 'Despesa registrada.');
+        render();
+      }).catch(function(){
+        btn.disabled = false;
+        showToast('Não foi possível salvar. Tente novamente.');
+      });
+    });
   }
 }
 
 function openExpenseModal(expenseId){
   var exp = state.expenses.find(function(e){ return e.id===expenseId; });
   if(!exp) return;
+  var isRefund = exp.type==='reembolso';
   var modalHtml =
     '<div class="overlay" id="expOverlay">' +
       '<div class="modal" role="dialog" aria-modal="true" style="max-width:420px;">' +
-        '<div class="modal-head"><h2>Editar despesa</h2><button class="modal-close" id="expModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="modal-head"><h2>'+(isRefund?'Editar reembolso':'Editar despesa')+'</h2><button class="modal-close" id="expModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="eType">Tipo</label><select id="eType">' +
+          '<option value="despesa" '+(!isRefund?'selected':'')+'>Despesa</option>' +
+          '<option value="reembolso" '+(isRefund?'selected':'')+'>Reembolso</option>' +
+        '</select></div>' +
         '<div class="field"><label for="eDesc">Descrição</label><input id="eDesc" type="text" value="'+escapeHtml(exp.description)+'" /></div>' +
         '<div class="field-row">' +
-          '<div class="field"><label for="eValue">Valor</label><input id="eValue" type="text" value="'+escapeHtml(exp.value)+'" /></div>' +
+          '<div class="field"><label for="eValue">Valor *</label><input id="eValue" type="text" inputmode="decimal" value="'+escapeHtml(exp.value)+'" /></div>' +
           '<div class="field"><label for="eCurrency">Moeda</label><select id="eCurrency">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'" '+((exp.currency||'BRL')===c.code?'selected':'')+'>'+c.label+'</option>'; }).join('') + '</select></div>' +
         '</div>' +
         '<div class="field"><label for="eDate">Data</label><input id="eDate" type="date" value="'+(exp.date||'')+'" /></div>' +
-        '<div class="field"><label style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="ePaid" '+(exp.paid?'checked':'')+' style="width:auto;" /> já foi paga</label></div>' +
+        '<div class="field"><label id="ePaidLabel" style="display:flex; align-items:center; gap:8px; font-weight:500; color:var(--ink);"><input type="checkbox" id="ePaid" '+(exp.paid?'checked':'')+' style="width:auto;" /> <span id="ePaidLabelText">'+(isRefund?'já recebi esse valor':'já foi paga')+'</span></label></div>' +
         '<div class="modal-actions"><button class="btn btn-danger-text" id="eDelete" style="margin-right:auto;">excluir</button><button class="btn btn-ghost" id="eCancel">cancelar</button><button class="btn btn-primary" id="eSave">Salvar</button></div>' +
       '</div>' +
     '</div>';
@@ -1873,19 +2588,37 @@ function openExpenseModal(expenseId){
   document.getElementById('expModalClose').addEventListener('click', close);
   document.getElementById('eCancel').addEventListener('click', close);
   document.getElementById('expOverlay').addEventListener('click', function(e){ if(e.target.id==='expOverlay') close(); });
+  document.getElementById('eType').addEventListener('change', function(){
+    var nowRefund = document.getElementById('eType').value==='reembolso';
+    document.getElementById('ePaidLabelText').textContent = nowRefund ? 'já recebi esse valor' : 'já foi paga';
+  });
   document.getElementById('eDelete').addEventListener('click', function(){
-    if(confirm('Excluir esta despesa?')){
+    if(confirm(isRefund ? 'Excluir este reembolso?' : 'Excluir esta despesa?')){
       state.expenses = state.expenses.filter(function(e){ return e.id!==exp.id; });
-      saveExpenses(); close(); showToast('Despesa excluída.'); render();
+      saveExpenses(); close(); showToast(isRefund?'Reembolso excluído.':'Despesa excluída.'); render();
     }
   });
   document.getElementById('eSave').addEventListener('click', function(){
-    exp.description = document.getElementById('eDesc').value.trim() || exp.description;
-    exp.value = document.getElementById('eValue').value.trim();
+    var desc = document.getElementById('eDesc').value.trim();
+    var rawValue = document.getElementById('eValue').value.trim();
+    var numericValue = parseMoneyGuess(rawValue);
+    if(!desc){ showToast('Descreva o registro.'); document.getElementById('eDesc').focus(); return; }
+    if(!rawValue || numericValue<=0){ showToast('Informe um valor válido, maior que zero.'); document.getElementById('eValue').focus(); return; }
+
+    var btn = document.getElementById('eSave');
+    btn.disabled = true;
+    exp.description = desc;
+    exp.value = rawValue;
     exp.currency = document.getElementById('eCurrency').value;
     exp.date = document.getElementById('eDate').value;
     exp.paid = document.getElementById('ePaid').checked;
-    saveExpenses(); close(); showToast('Despesa atualizada.'); render();
+    exp.type = document.getElementById('eType').value==='reembolso' ? 'reembolso' : 'despesa';
+    saveExpenses().then(function(){
+      close(); showToast('Atualizado.'); render();
+    }).catch(function(){
+      btn.disabled = false;
+      showToast('Não foi possível salvar. Tente novamente.');
+    });
   });
 }
 
@@ -1921,7 +2654,7 @@ function renderMetrics(){
       var d = new Date(refDate+"T00:00:00");
       return d.getFullYear()===m.year && d.getMonth()===m.month;
     });
-    var total = jobsInMonth.reduce(function(s,j){ return s+parseMoneyGuess(j.value); }, 0);
+    var total = jobsInMonth.reduce(function(s,j){ return s+parseMoneyBRL(j.value, j.currency); }, 0);
     return {label:m.label, total:total, count:jobsInMonth.length};
   });
   var maxVal = Math.max.apply(null, byMonth.map(function(m){return m.total;}).concat([1]));
@@ -1943,7 +2676,7 @@ function renderMetrics(){
   // top brands by revenue
   var byBrand = {};
   state.jobs.filter(function(j){return j.status==='pago';}).forEach(function(j){
-    byBrand[j.brandId] = (byBrand[j.brandId]||0) + parseMoneyGuess(j.value);
+    byBrand[j.brandId] = (byBrand[j.brandId]||0) + parseMoneyBRL(j.value, j.currency);
   });
   var topBrands = Object.keys(byBrand).map(function(id){
     var b = brandById(id);
@@ -1974,15 +2707,12 @@ function renderMetrics(){
 function openJobModal(jobId, presetStatus){
   var job = jobId ? state.jobs.find(function(j){return j.id===jobId;}) : null;
   var isNew = !job;
-  if(state.brands.length===0){
-    showToast("Cadastre uma marca antes de criar um trabalho.");
-    openBrandModal(null, function(){ openJobModal(jobId, presetStatus); });
-    return;
-  }
 
-  var brandOptions = '<option value="">— selecionar —</option>' + state.brands.map(function(b){
-    return '<option value="'+b.id+'" '+(job&&job.brandId===b.id?'selected':'')+'>'+escapeHtml(b.name)+'</option>';
+  var brandDatalistOptions = state.brands.slice().sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(b){
+    return '<option value="'+escapeHtml(b.name)+'"></option>';
   }).join('');
+
+  var currentBrand = job ? brandById(job.brandId) : null;
 
   var platformOptions = '<option value="">— nenhuma —</option>' + state.platforms.map(function(p){
     return '<option value="'+p.id+'" '+(job&&job.platformId===p.id?'selected':'')+'>'+escapeHtml(p.name)+'</option>';
@@ -2010,8 +2740,10 @@ function openJobModal(jobId, presetStatus){
           '<input id="jTitle" type="text" placeholder="Ex: 3 vídeos para lançamento" value="'+escapeHtml(job?job.title:'')+'" /></div>' +
 
         '<div class="field-row">' +
-          '<div class="field"><label for="jBrand">Marca *</label><select id="jBrand">'+brandOptions+'</select>' +
-            '<button type="button" class="btn btn-sm btn-ghost" id="jNewBrand" style="margin-top:8px;">+ Nova marca</button></div>' +
+          '<div class="field"><label for="jBrand">Marca *</label>' +
+            '<input id="jBrand" type="text" list="jBrandList" placeholder="Digite o nome — se for nova, criamos pra você" value="'+escapeHtml(currentBrand?currentBrand.name:'')+'" autocomplete="off" />' +
+            '<datalist id="jBrandList">'+brandDatalistOptions+'</datalist>' +
+            '<p style="font-size:11.5px; color:var(--ink-faint); margin:6px 2px 0;">Marca nova? Só escrever o nome — ela é criada automaticamente.</p></div>' +
           '<div class="field"><label for="jPlatform">Plataforma</label><select id="jPlatform">'+platformOptions+'</select></div>' +
         '</div>' +
 
@@ -2031,7 +2763,11 @@ function openJobModal(jobId, presetStatus){
 
         '<div class="field-row">' +
           '<div class="field"><label for="jPaymentMethod">Forma de pagamento</label><select id="jPaymentMethod">'+paymentOptions+'</select></div>' +
-          '<div class="field"><label for="jValue">Valor total combinado</label><input id="jValue" type="text" placeholder="Ex: R$ 540 ou permuta" value="'+escapeHtml(job?job.value:'')+'" /></div>' +
+          '<div class="field"><label for="jValue">Valor total combinado</label>' +
+            '<div style="display:flex; gap:8px;">' +
+              '<select id="jCurrency" style="flex:0 0 92px;">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'" '+((job&&job.currency?job.currency:'BRL')===c.code?'selected':'')+'>'+c.symbol+'</option>'; }).join('') + '</select>' +
+              '<input id="jValue" type="text" placeholder="Ex: 540 ou permuta" value="'+escapeHtml(job?job.value:'')+'" style="flex:1;" />' +
+            '</div></div>' +
         '</div>' +
 
         '<div class="field"><label>Tipo de pagamento</label>' +
@@ -2066,10 +2802,6 @@ function openJobModal(jobId, presetStatus){
 
   document.getElementById('modalRoot').innerHTML = modalHtml;
   document.getElementById('jTitle').focus();
-
-  document.getElementById('jNewBrand').addEventListener('click', function(){
-    openBrandModal(null, function(){ openJobModal(jobId, presetStatus); });
-  });
 
   var workingInstallments = (job && job.installments) ? job.installments.map(function(i){ return Object.assign({}, i); }) : [];
 
@@ -2174,8 +2906,10 @@ function openJobModal(jobId, presetStatus){
   }
 
   document.getElementById('jSave').addEventListener('click', function(){
-    var brandId = document.getElementById('jBrand').value;
-    if(!brandId){ showToast('Selecione uma marca.'); return; }
+    var brandNameInput = document.getElementById('jBrand').value.trim();
+    if(!brandNameInput){ showToast('Digite o nome da marca.'); document.getElementById('jBrand').focus(); return; }
+    var brand = findOrCreateBrandByName(brandNameInput);
+    var brandId = brand.id;
     var title = document.getElementById('jTitle').value.trim();
     var videos = document.getElementById('jVideos').value;
     var photos = document.getElementById('jPhotos').value;
@@ -2193,6 +2927,7 @@ function openJobModal(jobId, presetStatus){
       payDate: document.getElementById('jPayDate').value,
       paymentMethod: document.getElementById('jPaymentMethod').value,
       value: document.getElementById('jValue').value.trim(),
+      currency: document.getElementById('jCurrency').value,
       paymentType: isSplit ? 'split' : 'single',
       splitMode: splitMode,
       installments: isSplit ? workingInstallments : [],
@@ -2356,15 +3091,381 @@ function openPlatformModal(platformId){
   });
 }
 
+/* ---------------- render: products ---------------- */
+var PRODUCT_STATUS_FLOW = [
+  {key:"aguardando", label:"Aguardando envio"},
+  {key:"transito", label:"Em trânsito"},
+  {key:"recebido", label:"Recebido"}
+];
+var PRODUCT_STATUS_COLORS = {
+  aguardando: {dot:'var(--amber)', bg:'var(--amber-tint)', fg:'var(--amber-deep)'},
+  transito:   {dot:'var(--plum)',  bg:'var(--plum-tint)',  fg:'var(--plum)'},
+  recebido:   {dot:'var(--sage)',  bg:'var(--sage-tint)',  fg:'var(--sage-deep)'}
+};
+
+function renderProducts(){
+  var html = '';
+  html += '<div class="page-head"><div><h1>Produtos</h1><p class="page-sub">Itens físicos enviados pelas marcas para produção do conteúdo.</p></div>' +
+    '<button class="btn btn-primary" id="btnNewProduct"><span>+</span> Novo produto</button></div>';
+
+  if(state.products.length===0){
+    html += emptyState("Nenhum produto cadastrado ainda. Registre quando uma marca enviar algo para você produzir.", "btnEmptyNewProduct", "+ Adicionar produto");
+    document.getElementById('pageContent').innerHTML = html;
+    document.getElementById('btnNewProduct').addEventListener('click', function(){ openProductModal(null); });
+    document.getElementById('btnEmptyNewProduct').addEventListener('click', function(){ openProductModal(null); });
+    return;
+  }
+
+  html += '<div class="kanban" id="productsKanban" style="height:auto; min-height:280px;"></div>';
+  document.getElementById('pageContent').innerHTML = html;
+  document.getElementById('btnNewProduct').addEventListener('click', function(){ openProductModal(null); });
+  renderProductsKanban();
+}
+
+function renderProductsKanban(){
+  var wrap = document.getElementById('productsKanban');
+  var html = '';
+  PRODUCT_STATUS_FLOW.forEach(function(s){
+    var items = state.products.filter(function(p){ return p.status===s.key; });
+    var c = PRODUCT_STATUS_COLORS[s.key];
+    html += '<div class="kanban-col">' +
+      '<div class="kanban-col-head"><span class="status-badge" style="background:'+c.bg+'; color:'+c.fg+';"><span class="status-dot" style="background:'+c.dot+';"></span>'+escapeHtml(s.label)+'</span><span class="kanban-col-count">('+items.length+')</span></div>' +
+      '<div class="kanban-col-body" data-product-col="'+s.key+'">';
+    items.forEach(function(p){ html += productCardHtml(p); });
+    html += '<button class="kanban-add" data-new-product-status="'+s.key+'">+ Adicionar</button>';
+    html += '</div></div>';
+  });
+  wrap.innerHTML = html;
+
+  wrap.querySelectorAll('.kanban-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      if(card.classList.contains('dragging')) return;
+      openProductModal(card.getAttribute('data-product-id'));
+    });
+    card.addEventListener('dragstart', function(e){
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-product-id'));
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', function(){ card.classList.remove('dragging'); });
+  });
+  wrap.querySelectorAll('[data-new-product-status]').forEach(function(btn){
+    btn.addEventListener('click', function(){ openProductModal(null, btn.getAttribute('data-new-product-status')); });
+  });
+  wrap.querySelectorAll('[data-product-col]').forEach(function(col){
+    col.addEventListener('dragover', function(e){ e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', function(){ col.classList.remove('drag-over'); });
+    col.addEventListener('drop', function(e){
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      var pId = e.dataTransfer.getData('text/plain');
+      var newStatus = col.getAttribute('data-product-col');
+      var prod = state.products.find(function(x){ return x.id===pId; });
+      if(prod && prod.status!==newStatus){
+        prod.status = newStatus;
+        if(newStatus==='recebido' && !prod.receivedDate) prod.receivedDate = isoDate(new Date());
+        saveProducts();
+        showToast('Movido para "'+(PRODUCT_STATUS_FLOW.find(function(s){return s.key===newStatus;})||{}).label+'".');
+        renderProductsKanban();
+      }
+    });
+  });
+}
+
+function productCardHtml(p){
+  var brand = brandById(p.brandId);
+  var d = p.expectedDate ? daysUntil(p.expectedDate) : null;
+  var dateText = null;
+  if(p.status==='recebido' && p.receivedDate){
+    dateText = 'recebido em ' + fmtDate(p.receivedDate);
+  } else if(d!==null){
+    dateText = d<0 ? Math.abs(d)+'d de atraso' : d===0 ? 'chega hoje' : d===1 ? 'chega amanhã' : 'chega em '+d+'d';
+  }
+  return '<div class="kanban-card" draggable="true" data-product-id="'+p.id+'" tabindex="0" role="button" aria-label="Abrir '+escapeHtml(p.name)+'">' +
+    '<p class="kanban-card-title">'+escapeHtml(p.name)+'</p>' +
+    '<div class="kanban-tags">' +
+      (brand ? '<span class="tag" style="background:var(--magenta-tint); color:var(--magenta-deep);">'+escapeHtml(brand.name)+'</span>' : '') +
+    '</div>' +
+    (dateText ? '<div style="margin-top:8px;"><span class="tag tag-deadline" style="'+(p.status==='recebido'?'background:var(--sage-tint); color:var(--sage-deep);':'')+'">'+escapeHtml(dateText)+'</span></div>' : '') +
+  '</div>';
+}
+
+function openProductModal(productId, presetStatus){
+  var product = productId ? state.products.find(function(p){return p.id===productId;}) : null;
+  var isNew = !product;
+
+  var brandDatalistOptions = state.brands.slice().sort(function(a,b){return a.name.localeCompare(b.name);}).map(function(b){
+    return '<option value="'+escapeHtml(b.name)+'"></option>';
+  }).join('');
+  var currentBrand = product ? brandById(product.brandId) : null;
+
+  var jobOptions = '<option value="">— nenhum —</option>' + state.jobs
+    .filter(function(j){ return !product || !currentBrand || j.brandId===currentBrand.id || true; })
+    .slice().sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); })
+    .map(function(j){
+      var b = brandById(j.brandId);
+      var label = (b?b.name+' — ':'') + (j.title||'sem título');
+      return '<option value="'+j.id+'" '+(product&&product.jobId===j.id?'selected':'')+'>'+escapeHtml(label)+'</option>';
+    }).join('');
+
+  var statusOptions = PRODUCT_STATUS_FLOW.map(function(s){
+    return '<option value="'+s.key+'" '+((product?product.status:presetStatus)===s.key?'selected':'')+'>'+escapeHtml(s.label)+'</option>';
+  }).join('');
+
+  var modalHtml =
+    '<div class="overlay" id="prodOverlay">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-labelledby="prodModalTitle">' +
+        '<div class="modal-head"><h2 id="prodModalTitle">'+(isNew?'Novo produto':'Editar produto')+'</h2>' +
+          '<button class="modal-close" id="prodModalClose" aria-label="Fechar">✕</button></div>' +
+        '<div class="field"><label for="prName">Nome do produto</label>' +
+          '<input id="prName" type="text" placeholder="Ex: Kit skincare, fone bluetooth..." value="'+escapeHtml(product?product.name:'')+'" /></div>' +
+        '<div class="field"><label for="prBrand">Marca *</label>' +
+          '<input id="prBrand" type="text" list="prBrandList" placeholder="Digite o nome — se for nova, criamos pra você" value="'+escapeHtml(currentBrand?currentBrand.name:'')+'" autocomplete="off" />' +
+          '<datalist id="prBrandList">'+brandDatalistOptions+'</datalist></div>' +
+        '<div class="field"><label for="prJob">Vincular a um trabalho</label><select id="prJob">'+jobOptions+'</select></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="prStatus">Status</label><select id="prStatus">'+statusOptions+'</select></div>' +
+          '<div class="field"><label for="prExpected">Previsão de chegada</label><input id="prExpected" type="date" value="'+(product&&product.expectedDate?product.expectedDate:'')+'" /></div>' +
+        '</div>' +
+        '<div class="field"><label for="prNotes">Observações</label>' +
+          '<textarea id="prNotes" placeholder="Código de rastreio, observações...">'+escapeHtml(product?product.notes:'')+'</textarea></div>' +
+        '<div class="modal-actions">' +
+          (isNew ? '' : '<button class="btn btn-danger-text" id="prDelete" style="margin-right:auto;">excluir</button>') +
+          '<button class="btn btn-ghost" id="prCancel">cancelar</button>' +
+          '<button class="btn btn-primary" id="prSave">'+(isNew?'Criar produto':'Salvar alterações')+'</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('modalRoot').innerHTML = modalHtml;
+  document.getElementById('prName').focus();
+
+  function close(){ document.getElementById('modalRoot').innerHTML = ''; }
+  document.getElementById('prodModalClose').addEventListener('click', close);
+  document.getElementById('prCancel').addEventListener('click', close);
+  document.getElementById('prodOverlay').addEventListener('click', function(e){ if(e.target.id==='prodOverlay') close(); });
+
+  if(!isNew){
+    document.getElementById('prDelete').addEventListener('click', function(){
+      if(confirm('Excluir este produto?')){
+        state.products = state.products.filter(function(p){return p.id!==product.id;});
+        saveProducts();
+        close();
+        showToast('Produto excluído.');
+        render();
+      }
+    });
+  }
+
+  document.getElementById('prSave').addEventListener('click', function(){
+    var name = document.getElementById('prName').value.trim();
+    var brandNameInput = document.getElementById('prBrand').value.trim();
+    if(!name){ showToast('Dê um nome ao produto.'); document.getElementById('prName').focus(); return; }
+    if(!brandNameInput){ showToast('Digite o nome da marca.'); document.getElementById('prBrand').focus(); return; }
+    var brand = findOrCreateBrandByName(brandNameInput);
+    var newStatus = document.getElementById('prStatus').value;
+    var data = {
+      name: name,
+      brandId: brand.id,
+      jobId: document.getElementById('prJob').value || null,
+      status: newStatus,
+      expectedDate: document.getElementById('prExpected').value,
+      notes: document.getElementById('prNotes').value.trim()
+    };
+    if(newStatus==='recebido'){
+      data.receivedDate = (product && product.receivedDate) ? product.receivedDate : isoDate(new Date());
+    } else {
+      data.receivedDate = (product && product.receivedDate) ? product.receivedDate : '';
+    }
+    if(isNew){
+      data.id = uid();
+      data.createdAt = Date.now();
+      state.products.push(data);
+      showToast('Produto criado.');
+    } else {
+      Object.assign(product, data);
+      showToast('Alterações salvas.');
+    }
+    var btn = document.getElementById('prSave');
+    btn.disabled = true;
+    saveProducts().then(function(){
+      close();
+      render();
+    }).catch(function(){
+      btn.disabled = false;
+      showToast('Não foi possível salvar. Tente novamente.');
+    });
+  });
+}
+
+/* ---------------- notifications: smart, derived from existing data ---------------- */
+/* Each notification gets a stable id (hash of its semantic content, not a random uid)
+   so "mark as read" persists correctly across reloads/devices even though nothing
+   is stored permanently — the notification itself is recomputed every time. */
+function notifId(parts){ return parts.join('::'); }
+
+function buildNotifications(){
+  var list = [];
+  var today = new Date(); today.setHours(0,0,0,0);
+  var todayIso = isoDate(today);
+
+  // Entregas próximas / atrasadas
+  state.jobs.forEach(function(j){
+    if(j.status===STATUS_CANCELLED || j.status==='pago' || !j.deadline) return;
+    var brand = brandById(j.brandId);
+    var d = daysUntil(j.deadline);
+    var name = brand ? brand.name : (j.title||'um trabalho');
+    if(d!==null && d<0){
+      list.push({id:notifId(['deadline-late',j.id]), icon:'⚠', text:'Entrega '+name+' está '+Math.abs(d)+'d atrasada', date:j.deadline, priority:0, jobId:j.id});
+    } else if(d===0){
+      list.push({id:notifId(['deadline-today',j.id]), icon:'⚠', text:'Entrega '+name+' vence hoje', date:j.deadline, priority:1, jobId:j.id});
+    } else if(d!==null && d<=3){
+      list.push({id:notifId(['deadline-soon',j.id]), icon:'⚠', text:'Entrega '+name+' vence em '+d+'d', date:j.deadline, priority:2, jobId:j.id});
+    }
+    if(j.status==='aprovacao'){
+      list.push({id:notifId(['awaiting-review',j.id]), icon:'📝', text:'Trabalho '+name+' aguardando revisão', date:j.deadline||todayIso, priority:3, jobId:j.id});
+    }
+  });
+
+  // Pagamentos
+  getReceivableItems().forEach(function(it){
+    if(it.paid || !it.date) return;
+    var d = daysUntil(it.date);
+    if(d===0){
+      list.push({id:notifId(['pay-today',it.jobId,it.instId||'']), icon:'💰', text:'Hoje você recebe '+fmtCurrency(it.value, it.currency)+' — '+it.label, date:it.date, priority:1, jobId:it.jobId});
+    } else if(d!==null && d<0){
+      list.push({id:notifId(['pay-late',it.jobId,it.instId||'']), icon:'💰', text:'Pagamento atrasado: '+fmtCurrency(it.value, it.currency)+' — '+it.label, date:it.date, priority:0, jobId:it.jobId});
+    }
+  });
+
+  // Produtos
+  state.products.forEach(function(p){
+    var brand = brandById(p.brandId);
+    var name = brand ? brand.name : p.name;
+    if(p.status==='recebido' && p.receivedDate===todayIso){
+      list.push({id:notifId(['product-received',p.id]), icon:'📦', text:'Produto '+name+' chegou hoje', date:p.receivedDate, priority:3, productId:p.id});
+    } else if(p.status!=='recebido' && p.expectedDate===todayIso){
+      list.push({id:notifId(['product-today',p.id]), icon:'📦', text:'Produto '+name+' chega hoje', date:p.expectedDate, priority:2, productId:p.id});
+    }
+  });
+
+  // Follow-ups pendentes (sem contato há 5+ dias em status de follow-up)
+  state.prospects.forEach(function(p){
+    if(p.status!=='followup1' && p.status!=='followup2' && p.status!=='enviado') return;
+    var refDate = p.updatedAt || p.createdAt;
+    if(!refDate) return;
+    var diffDays = Math.floor((Date.now()-refDate)/86400000);
+    if(diffDays>=5){
+      list.push({id:notifId(['followup',p.id, String(Math.floor(diffDays/5))]), icon:'📧', text:'Faz '+diffDays+' dias desde o último contato com '+p.brandName, date:todayIso, priority:2, prospectId:p.id});
+    }
+  });
+
+  // Gravações hoje
+  var recordingsToday = state.jobs.filter(function(j){ return j.status==='gravacao' && j.deadline; });
+  var gravToday = recordingsToday.filter(function(j){ return daysUntil(j.deadline)===0; });
+  if(gravToday.length>0){
+    list.push({id:notifId(['recordings-today',todayIso]), icon:'🎬', text:'Hoje você tem '+gravToday.length+(gravToday.length===1?' gravação':' gravações')+' prevista'+(gravToday.length===1?'':'s'), date:todayIso, priority:1});
+  }
+
+  // Checklist atrasado (tarefas de trabalho não feitas com data passada)
+  var lateChecks = state.checklist.filter(function(c){ return !c.done && c.date && c.date<todayIso && c.category==='trabalho'; });
+  if(lateChecks.length>0){
+    list.push({id:notifId(['checklist-late',todayIso,String(lateChecks.length)]), icon:'✓', text:lateChecks.length===1?'1 tarefa do checklist está atrasada':lateChecks.length+' tarefas do checklist estão atrasadas', date:todayIso, priority:2});
+  }
+
+  list.sort(function(a,b){ return a.priority-b.priority || (a.date||'').localeCompare(b.date||''); });
+  return list;
+}
+
+function unreadNotifications(){
+  return buildNotifications().filter(function(n){ return !state.notificationsRead[n.id]; });
+}
+
+function renderNotifBell(){
+  var unread = unreadNotifications();
+  var count = unread.length;
+  var html = '<button class="notif-bell-btn" id="notifBellBtn" aria-label="Notificações">🔔' +
+    (count>0 ? '<span class="notif-badge">'+(count>9?'9+':count)+'</span>' : '') +
+  '</button>';
+  ['notifBellWrapDesktop','notifBellWrapMobile'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.innerHTML = html;
+  });
+  document.querySelectorAll('#notifBellBtn').forEach(function(btn){
+    btn.addEventListener('click', function(e){ e.stopPropagation(); toggleNotifPanel(btn); });
+  });
+}
+
+function toggleNotifPanel(anchorBtn){
+  var root = document.getElementById('notifPanelRoot');
+  if(state.notifPanelOpen){ closeNotifPanel(); return; }
+  state.notifPanelOpen = true;
+  var notifs = buildNotifications();
+  var rect = anchorBtn.getBoundingClientRect();
+  var panelTop = rect.bottom + 8;
+  var panelRight = Math.max(12, window.innerWidth - rect.right);
+
+  var html = '<div class="notif-overlay" id="notifOverlay"></div>' +
+    '<div class="notif-panel" id="notifPanel" style="top:'+panelTop+'px; right:'+panelRight+'px;">' +
+      '<div class="notif-panel-head"><h3>Notificações</h3>' +
+        (notifs.length>0 ? '<button class="notif-mark-all" id="notifMarkAll">marcar tudo como lida</button>' : '') +
+      '</div>' +
+      '<div class="notif-list">' +
+        (notifs.length===0 ? '<div class="notif-empty">Tudo em dia por aqui. 🌿</div>' :
+          notifs.map(function(n){
+            var unread = !state.notificationsRead[n.id];
+            return '<div class="notif-item '+(unread?'unread':'')+'" data-notif-id="'+n.id+'" data-job-id="'+(n.jobId||'')+'" data-product-id="'+(n.productId||'')+'" data-prospect-id="'+(n.prospectId||'')+'">' +
+              '<span class="notif-ico">'+n.icon+'</span>' +
+              '<span class="notif-text">'+escapeHtml(n.text)+'</span>' +
+              (unread ? '<span class="notif-dot-new"></span>' : '') +
+            '</div>';
+          }).join('')
+        ) +
+      '</div>' +
+    '</div>';
+  root.innerHTML = html;
+
+  document.getElementById('notifOverlay').addEventListener('click', closeNotifPanel);
+  var markAllBtn = document.getElementById('notifMarkAll');
+  if(markAllBtn) markAllBtn.addEventListener('click', function(){
+    notifs.forEach(function(n){ state.notificationsRead[n.id] = true; });
+    saveNotificationsRead();
+    closeNotifPanel();
+    renderNotifBell();
+  });
+  document.querySelectorAll('.notif-item').forEach(function(item){
+    item.addEventListener('click', function(){
+      var id = item.getAttribute('data-notif-id');
+      state.notificationsRead[id] = true;
+      saveNotificationsRead();
+      renderNotifBell();
+      var jobId = item.getAttribute('data-job-id');
+      var productId = item.getAttribute('data-product-id');
+      var prospectId = item.getAttribute('data-prospect-id');
+      closeNotifPanel();
+      if(jobId) openJobModal(jobId);
+      else if(productId) openProductModal(productId);
+      else if(prospectId) openProspectModal(prospectId);
+    });
+  });
+}
+
+function closeNotifPanel(){
+  state.notifPanelOpen = false;
+  document.getElementById('notifPanelRoot').innerHTML = '';
+}
+
 /* ---------------- main render dispatcher ---------------- */
 function render(){
   if(!state.loaded){
     document.getElementById('pageContent').innerHTML = '<p style="color:var(--ink-faint);">Carregando seus dados...</p>';
     return;
   }
+  renderNotifBell();
   if(state.route==='dashboard') renderDashboard();
   else if(state.route==='prospects') renderProspects();
   else if(state.route==='jobs') renderJobs();
+  else if(state.route==='products') renderProducts();
   else if(state.route==='agenda') renderAgenda();
   else if(state.route==='checklist') renderChecklist();
   else if(state.route==='brands') renderBrands();
@@ -2614,6 +3715,9 @@ function applyBrandLogo(){
 }
 
 /* ---------------- init ---------------- */
+window.addEventListener('scroll', function(){ if(state.notifPanelOpen) closeNotifPanel(); }, true);
+window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNotifPanel(); });
+
 (async function init(){
   applyBrandLogo();
   setupCloudAuthUI();
