@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Studio — controle seus jobs UGC</title>
+<title>Creator Desk — controle seus jobs UGC</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='p' cx='35%25' cy='30%25' r='75%25'%3E%3Cstop offset='0%25' stop-color='%23FCEFE6'/%3E%3Cstop offset='55%25' stop-color='%23F3D9CE'/%3E%3Cstop offset='100%25' stop-color='%23E3A9A0'/%3E%3C/radialGradient%3E%3CradialGradient id='c' cx='50%25' cy='40%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%236B4A4E'/%3E%3Cstop offset='100%25' stop-color='%233A2B2A'/%3E%3C/radialGradient%3E%3C/defs%3E%3Cg transform='translate(50,52)'%3E%3Cg fill='url(%23p)' stroke='%23C98FA0' stroke-width='0.8' stroke-opacity='0.6'%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(0)'/%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(60)'/%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(120)'/%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(180)'/%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(240)'/%3E%3Cpath d='M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z' transform='rotate(300)'/%3E%3C/g%3E%3Ccircle r='9' fill='url(%23c)'/%3E%3Cg fill='%232A1F1E' opacity='0.5'%3E%3Ccircle cx='-3' cy='-2' r='1'/%3E%3Ccircle cx='2' cy='-3' r='0.8'/%3E%3Ccircle cx='4' cy='1' r='1'/%3E%3Ccircle cx='-1' cy='3' r='0.9'/%3E%3Ccircle cx='-4' cy='1' r='0.7'/%3E%3Ccircle cx='1' cy='2' r='0.8'/%3E%3Ccircle cx='0' cy='-1' r='0.6'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -901,6 +902,16 @@ function persistAllLocalQuiet(){
 }
 function applyRemoteData(data){
   if(!data) return;
+  // Se os dados remotos chegaram completamente vazios mas temos dados locais,
+  // ignoramos o update — pode ser um sync incompleto ou documento novo no Firestore.
+  var remoteHasData = (data.jobs && data.jobs.length > 0) ||
+    (data.brands && data.brands.length > 0) ||
+    (data.prospects && data.prospects.length > 0) ||
+    (data.checklist && data.checklist.length > 0) ||
+    (data.expenses && data.expenses.length > 0) ||
+    (data.products && data.products.length > 0);
+  if(!remoteHasData && hasLocalData()) return;
+
   applyingRemote = true;
   state.jobs = ensureArray(data.jobs);
   state.brands = ensureArray(data.brands);
@@ -987,9 +998,21 @@ async function loadAll(){
   var loadedRates = await loadKeyObj(STORE.exchangeRates);
   if(loadedRates) state.exchangeRates = Object.assign({BRL:1}, loadedRates);
   if(state.platforms.length===0){
-    var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Prospecção ativa","Inbound","Outros"];
+    var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
     state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
     await saveKey(STORE.platforms, state.platforms);
+  } else {
+    // Garante que Axis e Space existam mesmo para usuários que já tinham plataformas
+    var newPlatforms = ["Axis","Space"];
+    var changed = false;
+    newPlatforms.forEach(function(name){
+      var exists = state.platforms.some(function(p){ return p.name.toLowerCase()===name.toLowerCase(); });
+      if(!exists){
+        state.platforms.push({id:uid(), name:name, createdAt:Date.now()});
+        changed = true;
+      }
+    });
+    if(changed) await saveKey(STORE.platforms, state.platforms);
   }
   state.loaded = true;
 }
@@ -1113,6 +1136,7 @@ function buildInstallments(splitMode, totalValue, videoCount, customRows){
 function navigate(route){
   document.getElementById('modalRoot').innerHTML = '';
   if(state.notifPanelOpen) closeNotifPanel();
+  _savedScrollY = 0; // nova rota sempre começa do topo
   state.route = route;
   document.querySelectorAll('.nav-item').forEach(function(el){
     el.classList.toggle('active', el.getAttribute('data-route')===route);
@@ -1455,6 +1479,11 @@ function renderKanban(){
     return !state.jobFilterPlatform || j.platformId===state.jobFilterPlatform;
   });
   var wrap = document.getElementById('kanbanWrap');
+  if(!wrap) return;
+
+  // Preserva posição de scroll horizontal antes de re-renderizar
+  var prevScrollLeft = wrap.scrollLeft;
+
   var html = '';
   KANBAN_STATUSES.forEach(function(s){
     var colJobs = jobs.filter(function(j){ return j.status===s.key; });
@@ -1466,6 +1495,9 @@ function renderKanban(){
     html += '</div></div>';
   });
   wrap.innerHTML = html;
+
+  // Restaura posição de scroll horizontal
+  if(prevScrollLeft) wrap.scrollLeft = prevScrollLeft;
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
     card.addEventListener('click', function(e){
@@ -1518,12 +1550,33 @@ function kanbanCardHtml(job){
   if(d!==null){
     deadlineText = d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : fmtDate(job.deadline);
   }
+
+  // Progresso de vídeos produzidos (só aparece se tem 2+ vídeos e algum check feito)
+  var videoProgress = '';
+  if(job.videoCount && parseInt(job.videoCount,10) >= 2 && job.videosDone){
+    var total = parseInt(job.videoCount,10);
+    var done = Object.values(job.videosDone).filter(Boolean).length;
+    if(done > 0){
+      var pct = Math.round((done/total)*100);
+      videoProgress = '<div style="margin-top:8px;">' +
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">' +
+          '<span style="font-size:11px; color:var(--ink-faint);">'+done+'/'+total+' vídeos</span>' +
+          '<span style="font-size:11px; color:var(--sage-deep); font-weight:600;">'+pct+'%</span>' +
+        '</div>' +
+        '<div style="height:3px; border-radius:99px; background:var(--line);">' +
+          '<div style="height:3px; border-radius:99px; background:var(--sage); width:'+pct+'%;"></div>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+
   return '<div class="kanban-card" draggable="true" data-job-id="'+job.id+'" tabindex="0" role="button" aria-label="Abrir '+escapeHtml(job.title)+'">' +
     '<p class="kanban-card-title">'+escapeHtml(brand?brand.name:(job.title||'Sem título'))+'</p>' +
     '<div class="kanban-tags">' +
       platformBadgeHtml(platform) +
       (job.value ? '<span class="tag-value">'+fmtCurrency(parseMoneyGuess(job.value), job.currency)+'</span>' : '') +
     '</div>' +
+    videoProgress +
     (deadlineText ? '<div style="margin-top:8px;"><span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span></div>' : '') +
   '</div>';
 }
@@ -2752,9 +2805,27 @@ function openJobModal(jobId, presetStatus){
         '<div class="field"><label for="jContentType">Tipo de conteúdo</label><select id="jContentType">'+contentOptions+'</select></div>' +
 
         '<div class="field-row">' +
-          '<div class="field"><label for="jVideos">Quantidade de vídeos</label><input id="jVideos" type="number" min="0" placeholder="0" value="'+(job&&job.videoCount!=null?job.videoCount:'')+'" /></div>' +
-          '<div class="field"><label for="jPhotos">Quantidade de fotos</label><input id="jPhotos" type="number" min="0" placeholder="0" value="'+(job&&job.photoCount!=null?job.photoCount:'')+'" /></div>' +
+          '<div class="field"><label for="jVideos">Vídeos</label><input id="jVideos" type="number" min="0" placeholder="0" value="'+(job&&job.videoCount!=null?job.videoCount:'')+'" /></div>' +
+          '<div class="field"><label for="jPhotos">Fotos</label><input id="jPhotos" type="number" min="0" placeholder="0" value="'+(job&&job.photoCount!=null?job.photoCount:'')+'" /></div>' +
+          '<div class="field"><label for="jStories">Stories</label><input id="jStories" type="number" min="0" placeholder="0" value="'+(job&&job.storyCount!=null?job.storyCount:'')+'" /></div>' +
         '</div>' +
+
+        (function(){
+          if(isNew) return '';
+          var count = job.videoCount ? parseInt(job.videoCount,10) : 0;
+          if(count < 2) return '';
+          var done = job.videosDone || {};
+          var checks = '';
+          for(var v=1; v<=count; v++){
+            var isDone = !!done[v];
+            checks += '<label style="display:flex; align-items:center; gap:9px; padding:7px 4px; border-bottom:1px solid var(--line); cursor:pointer; font-size:13.5px; color:var(--ink);">' +
+              '<input type="checkbox" data-video-check="'+v+'" style="width:auto;" '+(isDone?'checked':'')+' />' +
+              '<span style="'+(isDone?'text-decoration:line-through; color:var(--ink-faint);':'')+'">Vídeo '+v+'</span>' +
+            '</label>';
+          }
+          return '<div class="field" id="jVideosDoneWrap"><label style="margin-bottom:10px; display:block;">Vídeos produzidos</label>' +
+            '<div style="background:var(--lilac); border-radius:var(--radius-s); padding:4px 10px; border:1px solid var(--line);">' + checks + '</div></div>';
+        })() +
 
         '<div class="field-row">' +
           '<div class="field"><label for="jDeadline">Prazo de entrega</label><input id="jDeadline" type="date" value="'+(job&&job.deadline?job.deadline:'')+'" /></div>' +
@@ -2913,6 +2984,14 @@ function openJobModal(jobId, presetStatus){
     var title = document.getElementById('jTitle').value.trim();
     var videos = document.getElementById('jVideos').value;
     var photos = document.getElementById('jPhotos').value;
+    var stories = document.getElementById('jStories').value;
+
+    // Coleta o estado dos checks de vídeos produzidos (se existirem no modal)
+    var videosDone = (!isNew && job.videosDone) ? Object.assign({}, job.videosDone) : {};
+    document.querySelectorAll('[data-video-check]').forEach(function(cb){
+      videosDone[cb.getAttribute('data-video-check')] = cb.checked;
+    });
+
     var isSplit = document.getElementById('jPayTypeSplit').checked;
     var splitMode = isSplit ? currentSplitMode() : null;
     var data = {
@@ -2923,6 +3002,8 @@ function openJobModal(jobId, presetStatus){
       contentType: document.getElementById('jContentType').value,
       videoCount: videos===''?null:parseInt(videos,10),
       photoCount: photos===''?null:parseInt(photos,10),
+      storyCount: stories===''?null:parseInt(stories,10),
+      videosDone: videosDone,
       deadline: document.getElementById('jDeadline').value,
       payDate: document.getElementById('jPayDate').value,
       paymentMethod: document.getElementById('jPaymentMethod').value,
@@ -3455,12 +3536,18 @@ function closeNotifPanel(){
   document.getElementById('notifPanelRoot').innerHTML = '';
 }
 
+/* ---------------- scroll preservation: keeps the user's position after any re-render ---------------- */
+var _savedScrollY = 0;
+function saveScrollY(){ _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0; }
+function restoreScrollY(){ if(_savedScrollY > 0) requestAnimationFrame(function(){ window.scrollTo(0, _savedScrollY); }); }
+
 /* ---------------- main render dispatcher ---------------- */
 function render(){
   if(!state.loaded){
     document.getElementById('pageContent').innerHTML = '<p style="color:var(--ink-faint);">Carregando seus dados...</p>';
     return;
   }
+  saveScrollY();
   renderNotifBell();
   if(state.route==='dashboard') renderDashboard();
   else if(state.route==='prospects') renderProspects();
@@ -3473,6 +3560,7 @@ function render(){
   else if(state.route==='payments') renderPayments();
   else if(state.route==='metrics') renderMetrics();
   else if(state.route==='contracts') renderContracts();
+  restoreScrollY();
 }
 
 /* ---------------- render: contracts (contract generator) ---------------- */
@@ -3697,12 +3785,31 @@ function generateContractPdf(){
 /* ---------------- brand logo (floral illustration, embedded SVG) ---------------- */
 var BRAND_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
   '<rect width="100" height="100" rx="22" fill="#F3E7DD"/>' +
-  '<g>' +
-    '<path d="M50 50 C38 38, 30 30, 32 18 C34 8, 46 8, 50 20 C54 8, 66 8, 68 18 C70 30, 62 38, 50 50 Z" fill="#8E3B52"/>' +
-    '<path d="M50 50 C62 42, 72 38, 82 44 C90 49, 86 60, 74 60 C84 64, 82 76, 72 75 C62 74, 56 64, 50 50 Z" fill="#6B2A3D"/>' +
-    '<path d="M50 50 C40 60, 32 70, 20 68 C10 66, 10 54, 22 52 C12 46, 18 34, 28 37 C40 40, 46 44, 50 50 Z" fill="#C98FA0"/>' +
-    '<path d="M50 50 C56 62, 58 74, 50 84 C44 92, 34 86, 38 76 C30 84, 20 76, 26 68 C34 58, 42 52, 50 50 Z" fill="#9C7724"/>' +
-    '<circle cx="50" cy="50" r="7" fill="#C99A3E"/>' +
+  '<defs>' +
+    '<radialGradient id="logoPetal" cx="35%" cy="30%" r="75%">' +
+      '<stop offset="0%" stop-color="#FCEFE6"/>' +
+      '<stop offset="55%" stop-color="#F3D9CE"/>' +
+      '<stop offset="100%" stop-color="#E3A9A0"/>' +
+    '</radialGradient>' +
+    '<radialGradient id="logoCenter" cx="50%" cy="40%" r="60%">' +
+      '<stop offset="0%" stop-color="#6B4A4E"/>' +
+      '<stop offset="100%" stop-color="#3A2B2A"/>' +
+    '</radialGradient>' +
+  '</defs>' +
+  '<g transform="translate(50,52)">' +
+    '<g fill="url(#logoPetal)" stroke="#C98FA0" stroke-width="0.8" stroke-opacity="0.6">' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(0)"/>' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(60)"/>' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(120)"/>' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(180)"/>' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(240)"/>' +
+      '<path d="M0,-3 C12,-10 13,-26 0,-37 C-13,-26 -12,-10 0,-3 Z" transform="rotate(300)"/>' +
+    '</g>' +
+    '<circle r="9" fill="url(#logoCenter)"/>' +
+    '<g fill="#2A1F1E" opacity="0.5">' +
+      '<circle cx="-3" cy="-2" r="1"/><circle cx="2" cy="-3" r="0.8"/><circle cx="4" cy="1" r="1"/>' +
+      '<circle cx="-1" cy="3" r="0.9"/><circle cx="-4" cy="1" r="0.7"/><circle cx="1" cy="2" r="0.8"/><circle cx="0" cy="-1" r="0.6"/>' +
+    '</g>' +
   '</g>' +
 '</svg>';
 
@@ -3732,3 +3839,4 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 </script>
 </body>
 </html>
+
