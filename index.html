@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -586,19 +587,32 @@ var KANBAN_STATUSES = STATUS_FLOW.concat([{key:STATUS_CANCELLED,label:"Cancelado
 /* Status color map: each status gets a dot color + soft tint background,
    staying within the existing palette family (no new hues introduced outside it). */
 var STATUS_COLORS = {
-  prospeccao:           {dot:'var(--slate)',        bg:'var(--slate-tint)',   fg:'#54527a'},
-  followup:             {dot:'var(--teal)',          bg:'var(--teal-tint)',    fg:'#2d6663'},
-  negociacao:           {dot:'var(--amber)',         bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
-  contrato:             {dot:'var(--sage)',          bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
-  aguardando_produto:   {dot:'var(--clay)',          bg:'var(--clay-tint)',    fg:'var(--clay)'},
-  roteiro:              {dot:'var(--plum)',          bg:'var(--plum-tint)',    fg:'var(--plum)'},
-  gravacao:             {dot:'#D6A24A',              bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
-  edicao:               {dot:'var(--plum)',          bg:'var(--plum-tint)',    fg:'var(--plum)'},
-  aprovacao:             {dot:'var(--clay)',         bg:'var(--clay-tint)',    fg:'var(--clay)'},
-  alteracoes:           {dot:'var(--danger)',        bg:'var(--danger-tint)',  fg:'var(--danger)'},
-  aguardando_pagamento: {dot:'var(--amber)',         bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
-  pago:                 {dot:'var(--sage-deep)',     bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
-  cancelado:            {dot:'var(--ink-faint)',     bg:'var(--lilac)',        fg:'var(--ink-soft)'}
+  /* ---- prospecção ---- */
+  pendente:             {dot:'var(--ink-faint)',     bg:'var(--lilac)',        fg:'var(--ink-soft)'},
+  enviado:              {dot:'var(--slate)',          bg:'var(--slate-tint)',   fg:'#54527a'},
+  email:                {dot:'var(--teal)',           bg:'var(--teal-tint)',    fg:'#2d6663'},
+  respondeu_email:      {dot:'var(--sage)',           bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  followup_email:       {dot:'var(--plum)',           bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  followup1:            {dot:'var(--teal)',           bg:'var(--teal-tint)',    fg:'#2d6663'},
+  followup2:            {dot:'var(--amber)',          bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  respondeu:            {dot:'var(--sage)',           bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  negociando:           {dot:'var(--amber)',          bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  fechou:               {dot:'var(--sage-deep)',      bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  recusou:              {dot:'var(--danger)',         bg:'var(--danger-tint)',  fg:'var(--danger)'},
+  /* ---- jobs ---- */
+  prospeccao:           {dot:'var(--slate)',          bg:'var(--slate-tint)',   fg:'#54527a'},
+  followup:             {dot:'var(--teal)',           bg:'var(--teal-tint)',    fg:'#2d6663'},
+  negociacao:           {dot:'var(--amber)',          bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  contrato:             {dot:'var(--sage)',           bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  aguardando_produto:   {dot:'var(--clay)',           bg:'var(--clay-tint)',    fg:'var(--clay)'},
+  roteiro:              {dot:'var(--plum)',           bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  gravacao:             {dot:'#D6A24A',               bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  edicao:               {dot:'var(--plum)',           bg:'var(--plum-tint)',    fg:'var(--plum)'},
+  aprovacao:            {dot:'var(--clay)',           bg:'var(--clay-tint)',    fg:'var(--clay)'},
+  alteracoes:           {dot:'var(--danger)',         bg:'var(--danger-tint)',  fg:'var(--danger)'},
+  aguardando_pagamento: {dot:'var(--amber)',          bg:'var(--amber-tint)',   fg:'var(--amber-deep)'},
+  pago:                 {dot:'var(--sage-deep)',      bg:'var(--sage-tint)',    fg:'var(--sage-deep)'},
+  cancelado:            {dot:'var(--ink-faint)',      bg:'var(--lilac)',        fg:'var(--ink-soft)'}
 };
 function statusColor(key){
   return STATUS_COLORS[key] || {dot:'var(--ink-faint)', bg:'var(--lilac)', fg:'var(--ink-soft)'};
@@ -648,14 +662,17 @@ var CURRENCIES = [
 ];
 
 var PROSPECT_STATUS_FLOW = [
-  {key:"pendente", label:"Pendente"},
-  {key:"enviado", label:"Enviado"},
-  {key:"followup1", label:"Follow-up 1"},
-  {key:"followup2", label:"Follow-up 2"},
-  {key:"respondeu", label:"Respondeu"},
-  {key:"negociando", label:"Negociando"},
-  {key:"fechou", label:"Fechou"},
-  {key:"recusou", label:"Recusou"}
+  {key:"pendente",        label:"Pendente"},
+  {key:"enviado",         label:"Enviado"},
+  {key:"email",           label:"Email"},
+  {key:"respondeu_email", label:"Respondeu email"},
+  {key:"followup_email",  label:"Follow-up email"},
+  {key:"followup1",       label:"Follow-up 1"},
+  {key:"followup2",       label:"Follow-up 2"},
+  {key:"respondeu",       label:"Respondeu"},
+  {key:"negociando",      label:"Negociando"},
+  {key:"fechou",          label:"Fechou"},
+  {key:"recusou",         label:"Recusou"}
 ];
 
 var STORE = {
@@ -668,7 +685,8 @@ var STORE = {
   products: "ugc_products_v1",
   contractProfile: "ugc_contract_profile_v1",
   notificationsRead: "ugc_notifications_read_v1",
-  exchangeRates: "ugc_exchange_rates_v1"
+  exchangeRates: "ugc_exchange_rates_v1",
+  nichos: "ugc_nichos_v1"
 };
 
 var state = {
@@ -690,7 +708,8 @@ var state = {
   paymentsTab: "receitas",
   metricsRange: "month",
   notifPanelOpen: false,
-  exchangeRates: {BRL:1, USD:5.4, EUR:5.9}
+  exchangeRates: {BRL:1, USD:5.4, EUR:5.9},
+  nichos: []
 };
 
 var FIREBASE_CONFIG = {
@@ -709,6 +728,41 @@ var cloudUnsubscribe = null;
 var cloudSaveTimer = null;
 var cloudSyncStatus = "off";
 var applyingRemote = false;
+
+/* Auto-scroll durante drag: rola o kanban automaticamente quando o card
+   chega perto da borda, resolvendo o problema de só poder soltar onde já
+   está visível na tela. */
+var _dragScrollRAF = null;
+var _dragScrollState = {el: null, x: 0, y: 0};
+
+function startDragScroll(scrollEl, clientX, clientY){
+  _dragScrollState = {el: scrollEl, x: clientX, y: clientY};
+  var EDGE = 80;
+  var SPEED = 14;
+  cancelAnimationFrame(_dragScrollRAF);
+  function loop(){
+    var s = _dragScrollState;
+    if(!s.el){ return; }
+    var rect = s.el.getBoundingClientRect();
+    if(s.x < rect.left + EDGE)   s.el.scrollLeft -= SPEED;
+    if(s.x > rect.right - EDGE)  s.el.scrollLeft += SPEED;
+    if(s.y < 80)                  window.scrollBy(0, -SPEED);
+    if(s.y > window.innerHeight - 80) window.scrollBy(0, SPEED);
+    _dragScrollRAF = requestAnimationFrame(loop);
+  }
+  _dragScrollRAF = requestAnimationFrame(loop);
+}
+
+function updateDragScroll(clientX, clientY){
+  _dragScrollState.x = clientX;
+  _dragScrollState.y = clientY;
+}
+
+function stopDragScroll(){
+  cancelAnimationFrame(_dragScrollRAF);
+  _dragScrollRAF = null;
+  _dragScrollState = {el: null, x: 0, y: 0};
+}
 
 /* ---------------- storage helpers ---------------- */
 function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
@@ -866,6 +920,7 @@ function getStatePayload(){
     contractProfile: state.contractProfile,
     notificationsRead: state.notificationsRead,
     exchangeRates: state.exchangeRates,
+    nichos: state.nichos,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -897,7 +952,8 @@ function persistAllLocalQuiet(){
     saveKeyQuiet(STORE.products, state.products),
     saveKeyQuiet(STORE.contractProfile, state.contractProfile),
     saveKeyQuiet(STORE.notificationsRead, state.notificationsRead),
-    saveKeyQuiet(STORE.exchangeRates, state.exchangeRates)
+    saveKeyQuiet(STORE.exchangeRates, state.exchangeRates),
+    saveKeyQuiet(STORE.nichos, state.nichos)
   ]).finally(function(){ applyingRemote = false; });
 }
 function applyRemoteData(data){
@@ -926,6 +982,7 @@ function applyRemoteData(data){
     ? data.notificationsRead : {};
   state.exchangeRates = data.exchangeRates && typeof data.exchangeRates === 'object' && !Array.isArray(data.exchangeRates)
     ? Object.assign({BRL:1}, data.exchangeRates) : state.exchangeRates;
+  state.nichos = ensureArray(data.nichos);
   applyingRemote = false;
 }
 function subscribeCloudData(){
@@ -997,6 +1054,11 @@ async function loadAll(){
   state.notificationsRead = (await loadKeyObj(STORE.notificationsRead)) || {};
   var loadedRates = await loadKeyObj(STORE.exchangeRates);
   if(loadedRates) state.exchangeRates = Object.assign({BRL:1}, loadedRates);
+  state.nichos = await loadKey(STORE.nichos);
+  if(state.nichos.length === 0){
+    state.nichos = ['Beleza','Moda','Saúde e bem-estar','Alimentação','Fitness','Tech','Casa e decoração','Pets','Infantil','Finanças','Viagem','Lifestyle'];
+    await saveKey(STORE.nichos, state.nichos);
+  }
   if(state.platforms.length===0){
     var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
     state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
@@ -1026,6 +1088,7 @@ function saveProducts(){ return saveKey(STORE.products, state.products); }
 function saveContractProfile(){ return saveKey(STORE.contractProfile, state.contractProfile); }
 function saveNotificationsRead(){ return saveKeyQuiet(STORE.notificationsRead, state.notificationsRead); }
 function saveExchangeRates(){ return saveKey(STORE.exchangeRates, state.exchangeRates); }
+function saveNichos(){ return saveKey(STORE.nichos, state.nichos); }
 
 /* ---------------- utils ---------------- */
 function escapeHtml(str){
@@ -1248,7 +1311,7 @@ function renderProspectKanban(){
   PROSPECT_STATUS_FLOW.forEach(function(s){
     var items = state.prospects.filter(function(p){ return p.status===s.key; });
     html += '<div class="kanban-col">' +
-      '<div class="kanban-col-head"><span class="kanban-col-title">'+escapeHtml(s.label)+'</span><span class="kanban-col-count">('+items.length+')</span></div>' +
+      '<div class="kanban-col-head">'+statusBadgeHtml(s.key, s.label)+'<span class="kanban-col-count">('+items.length+')</span></div>' +
       '<div class="kanban-col-body" data-prospect-col="'+s.key+'">';
     items.forEach(function(p){ html += prospectCardHtml(p); });
     html += '<button class="kanban-add" data-new-prospect-status="'+s.key+'">+ Adicionar</button>';
@@ -1265,9 +1328,14 @@ function renderProspectKanban(){
       card.classList.add('dragging');
       e.dataTransfer.setData('text/plain', card.getAttribute('data-prospect-id'));
       e.dataTransfer.effectAllowed = 'move';
+      startDragScroll(wrap, e.clientX, e.clientY);
     });
-    card.addEventListener('dragend', function(){ card.classList.remove('dragging'); });
+    card.addEventListener('dragend', function(){
+      card.classList.remove('dragging');
+      stopDragScroll();
+    });
   });
+  wrap.addEventListener('dragover', function(e){ updateDragScroll(e.clientX, e.clientY); });
   wrap.querySelectorAll('[data-new-prospect-status]').forEach(function(btn){
     btn.addEventListener('click', function(){ openProspectModal(null, btn.getAttribute('data-new-prospect-status')); });
   });
@@ -1277,6 +1345,7 @@ function renderProspectKanban(){
     col.addEventListener('drop', function(e){
       e.preventDefault();
       col.classList.remove('drag-over');
+      stopDragScroll();
       var pId = e.dataTransfer.getData('text/plain');
       var newStatus = col.getAttribute('data-prospect-col');
       var p = state.prospects.find(function(x){ return x.id===pId; });
@@ -1377,7 +1446,13 @@ function openProspectModal(prospectId, presetStatus){
           '<div class="field"><label for="pContact">Contato</label><input id="pContact" type="text" placeholder="DM Instagram, email..." value="'+escapeHtml(p?p.contact:'')+'" /></div>' +
           '<div class="field"><label for="pPlatform">Plataforma</label><select id="pPlatform">'+platformOptions+'</select></div>' +
         '</div>' +
-        '<div class="field"><label for="pStatus">Status</label><select id="pStatus">'+statusOptions+'</select></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="pStatus">Status</label><select id="pStatus">'+statusOptions+'</select></div>' +
+          '<div class="field"><label for="pNicho">Nicho</label>' +
+            '<input id="pNicho" type="text" list="pNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(p&&p.nicho?p.nicho:'')+'" autocomplete="off" />' +
+            '<datalist id="pNichoList">'+state.nichos.map(function(n){ return '<option value="'+escapeHtml(n)+'"></option>'; }).join('')+'</datalist>' +
+          '</div>' +
+        '</div>' +
         '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Histórico da conversa, valor proposto...">'+escapeHtml(p?p.notes:'')+'</textarea></div>' +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
@@ -1412,6 +1487,14 @@ function openProspectModal(prospectId, presetStatus){
       brandName: brandName,
       contact: document.getElementById('pContact').value.trim(),
       platformId: document.getElementById('pPlatform').value,
+      nicho: (function(){
+        var n = document.getElementById('pNicho').value.trim();
+        if(n && !state.nichos.includes(n)){
+          state.nichos.push(n);
+          saveNichos();
+        }
+        return n;
+      })(),
       notes: document.getElementById('pNotes').value.trim()
     };
     if(isNew){
@@ -1481,9 +1564,6 @@ function renderKanban(){
   var wrap = document.getElementById('kanbanWrap');
   if(!wrap) return;
 
-  // Preserva posição de scroll horizontal antes de re-renderizar
-  var prevScrollLeft = wrap.scrollLeft;
-
   var html = '';
   KANBAN_STATUSES.forEach(function(s){
     var colJobs = jobs.filter(function(j){ return j.status===s.key; });
@@ -1496,9 +1576,6 @@ function renderKanban(){
   });
   wrap.innerHTML = html;
 
-  // Restaura posição de scroll horizontal
-  if(prevScrollLeft) wrap.scrollLeft = prevScrollLeft;
-
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
     card.addEventListener('click', function(e){
       if(card.classList.contains('dragging')) return;
@@ -1508,11 +1585,14 @@ function renderKanban(){
       card.classList.add('dragging');
       e.dataTransfer.setData('text/plain', card.getAttribute('data-job-id'));
       e.dataTransfer.effectAllowed = 'move';
+      startDragScroll(wrap, e.clientX, e.clientY);
     });
     card.addEventListener('dragend', function(){
       card.classList.remove('dragging');
+      stopDragScroll();
     });
   });
+  wrap.addEventListener('dragover', function(e){ updateDragScroll(e.clientX, e.clientY); });
   wrap.querySelectorAll('[data-new-job-status]').forEach(function(btn){
     btn.addEventListener('click', function(){ openJobModal(null, btn.getAttribute('data-new-job-status')); });
   });
@@ -1529,6 +1609,7 @@ function renderKanban(){
     col.addEventListener('drop', function(e){
       e.preventDefault();
       col.classList.remove('drag-over');
+      stopDragScroll();
       var jobId = e.dataTransfer.getData('text/plain');
       var newStatus = col.getAttribute('data-status-col');
       var job = state.jobs.find(function(j){ return j.id===jobId; });
@@ -2260,25 +2341,41 @@ function financeSummary(){
 
 /* returns a flat list of receivable items: one row per installment, or one row per single-payment job */
 function getReceivableItems(){
+  var todayIso = isoDate(new Date());
+  var currentMonthPrefix = todayIso.slice(0,7); // "2026-07"
+
+  // Rolagem automática: se um item não foi pago e o mês previsto já passou,
+  // exibe no mês atual sem alterar o dado original no Firebase.
+  function effectiveDate(date, paid){
+    if(paid || !date) return date;
+    var itemMonth = date.slice(0,7);
+    if(itemMonth < currentMonthPrefix) return currentMonthPrefix + '-01';
+    return date;
+  }
+
   var items = [];
   state.jobs.filter(function(j){ return j.status!==STATUS_CANCELLED; }).forEach(function(j){
     var brand = brandById(j.brandId);
     if(j.paymentType==='split' && j.installments && j.installments.length>0){
       j.installments.forEach(function(inst, idx){
+        var rawDate = inst.paid ? inst.paidDate : (inst.dueDate || j.payDate || j.deadline);
         items.push({
           jobId:j.id, installmentId:inst.id, installmentIndex:idx,
           label:(brand?brand.name:j.title) + ' · ' + inst.label,
           value:parseMoneyGuess(inst.value), currency:j.currency||'BRL', paid:!!inst.paid,
-          date: inst.paid ? inst.paidDate : (inst.dueDate || j.payDate || j.deadline),
+          date: effectiveDate(rawDate, !!inst.paid),
+          originalDate: rawDate,
           contentType: j.contentType
         });
       });
     } else {
+      var rawDate = j.status==='pago' ? j.payDate : (j.payDate || j.deadline);
       items.push({
         jobId:j.id, installmentId:null, installmentIndex:null,
         label:(brand?brand.name:j.title),
         value:parseMoneyGuess(j.value), currency:j.currency||'BRL', paid:j.status==='pago',
-        date: j.status==='pago' ? j.payDate : (j.payDate || j.deadline),
+        date: effectiveDate(rawDate, j.status==='pago'),
+        originalDate: rawDate,
         contentType: j.contentType
       });
     }
@@ -2344,11 +2441,18 @@ function renderPayments(){
 }
 
 function receivableRowHtml(item){
+  var wasRolled = item.originalDate && item.date !== item.originalDate;
+  var originalMonthLabel = wasRolled ? (function(){
+    var d = new Date(item.originalDate + 'T00:00:00');
+    return d.toLocaleDateString('pt-BR',{month:'long'});
+  })() : null;
+
   return '<div class="kanban-card" style="display:flex; align-items:center; gap:12px; cursor:default;">' +
     '<button class="check-box" data-mark-paid="'+item.jobId+'" data-inst-id="'+(item.installmentId||'')+'" aria-label="Marcar como recebido" style="flex-shrink:0;"></button>' +
     '<div style="flex:1; min-width:0; cursor:pointer;" data-open-job="'+item.jobId+'">' +
       '<p class="kanban-card-title" style="margin-bottom:4px; font-size:14px;">'+escapeHtml(item.label)+(item.contentType?' <span style="font-weight:400; color:var(--ink-soft); font-size:12.5px;">· '+escapeHtml(item.contentType)+'</span>':'')+'</p>' +
-      '<span style="font-size:12px; color:var(--ink-faint);">'+(item.date?fmtDate(item.date):'sem data')+'</span>' +
+      '<span style="font-size:12px; color:var(--ink-faint);">'+(item.originalDate&&!wasRolled?fmtDate(item.originalDate):'sem data original')+'</span>' +
+      (wasRolled ? ' <span class="tag" style="background:var(--danger-tint); color:var(--danger); font-size:10.5px;">previsto em '+escapeHtml(originalMonthLabel)+'</span>' : '') +
     '</div>' +
     '<span class="tag-value" style="font-size:15px;">'+fmtCurrency(item.value, item.currency)+'</span>' +
   '</div>';
@@ -2438,14 +2542,76 @@ function renderPaymentsList(){
     var received = allReceivable.filter(function(it){ return it.paid; })
       .sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
 
-    html += '<div class="section"><div class="section-head"><h2>A receber ('+pending.length+')</h2></div>';
-    html += pending.length===0 ? emptyState("Nada pendente por aqui.")
-      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + pending.map(receivableRowHtml).join('') + '</div>';
-    html += '</div>';
+    // Agrupa pendentes por mês
+    var pendingByMonth = {};
+    pending.forEach(function(it){
+      var key = it.date ? it.date.slice(0,7) : 'sem-data';
+      (pendingByMonth[key] = pendingByMonth[key]||[]).push(it);
+    });
+
+    var monthKeys = Object.keys(pendingByMonth).sort();
+
+    if(monthKeys.length === 0){
+      html += '<div class="section">' + emptyState("Nada pendente por aqui.") + '</div>';
+    } else {
+      monthKeys.forEach(function(key){
+        var items = pendingByMonth[key];
+        var monthLabel = key === 'sem-data' ? 'Sem data definida' : (function(){
+          var parts = key.split('-');
+          var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+          return d.toLocaleDateString('pt-BR',{month:'long', year:'numeric'});
+        })();
+        // Total do mês convertido para BRL
+        var monthTotal = items.reduce(function(s,it){
+          return s + parseMoneyBRL(it.value, it.currency);
+        }, 0);
+        var isCurrentMonth = key === (function(){
+          var n = new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');
+        })();
+
+        html += '<div class="section">';
+        html += '<div class="section-head" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">';
+        html += '<h2 style="text-transform:capitalize; display:flex; align-items:center; gap:8px;">';
+        if(isCurrentMonth) html += '<span class="status-badge" style="background:var(--magenta-tint); color:var(--magenta-deep); font-size:10px;">este mês</span>';
+        html += escapeHtml(monthLabel) + '</h2>';
+        html += '<span style="font-size:14px; font-weight:700; color:var(--sage-deep);">'+fmtBRL(monthTotal)+'</span>';
+        html += '</div>';
+        html += '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + items.map(receivableRowHtml).join('') + '</div>';
+        html += '</div>';
+      });
+    }
+
+    // Recebidos agrupados por mês também
+    var receivedByMonth = {};
+    received.forEach(function(it){
+      var key = it.date ? it.date.slice(0,7) : 'sem-data';
+      (receivedByMonth[key] = receivedByMonth[key]||[]).push(it);
+    });
+    var receivedKeys = Object.keys(receivedByMonth).sort().reverse();
 
     html += '<div class="section"><div class="section-head"><h2>Recebidos ('+received.length+')</h2></div>';
-    html += received.length===0 ? emptyState("Nenhum trabalho pago ainda.")
-      : '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + received.map(receivedRowHtml).join('') + '</div>';
+    if(received.length === 0){
+      html += emptyState("Nenhum trabalho pago ainda.");
+    } else {
+      receivedKeys.forEach(function(key){
+        var items = receivedByMonth[key];
+        var monthLabel = key === 'sem-data' ? 'Sem data' : (function(){
+          var parts = key.split('-');
+          var d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, 1);
+          return d.toLocaleDateString('pt-BR',{month:'long', year:'numeric'});
+        })();
+        var monthTotal = items.reduce(function(s,it){
+          return s + parseMoneyBRL(it.value, it.currency);
+        }, 0);
+        html += '<div style="margin-bottom:16px;">';
+        html += '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding:0 2px;">';
+        html += '<span style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:capitalize;">'+escapeHtml(monthLabel)+'</span>';
+        html += '<span style="font-size:12.5px; font-weight:700; color:var(--sage-deep);">'+fmtBRL(monthTotal)+'</span>';
+        html += '</div>';
+        html += '<div class="kanban-col-body" style="background:transparent;border:none;padding:0;">' + items.map(receivedRowHtml).join('') + '</div>';
+        html += '</div>';
+      });
+    }
     html += '</div>';
 
   } else if(state.paymentsTab==='despesas'){
@@ -2726,6 +2892,82 @@ function renderMetrics(){
   });
   html += '</div></div></div>';
 
+  // ---- Métricas por nicho ----
+  var byNicho = {};
+  state.jobs.filter(function(j){ return j.status!==STATUS_CANCELLED && j.nicho; }).forEach(function(j){
+    var n = j.nicho;
+    if(!byNicho[n]) byNicho[n] = {count:0, receita:0};
+    byNicho[n].count++;
+    byNicho[n].receita += parseMoneyBRL(j.value, j.currency);
+  });
+  var nichoEntries = Object.keys(byNicho).map(function(n){
+    return {name:n, count:byNicho[n].count, receita:byNicho[n].receita};
+  }).sort(function(a,b){ return b.count - a.count || b.receita - a.receita; });
+
+  html += '<div class="section"><div class="section-head"><h2>Desempenho por nicho</h2></div>';
+  if(nichoEntries.length === 0){
+    html += emptyState("Nenhum trabalho com nicho cadastrado ainda.");
+  } else {
+    var maxNichoCount = Math.max.apply(null, nichoEntries.map(function(e){ return e.count; }).concat([1]));
+    html += '<div class="table-wrap" style="padding:18px 20px; display:flex; flex-direction:column; gap:14px;">';
+    nichoEntries.forEach(function(e){
+      var pct = Math.round((e.count/maxNichoCount)*100);
+      html += '<div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13.5px; margin-bottom:5px;">' +
+          '<strong>'+escapeHtml(e.name)+'</strong>' +
+          '<span style="display:flex; gap:14px;">' +
+            '<span style="color:var(--ink-soft); font-size:12px;">'+e.count+' trabalho'+(e.count>1?'s':'')+'</span>' +
+            '<span style="font-weight:700; color:var(--sage-deep);">'+fmtBRL(e.receita)+'</span>' +
+          '</span>' +
+        '</div>' +
+        '<div style="background:var(--lilac); border-radius:999px; height:7px; overflow:hidden;">' +
+          '<div style="width:'+pct+'%; height:100%; background:var(--sage);"></div>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ---- Métricas por plataforma ----
+  var byPlat = {};
+  state.jobs.filter(function(j){ return j.status!==STATUS_CANCELLED && j.platformId; }).forEach(function(j){
+    var pid = j.platformId;
+    if(!byPlat[pid]) byPlat[pid] = {count:0, receita:0};
+    byPlat[pid].count++;
+    byPlat[pid].receita += parseMoneyBRL(j.value, j.currency);
+  });
+  var platEntries = Object.keys(byPlat).map(function(pid){
+    var plat = platformById(pid);
+    return {name:plat?plat.name:'—', id:pid, count:byPlat[pid].count, receita:byPlat[pid].receita};
+  }).sort(function(a,b){ return b.count - a.count; });
+
+  html += '<div class="section"><div class="section-head"><h2>Desempenho por plataforma</h2></div>';
+  if(platEntries.length === 0){
+    html += emptyState("Nenhum trabalho com plataforma cadastrada ainda.");
+  } else {
+    var maxPlatCount = Math.max.apply(null, platEntries.map(function(e){ return e.count; }).concat([1]));
+    html += '<div class="table-wrap" style="padding:18px 20px; display:flex; flex-direction:column; gap:14px;">';
+    platEntries.forEach(function(e){
+      var pct = Math.round((e.count/maxPlatCount)*100);
+      var c = platformColor(e.id);
+      html += '<div>' +
+        '<div style="display:flex; justify-content:space-between; align-items:baseline; font-size:13.5px; margin-bottom:5px;">' +
+          '<span style="display:flex; align-items:center; gap:7px;"><span class="status-dot" style="background:'+c.dot+';"></span><strong>'+escapeHtml(e.name)+'</strong></span>' +
+          '<span style="display:flex; gap:14px;">' +
+            '<span style="color:var(--ink-soft); font-size:12px;">'+e.count+' job'+(e.count>1?'s':'')+'</span>' +
+            (e.receita>0?'<span style="font-weight:700; color:var(--sage-deep);">'+fmtBRL(e.receita)+'</span>':'') +
+          '</span>' +
+        '</div>' +
+        '<div style="background:var(--lilac); border-radius:999px; height:7px; overflow:hidden;">' +
+          '<div style="width:'+pct+'%; height:100%; background:'+c.dot+';"></div>' +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+
   // top brands by revenue
   var byBrand = {};
   state.jobs.filter(function(j){return j.status==='pago';}).forEach(function(j){
@@ -2802,7 +3044,15 @@ function openJobModal(jobId, presetStatus){
 
         '<div class="field"><label for="jStatus">Status *</label><select id="jStatus">'+statusOptions+'</select></div>' +
 
-        '<div class="field"><label for="jContentType">Tipo de conteúdo</label><select id="jContentType">'+contentOptions+'</select></div>' +
+        '<div class="field-row">' +
+          '<div class="field"><label for="jContentType">Tipo de conteúdo</label><select id="jContentType">'+contentOptions+'</select></div>' +
+          '<div class="field"><label for="jNicho">Nicho</label>' +
+            '<div style="display:flex; gap:8px;">' +
+              '<input id="jNicho" type="text" list="jNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(job&&job.nicho?job.nicho:'')+'" autocomplete="off" style="flex:1;" />' +
+              '<datalist id="jNichoList">'+state.nichos.map(function(n){ return '<option value="'+escapeHtml(n)+'"></option>'; }).join('')+'</datalist>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
 
         '<div class="field-row">' +
           '<div class="field"><label for="jVideos">Vídeos</label><input id="jVideos" type="number" min="0" placeholder="0" value="'+(job&&job.videoCount!=null?job.videoCount:'')+'" /></div>' +
@@ -3000,6 +3250,14 @@ function openJobModal(jobId, presetStatus){
       platformId: document.getElementById('jPlatform').value,
       status: document.getElementById('jStatus').value,
       contentType: document.getElementById('jContentType').value,
+      nicho: (function(){
+        var n = document.getElementById('jNicho').value.trim();
+        if(n && !state.nichos.includes(n)){
+          state.nichos.push(n);
+          saveNichos();
+        }
+        return n;
+      })(),
       videoCount: videos===''?null:parseInt(videos,10),
       photoCount: photos===''?null:parseInt(photos,10),
       storyCount: stories===''?null:parseInt(stories,10),
@@ -3538,8 +3796,31 @@ function closeNotifPanel(){
 
 /* ---------------- scroll preservation: keeps the user's position after any re-render ---------------- */
 var _savedScrollY = 0;
-function saveScrollY(){ _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0; }
-function restoreScrollY(){ if(_savedScrollY > 0) requestAnimationFrame(function(){ window.scrollTo(0, _savedScrollY); }); }
+var _savedKanbanScrolls = {};
+
+function saveScrollY(){
+  _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  _savedKanbanScrolls = {};
+  ['kanbanWrap','prospectKanban','weekKanban'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && el.scrollLeft > 0) _savedKanbanScrolls[id] = el.scrollLeft;
+  });
+}
+
+function restoreScrollY(){
+  if(_savedScrollY > 0){
+    requestAnimationFrame(function(){ window.scrollTo(0, _savedScrollY); });
+  }
+  var saved = _savedKanbanScrolls;
+  if(Object.keys(saved).length > 0){
+    requestAnimationFrame(function(){
+      Object.keys(saved).forEach(function(id){
+        var el = document.getElementById(id);
+        if(el) el.scrollLeft = saved[id];
+      });
+    });
+  }
+}
 
 /* ---------------- main render dispatcher ---------------- */
 function render(){
