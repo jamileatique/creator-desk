@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -532,7 +533,7 @@
       <button class="nav-item" data-route="platforms"><span class="ico">🌷</span> plataformas</button>
       <button class="nav-item" data-route="payments"><span class="ico">$</span> pagamentos</button>
       <button class="nav-item" data-route="metrics"><span class="ico">🌼</span> métricas</button>
-      <button class="nav-item" data-route="contracts"><span class="ico">▢</span> contratos</button>
+      <button class="nav-item" data-route="contracts"><span class="ico">📄</span> contratos</button>
     </div>
     <div class="sidebar-foot" id="syncFoot">
       <div id="syncStatusText"><span class="sync-dot off"></span>Carregando...</div>
@@ -1285,11 +1286,13 @@ function renderDashboard(){
 function dashboardJobRow(job){
   var brand = brandById(job.brandId);
   var d = daysUntil(job.deadline);
-  var deadlineText = d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : 'em '+d+'d';
+  var isDelivered = job.deliveredAt || job.status==='aguardando_pagamento' || job.status==='postagem' || job.status==='pago';
+  var deadlineText = isDelivered ? '✓ entregue' : (d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : 'em '+d+'d');
+  var tagStyle = isDelivered ? 'background:var(--sage-tint);color:var(--sage-deep);' : (d<0 ? 'background:var(--danger-tint);color:var(--danger);' : '');
   return '<div class="kanban-card" data-job-row="'+job.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:12px;">' +
     '<div><p class="kanban-card-title" style="margin-bottom:2px;">'+escapeHtml(job.title||'Job sem título')+'</p>' +
     '<span style="font-size:12.5px; color:var(--ink-soft);">'+escapeHtml(brand?brand.name:'sem marca')+'</span></div>' +
-    '<span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span>' +
+    '<span class="tag" style="'+tagStyle+'">'+escapeHtml(deadlineText)+'</span>' +
   '</div>';
 }
 
@@ -1628,8 +1631,18 @@ function kanbanCardHtml(job){
   var platform = platformById(job.platformId);
   var d = job.deadline ? daysUntil(job.deadline) : null;
   var deadlineText = null;
+  var deadlineStyle = '';
+  var isDelivered = job.deliveredAt || job.status==='aguardando_pagamento' || job.status==='postagem' || job.status==='pago';
   if(d!==null){
-    deadlineText = d<0 ? Math.abs(d)+'d atrasado' : d===0 ? 'hoje' : d===1 ? 'amanhã' : fmtDate(job.deadline);
+    if(isDelivered){
+      deadlineText = '✓ entregue';
+      deadlineStyle = 'background:var(--sage-tint);color:var(--sage-deep);';
+    } else if(d<0){
+      deadlineText = Math.abs(d)+'d atrasado';
+      deadlineStyle = 'background:var(--danger-tint);color:var(--danger);';
+    } else {
+      deadlineText = d===0 ? 'hoje' : d===1 ? 'amanhã' : fmtDate(job.deadline);
+    }
   }
 
   // Progresso de vídeos produzidos (só aparece se tem 2+ vídeos e algum check feito)
@@ -1658,7 +1671,7 @@ function kanbanCardHtml(job){
       (job.value ? '<span class="tag-value">'+fmtCurrency(parseMoneyGuess(job.value), job.currency)+'</span>' : '') +
     '</div>' +
     videoProgress +
-    (deadlineText ? '<div style="margin-top:8px;"><span class="tag tag-deadline">'+escapeHtml(deadlineText)+'</span></div>' : '') +
+    (deadlineText ? '<div style="margin-top:8px;"><span class="tag" style="'+deadlineStyle+'">'+escapeHtml(deadlineText)+'</span></div>' : '') +
   '</div>';
 }
 
@@ -1868,8 +1881,12 @@ function renderChecklist(){
   document.getElementById('pageContent').innerHTML = html;
 
   var today = startOfToday();
-  checklistScroll.startDate = addDays(today, -Math.floor(CHECKLIST_INITIAL_SPAN/2));
-  checklistScroll.endDate = addDays(checklistScroll.startDate, CHECKLIST_INITIAL_SPAN - 1);
+  // Começar sempre na segunda-feira da semana atual
+  var dow = today.getDay(); // 0=dom, 1=seg...6=sab
+  var diffToMonday = (dow === 0) ? -6 : 1 - dow;
+  var monday = addDays(today, diffToMonday);
+  checklistScroll.startDate = monday;
+  checklistScroll.endDate = addDays(monday, 6); // seg a dom
 
   buildChecklistDays({initial:true});
 
@@ -2005,7 +2022,12 @@ function refreshChecklistDay(dateIso){
   var wrap = document.getElementById('weekKanban');
   if(!wrap) return;
   var col = wrap.querySelector('[data-day-col="'+dateIso+'"]');
-  if(!col){ buildChecklistDays(); return; }
+  if(!col){
+    var savedScroll = wrap.scrollLeft;
+    buildChecklistDays();
+    requestAnimationFrame(function(){ wrap.scrollLeft = savedScroll; });
+    return;
+  }
   var d = new Date(dateIso+"T00:00:00");
   var todayIso = isoDate(startOfToday());
   var temp = document.createElement('div');
@@ -2222,7 +2244,7 @@ function promptAddCheck(dateIso, category){
 /* ---------------- render: brands ---------------- */
 function renderBrands(){
   var html = '';
-  html += '<div class="page-head"><div><h1>Marcas</h1><p class="page-sub">Quem te contrata e o histórico de trabalhos com cada uma.</p></div>' +
+  html += '<div class="page-head"><div><h1>Marcas</h1><p class="page-sub">'+state.brands.length+' marca'+(state.brands.length!==1?'s':'')+' no total.</p></div>' +
     '<button class="btn btn-primary" id="btnNewBrand"><span>+</span> Nova marca</button></div>';
 
   if(state.brands.length===0){
@@ -3885,6 +3907,7 @@ function renderContracts(){
         '<div class="field"><label for="cDate">Data do contrato</label><input id="cDate" type="date" value="'+isoDate(new Date())+'" /></div>' +
       '</div>' +
       '<div class="field"><label for="cCity">Cidade do contrato</label><input id="cCity" type="text" placeholder="Ex: Votorantim" value="'+escapeHtml(prof.city||'')+'" /></div>' +
+      '<div class="field"><label for="cTrafficMonths">Tempo de uso em tráfego pago (meses) <span style="font-weight:400;color:var(--ink-faint);font-size:11px;">— aparece na cláusula 5.2 do contrato</span></label><input id="cTrafficMonths" type="number" min="1" value="4" placeholder="Ex: 4" /></div>' +
       '<div class="modal-actions" style="margin-top:8px;"><button class="btn btn-primary" id="btnGenContract">Gerar contrato (PDF)</button></div>' +
     '</div>';
   }
@@ -3961,6 +3984,7 @@ function generateContractPdf(){
   var value = document.getElementById('cValue').value.trim();
   var dateStr = document.getElementById('cDate').value;
   var city = document.getElementById('cCity').value.trim() || prof.city || '';
+  var trafficMonths = document.getElementById('cTrafficMonths').value || '4';
 
   if(!brandName){ showToast('Informe o nome da marca contratante.'); return; }
 
@@ -4035,7 +4059,7 @@ function generateContractPdf(){
 
   addHeading('CLÁUSULA QUINTA – DOS DIREITOS DE USO E IMAGEM');
   addParagraph('5.1. Uso Orgânico: A CONTRATANTE poderá utilizar o conteúdo em suas redes sociais oficiais e site por prazo indeterminado.');
-  addParagraph('5.2. Uso em Tráfego Pago (Ads): O uso do conteúdo para anúncios patrocinados (Dark Posts, Spark Ads) é autorizado pelo período de 4 meses a contar da entrega. Após este período, a renovação deverá ser negociada à parte.');
+  addParagraph('5.2. Uso em Tráfego Pago (Ads): O uso do conteúdo para anúncios patrocinados (Dark Posts, Spark Ads) é autorizado pelo período de '+trafficMonths+' meses a contar da entrega. Após este período, a renovação deverá ser negociada à parte.');
   addParagraph('5.3. Proteção contra IA: Fica expressamente PROIBIDO o uso da voz ou imagem da CONTRATADA para treinamento de Inteligência Artificial, criação de avatares digitais ou "deepfakes".');
   addParagraph('5.4. A CONTRATADA não autoriza o uso de sua imagem em contextos difamatórios, ilícitos ou que firam a moral e os bons costumes.', {spacingAfter:14});
 
@@ -4120,4 +4144,6 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 </script>
 </body>
 </html>
+
+
 
