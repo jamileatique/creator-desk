@@ -2233,10 +2233,18 @@ function promptAddCheck(dateIso, category){
   function save(){
     var text = document.getElementById('cText').value.trim();
     if(!text){ showToast('Escreva o que precisa ser feito.'); return; }
+    // salva posição do scroll ANTES de fechar o modal
+    var scroller = document.getElementById('weekKanban');
+    var savedScroll = scroller ? scroller.scrollLeft : 0;
     state.checklist.push({id:uid(), text:text, date:dateIso, category:category, done:false, createdAt:Date.now()});
     saveChecklist();
     close();
     refreshChecklistDay(dateIso);
+    // restaura posição depois do DOM atualizar
+    requestAnimationFrame(function(){
+      var s = document.getElementById('weekKanban');
+      if(s) s.scrollLeft = savedScroll;
+    });
     showToast('Tarefa adicionada.');
   }
 }
@@ -4144,6 +4152,9 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 </script>
 </body>
 </html>
+
+
+
 
 
 
