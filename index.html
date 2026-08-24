@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -390,20 +391,46 @@
   .planner-card-label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-faint); margin:0 0 14px;}
 
   .priority-item{
-    display:flex; align-items:center; gap:10px; padding:8px 0;
-    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px; padding:10px 0;
+    border-bottom:1px solid var(--line); transition:opacity .15s ease;
   }
   .priority-item:last-child{border-bottom:none;}
+  .priority-item.done .priority-input{ text-decoration:line-through; color:var(--ink-faint); }
+  .priority-item.done .priority-num{
+    background:var(--sage-tint); color:var(--sage-deep);
+  }
+  .priority-check{
+    width:22px; height:22px; border-radius:50%; border:2px solid var(--line);
+    flex-shrink:0; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; background:var(--paper); transition:all .15s ease;
+    font-size:11px; color:transparent;
+  }
+  .priority-item.done .priority-check{
+    background:var(--sage); border-color:var(--sage); color:#fff;
+  }
   .priority-num{
     width:24px; height:24px; border-radius:50%; background:var(--magenta-tint);
     color:var(--magenta-deep); font-size:12px; font-weight:700;
     display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    transition:all .15s ease;
   }
   .priority-input{
     flex:1; border:none; background:transparent; font-size:13.5px;
-    color:var(--ink); outline:none;
+    color:var(--ink); outline:none; transition:all .15s ease;
   }
   .priority-input::placeholder{color:var(--ink-faint);}
+
+  /* timer custom input */
+  .timer-custom-row{
+    display:flex; align-items:center; gap:8px; justify-content:center; margin-top:10px;
+  }
+  .timer-custom-input{
+    width:64px; padding:6px 10px; border-radius:var(--radius-s);
+    border:1px solid var(--line); background:var(--lilac); font-size:14px;
+    text-align:center; font-family:'Fraunces',serif; font-weight:600; outline:none;
+    color:var(--ink);
+  }
+  .timer-custom-input:focus{border-color:var(--magenta); background:var(--paper);}
 
   /* timer */
   .timer-display{
@@ -2071,9 +2098,18 @@ function renderDailyPlanner(){
         // prioridades
         '<div class="planner-card">' +
           '<p class="planner-card-label">⭐ top 3 prioridades</p>' +
-          '<div class="priority-item"><span class="priority-num">1</span><input class="priority-input" id="dpP1" type="text" placeholder="Prioridade mais importante..." value="'+escapeHtml(data.p1)+'" /></div>' +
-          '<div class="priority-item"><span class="priority-num">2</span><input class="priority-input" id="dpP2" type="text" placeholder="Segunda prioridade..." value="'+escapeHtml(data.p2)+'" /></div>' +
-          '<div class="priority-item"><span class="priority-num">3</span><input class="priority-input" id="dpP3" type="text" placeholder="Terceira prioridade..." value="'+escapeHtml(data.p3)+'" /></div>' +
+          '<div class="priority-item '+(data.p1done?'done':'')+'">' +
+            '<span class="priority-num">'+(data.p1done?'✓':'1')+'</span>' +
+            '<button class="priority-check" data-pdone="p1done" aria-label="Concluir prioridade 1">'+(data.p1done?'✓':'')+'</button>' +
+            '<input class="priority-input" id="dpP1" type="text" placeholder="Prioridade mais importante..." value="'+escapeHtml(data.p1)+'" /></div>' +
+          '<div class="priority-item '+(data.p2done?'done':'')+'">' +
+            '<span class="priority-num">'+(data.p2done?'✓':'2')+'</span>' +
+            '<button class="priority-check" data-pdone="p2done" aria-label="Concluir prioridade 2">'+(data.p2done?'✓':'')+'</button>' +
+            '<input class="priority-input" id="dpP2" type="text" placeholder="Segunda prioridade..." value="'+escapeHtml(data.p2)+'" /></div>' +
+          '<div class="priority-item '+(data.p3done?'done':'')+'">' +
+            '<span class="priority-num">'+(data.p3done?'✓':'3')+'</span>' +
+            '<button class="priority-check" data-pdone="p3done" aria-label="Concluir prioridade 3">'+(data.p3done?'✓':'')+'</button>' +
+            '<input class="priority-input" id="dpP3" type="text" placeholder="Terceira prioridade..." value="'+escapeHtml(data.p3)+'" /></div>' +
         '</div>' +
 
         // timer
@@ -2092,6 +2128,10 @@ function renderDailyPlanner(){
               '<button class="btn btn-sm btn-ghost" id="timerWork">25 min</button>' +
               '<button class="btn btn-sm btn-ghost" id="timerBreak">5 min</button>' +
               '<button class="btn btn-sm btn-ghost" id="timerLong">15 min</button>' +
+            '</div>' +
+            '<div class="timer-custom-row">' +
+              '<input class="timer-custom-input" id="timerCustomMin" type="number" min="1" max="120" placeholder="min" title="Tempo personalizado em minutos" />' +
+              '<button class="btn btn-sm btn-ghost" id="timerCustomSet">definir</button>' +
             '</div>' +
             '<div style="margin-top:14px; display:flex; gap:10px; justify-content:center;">' +
               '<button class="btn btn-primary" id="timerToggle">▶ Iniciar</button>' +
@@ -2140,16 +2180,37 @@ function renderDailyPlanner(){
   // salvar frase e prioridades com debounce
   function saveDailyData(){
     var d2 = getPlannerDay();
+    var cur = getPlannerData(d2);
     savePlannerData(d2, {
       phrase: document.getElementById('dpPhrase').value,
       p1: document.getElementById('dpP1').value,
       p2: document.getElementById('dpP2').value,
-      p3: document.getElementById('dpP3').value
+      p3: document.getElementById('dpP3').value,
+      p1done: cur.p1done||false,
+      p2done: cur.p2done||false,
+      p3done: cur.p3done||false
     });
   }
   ['dpPhrase','dpP1','dpP2','dpP3'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.addEventListener('input', debounce(saveDailyData, 600));
+  });
+
+  // checkboxes das prioridades
+  wrap.querySelectorAll('[data-pdone]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-pdone');
+      var d2 = getPlannerDay();
+      var cur = getPlannerData(d2);
+      cur[key] = !cur[key];
+      // salva também os textos atuais
+      cur.phrase = document.getElementById('dpPhrase').value;
+      cur.p1 = document.getElementById('dpP1').value;
+      cur.p2 = document.getElementById('dpP2').value;
+      cur.p3 = document.getElementById('dpP3').value;
+      savePlannerData(d2, cur);
+      renderDailyPlanner();
+    });
   });
 
   // tarefas
@@ -2247,6 +2308,21 @@ function initTimer(){
   if(longBtn) longBtn.addEventListener('click', function(){
     clearInterval(T.interval); T.running=false; T.mode='long'; T.seconds=15*60; updateUI();
   });
+
+  var customSet = document.getElementById('timerCustomSet');
+  var customInput = document.getElementById('timerCustomMin');
+  if(customSet) customSet.addEventListener('click', function(){
+    var mins = parseInt(customInput.value, 10);
+    if(!mins || mins<1 || mins>120){ showToast('Digite um valor entre 1 e 120 minutos.'); return; }
+    clearInterval(T.interval); T.running=false; T.mode='work'; T.seconds=mins*60;
+    customInput.value='';
+    updateUI();
+    showToast('Timer definido para '+mins+' min. ✓');
+  });
+  if(customInput) customInput.addEventListener('keydown', function(e){
+    if(e.key==='Enter') customSet && customSet.click();
+  });
+
   updateUI();
 }
 
@@ -4507,10 +4583,6 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 </script>
 </body>
 </html>
-
-
-
-
 
 
 
