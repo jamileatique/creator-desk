@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1114,8 +1113,14 @@ function subscribeCloudData(){
     applyRemoteData(snap.data());
     persistAllLocalQuiet().then(function(){
       if(state.loaded){
-        document.getElementById('modalRoot').innerHTML = '';
-        render();
+        // não re-renderiza se o usuário estiver digitando no planner
+        var activeEl = document.activeElement;
+        var plannerInputs = ['dpPhrase','dpP1','dpP2','dpP3'];
+        var typingInPlanner = activeEl && plannerInputs.indexOf(activeEl.id) !== -1;
+        if(!typingInPlanner){
+          document.getElementById('modalRoot').innerHTML = '';
+          render();
+        }
       }
       updateSyncUI();
     });
