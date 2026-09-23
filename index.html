@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -420,6 +421,151 @@
   .priority-input::placeholder{color:var(--ink-faint);}
 
   /* timer custom input */
+  /* ---- assistente ---- */
+  .assistant-layout{display:grid; grid-template-columns:300px 1fr; gap:20px; height:calc(100vh - 180px); min-height:500px;}
+  @media(max-width:900px){.assistant-layout{grid-template-columns:1fr; height:auto;}}
+  .assistant-profile-panel{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-l);
+    padding:20px; display:flex; flex-direction:column; gap:14px;
+    overflow-y:auto; max-height:100%;
+  }
+  .assistant-profile-panel h3{font-family:'Fraunces',serif; font-size:16px; margin:0 0 4px;}
+  .assistant-profile-panel p{font-size:12.5px; color:var(--ink-soft); margin:0 0 10px; line-height:1.5;}
+  .profile-textarea{
+    width:100%; min-height:200px; padding:12px; border-radius:var(--radius-s);
+    border:1px solid var(--line); background:var(--lilac); font-size:13px;
+    color:var(--ink); resize:vertical; outline:none; line-height:1.6;
+  }
+  .profile-textarea:focus{border-color:var(--magenta); background:var(--paper);}
+
+  .assistant-chat-panel{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-l);
+    display:flex; flex-direction:column; overflow:hidden;
+  }
+  .chat-messages{
+    flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:14px;
+  }
+  .chat-msg{display:flex; gap:10px; align-items:flex-start;}
+  .chat-msg.user{flex-direction:row-reverse;}
+  .chat-bubble{
+    max-width:80%; padding:12px 16px; border-radius:16px; font-size:14px; line-height:1.6;
+    white-space:pre-wrap;
+  }
+  .chat-msg.assistant .chat-bubble{
+    background:var(--lilac); color:var(--ink); border-bottom-left-radius:4px;
+  }
+  .chat-msg.user .chat-bubble{
+    background:var(--magenta); color:#fff; border-bottom-right-radius:4px;
+  }
+  .chat-avatar{
+    width:32px; height:32px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:16px;
+    background:var(--magenta-tint);
+  }
+  .chat-msg.user .chat-avatar{background:var(--magenta); color:#fff;}
+  .chat-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .chat-action-btn{
+    padding:6px 12px; border-radius:999px; border:1px solid var(--line);
+    background:var(--paper); font-size:12.5px; font-weight:600; color:var(--magenta-deep);
+    cursor:pointer; transition:all .12s ease;
+  }
+  .chat-action-btn:hover{background:var(--magenta-tint);}
+  .chat-copy-btn{
+    display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+    padding:5px 10px; border-radius:999px; border:1px solid var(--line);
+    background:var(--paper); font-size:12px; font-weight:600; color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .chat-copy-btn:hover{background:var(--sage-tint); color:var(--sage-deep); border-color:var(--sage);}
+  .chat-input-row{
+    display:flex; gap:10px; padding:14px 16px; border-top:1px solid var(--line);
+    background:var(--paper);
+  }
+  .chat-input{
+    flex:1; padding:11px 14px; border-radius:var(--radius-m); border:1px solid var(--line);
+    background:var(--lilac); font-size:14px; outline:none; resize:none; min-height:44px; max-height:120px;
+    font-family:'Inter',sans-serif; line-height:1.5;
+  }
+  .chat-input:focus{border-color:var(--magenta); background:var(--paper);}
+  .chat-typing{
+    display:flex; gap:6px; align-items:center; padding:10px 14px;
+    background:var(--lilac); border-radius:16px; border-bottom-left-radius:4px;
+    width:fit-content;
+  }
+  .chat-typing span{
+    width:7px; height:7px; border-radius:50%; background:var(--ink-faint);
+    animation:typingDot 1.2s infinite;
+  }
+  .chat-typing span:nth-child(2){animation-delay:.2s;}
+  .chat-typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes typingDot{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+  /* ---- tema / paleta de cores ---- */
+  .theme-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; margin-bottom:32px;}
+  .theme-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-l);
+    padding:22px 20px; box-shadow:var(--shadow-soft);
+  }
+  .theme-card-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin:0 0 14px;}
+  .color-picker-wrap{display:flex; flex-direction:column; gap:10px;}
+  .color-canvas-wrap{
+    position:relative; width:100%; height:160px; border-radius:var(--radius-s); overflow:hidden;
+    cursor:crosshair; user-select:none;
+  }
+  .color-canvas{width:100%; height:100%; display:block;}
+  .color-cursor{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+    border:2px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,0.3);
+    transform:translate(-50%,-50%); pointer-events:none;
+  }
+  .hue-slider-wrap{position:relative; height:18px; border-radius:999px; overflow:hidden;}
+  .hue-slider{
+    width:100%; height:100%; appearance:none; -webkit-appearance:none;
+    background:linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);
+    border:none; cursor:pointer; outline:none;
+  }
+  .hue-slider::-webkit-slider-thumb{
+    -webkit-appearance:none; width:20px; height:20px; border-radius:50%;
+    background:#fff; border:2px solid rgba(0,0,0,0.2); box-shadow:0 1px 4px rgba(0,0,0,0.3);
+    cursor:pointer;
+  }
+  .color-input-row{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .color-mode-toggle{
+    display:flex; border:1px solid var(--line); border-radius:var(--radius-s); overflow:hidden;
+    flex-shrink:0;
+  }
+  .color-mode-btn{
+    padding:6px 10px; font-size:11.5px; font-weight:700; border:none; background:transparent;
+    color:var(--ink-soft); cursor:pointer; transition:all .1s ease;
+  }
+  .color-mode-btn.active{background:var(--magenta); color:#fff;}
+  .color-rgb-row{display:flex; gap:6px; flex:1;}
+  .color-rgb-input{
+    flex:1; padding:9px 8px; border-radius:var(--radius-s); border:1px solid var(--line);
+    background:var(--lilac); font-size:13px; text-align:center; outline:none; min-width:0;
+    color:var(--ink);
+  }
+  .color-rgb-input:focus{border-color:var(--magenta); background:var(--paper);}
+  .color-rgb-label{font-size:10px; text-align:center; color:var(--ink-faint); font-weight:700; letter-spacing:.04em; margin-top:2px;}
+  .color-preview-swatch{
+    width:36px; height:36px; border-radius:var(--radius-s); border:1px solid var(--line);
+    flex-shrink:0; cursor:pointer;
+  }
+  .color-hex-input{
+    flex:1; padding:9px 12px; border-radius:var(--radius-s); border:1px solid var(--line);
+    background:var(--lilac); font-size:13.5px; font-family:'Inter',sans-serif;
+    color:var(--ink); outline:none; text-transform:uppercase;
+  }
+  .color-hex-input:focus{border-color:var(--magenta); background:var(--paper);}
+  .theme-presets{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:24px;}
+  .theme-preset-btn{
+    padding:8px 16px; border-radius:999px; border:1px solid var(--line);
+    background:var(--paper); font-size:13px; font-weight:600; color:var(--ink-soft);
+    cursor:pointer; display:flex; align-items:center; gap:8px; transition:all .12s ease;
+  }
+  .theme-preset-btn:hover{background:var(--lilac);}
+  .theme-preset-dot{width:12px; height:12px; border-radius:50%;}
+
   .timer-custom-row{
     display:flex; align-items:center; gap:8px; justify-content:center; margin-top:10px;
   }
@@ -637,6 +783,8 @@
       <button class="nav-item" data-route="payments"><span class="ico">💸</span> pagamentos</button>
       <button class="nav-item" data-route="metrics"><span class="ico">📊</span> métricas</button>
       <button class="nav-item" data-route="contracts"><span class="ico">📝</span> contratos</button>
+      <button class="nav-item" data-route="assistant"><span class="ico">✨</span> assistente</button>
+      <button class="nav-item" data-route="theme"><span class="ico">🎨</span> tema</button>
     </div>
     <div class="sidebar-foot" id="syncFoot">
       <div id="syncStatusText"><span class="sync-dot off"></span>Carregando...</div>
@@ -644,6 +792,9 @@
       <button class="btn btn-sm btn-ghost" id="btnCloudAuth" type="button" style="display:none;">Entrar com Google</button>
     </div>
   </nav>
+
+  <!-- overlay para fechar sidebar no mobile -->
+  <div id="sidebarOverlay" style="display:none; position:fixed; inset:0; z-index:39; background:transparent;" onclick="document.getElementById('sidebar').classList.remove('open'); this.style.display='none';"></div>
 
   <main class="main" id="main">
     <div class="mobile-bar">
@@ -791,7 +942,9 @@ var STORE = {
   notificationsRead: "ugc_notifications_read_v1",
   exchangeRates: "ugc_exchange_rates_v1",
   nichos: "ugc_nichos_v1",
-  planner: "ugc_planner_v1"
+  planner: "ugc_planner_v1",
+  creatorProfile: "ugc_creator_profile_v1",
+  assistantHistory: "ugc_assistant_history_v1"
 };
 
 var state = {
@@ -815,10 +968,12 @@ var state = {
   notifPanelOpen: false,
   exchangeRates: {BRL:1, USD:5.4, EUR:5.9},
   nichos: [],
-  plannerView: 'weekly',   // 'weekly' | 'daily'
-  plannerDay: null,        // isoDate string, null = hoje
-  planner: {},             // {dateIso: {phrase, p1, p2, p3}}
-  timer: {running:false, seconds:25*60, mode:'work', interval:null}
+  plannerView: 'weekly',
+  plannerDay: null,
+  planner: {},
+  timer: {running:false, seconds:25*60, mode:'work', interval:null},
+  creatorProfile: null,       // perfil de criadora para o assistente
+  assistantMessages: []       // histórico do chat do assistente (só em memória)
 };
 
 var FIREBASE_CONFIG = {
@@ -1175,7 +1330,7 @@ async function loadAll(){
     await saveKey(STORE.nichos, state.nichos);
   }
   if(state.platforms.length===0){
-    var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
+    var defaults = ["Instagram","Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
     state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
     await saveKey(STORE.platforms, state.platforms);
   } else {
@@ -1196,6 +1351,9 @@ async function loadAll(){
     var plannerData = await loadKeyObj(STORE.planner);
     state.planner = plannerData || {};
   }catch(e){ state.planner = {}; }
+  try{
+    state.creatorProfile = await loadKeyObj(STORE.creatorProfile);
+  }catch(e){ state.creatorProfile = null; }
   state.loaded = true;
 }
 function saveJobs(){ return saveKey(STORE.jobs, state.jobs); }
@@ -1327,6 +1485,8 @@ function navigate(route){
   var titles = {dashboard:"painel", prospects:"prospecção", jobs:"trabalhos", products:"produtos", agenda:"agenda", checklist:"checklist", brands:"marcas", platforms:"plataformas", payments:"pagamentos", metrics:"métricas", contracts:"contratos"};
   document.getElementById('mobileTitle').textContent = titles[route] || route;
   document.getElementById('sidebar').classList.remove('open');
+  var ov = document.getElementById('sidebarOverlay');
+  if(ov) ov.style.display = 'none';
   render();
 }
 document.getElementById('navList').addEventListener('click', function(e){
@@ -1334,7 +1494,11 @@ document.getElementById('navList').addEventListener('click', function(e){
   if(btn) navigate(btn.getAttribute('data-route'));
 });
 document.getElementById('menuBtn').addEventListener('click', function(){
-  document.getElementById('sidebar').classList.toggle('open');
+  var sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('open');
+  // mostra/esconde overlay
+  var ov = document.getElementById('sidebarOverlay');
+  if(ov) ov.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
 });
 
 /* ---------------- shared bits ---------------- */
@@ -1419,16 +1583,38 @@ function dashboardJobRow(job){
 function renderProspects(){
   var html = '';
   html += '<div class="page-head"><div><h1>Prospecção</h1><p class="page-sub">Gerencie seus contatos com marcas, do primeiro DM até o fechamento.</p></div>' +
-    '<button class="btn btn-primary" id="btnNewProspect"><span>+</span> Nova prospecção</button></div>';
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+      '<button class="btn" id="btnUploadPrint" style="gap:8px;">📸 Importar print do Instagram</button>' +
+      '<button class="btn btn-primary" id="btnNewProspect"><span>+</span> Nova prospecção</button>' +
+    '</div></div>';
 
+  // input de arquivo oculto
+  html += '<input type="file" id="prospectImageInput" accept="image/*" multiple style="display:none;" />';
+  html += '<div id="prospectImportResult"></div>';
   html += '<div class="kanban" id="prospectKanban"></div>';
+
   document.getElementById('pageContent').innerHTML = html;
+
   document.getElementById('btnNewProspect').addEventListener('click', function(){ openProspectModal(null); });
+
+  // upload de print — aceita múltiplos
+  var fileInput = document.getElementById('prospectImageInput');
+  document.getElementById('btnUploadPrint').addEventListener('click', function(){
+    fileInput.click();
+  });
+  fileInput.addEventListener('change', function(){
+    if(fileInput.files && fileInput.files.length > 0){
+      processMultiplePrints(Array.from(fileInput.files));
+      fileInput.value = '';
+    }
+  });
+
   renderProspectKanban();
 }
 
 function renderProspectKanban(){
   var wrap = document.getElementById('prospectKanban');
+  var savedScroll = wrap ? wrap.scrollLeft : 0;
   var html = '';
   PROSPECT_STATUS_FLOW.forEach(function(s){
     var items = state.prospects.filter(function(p){ return p.status===s.key; });
@@ -1440,6 +1626,8 @@ function renderProspectKanban(){
     html += '</div></div>';
   });
   wrap.innerHTML = html;
+  // restaura posição de scroll
+  requestAnimationFrame(function(){ if(wrap) wrap.scrollLeft = savedScroll; });
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
     card.addEventListener('click', function(){
@@ -1486,6 +1674,7 @@ function prospectCardHtml(p){
       platformBadgeHtml(platform) +
       (p.contact ? '<span class="tag" style="background:var(--lilac); color:var(--ink-soft);">'+escapeHtml(p.contact)+'</span>' : '') +
     '</div>' +
+    (p.instagramUrl ? '<div style="margin-top:7px;"><a href="'+escapeHtml(p.instagramUrl)+'" target="_blank" rel="noopener" style="font-size:11.5px; color:var(--magenta-deep); text-decoration:none;" onclick="event.stopPropagation();">🔗 ver perfil</a></div>' : '') +
   '</div>';
 }
 
@@ -1521,6 +1710,137 @@ function findOrCreateBrandByName(rawName, extra){
   return brand;
 }
 
+/* ---------------- importar print do Instagram com IA ---------------- */
+function processMultiplePrints(files){
+  if(!files || files.length===0) return;
+  var resultDiv = document.getElementById('prospectImportResult');
+
+  if(files.length === 1){
+    extractInstagramFromImage(files[0]);
+    return;
+  }
+
+  // múltiplos: processa em fila e cadastra automaticamente sem abrir modal
+  var total = files.length;
+  var done = 0;
+  var errors = 0;
+  var added = 0;
+  var igPlatform = state.platforms.find(function(p){ return p.name.toLowerCase()==='instagram'; });
+
+  function updateProgress(){
+    if(!resultDiv) return;
+    var pct = Math.round((done/total)*100);
+    var finished = done===total;
+    resultDiv.innerHTML =
+      '<div style="padding:14px 16px; background:'+(finished?'var(--sage-tint)':'var(--magenta-tint)')+'; border-radius:var(--radius-s); margin-bottom:16px;">' +
+        '<div style="font-size:13.5px; color:'+(finished?'var(--sage-deep)':'var(--magenta-deep)')+'; font-weight:600; margin-bottom:8px;">' +
+          (finished ? '✓ Pronto! ' : '📸 Processando ') + done+'/'+total+' prints...' +
+        '</div>' +
+        '<div style="background:var(--paper); border-radius:999px; height:7px; overflow:hidden;">' +
+          '<div style="width:'+pct+'%; height:100%; background:'+(finished?'var(--sage)':'var(--magenta)')+'; transition:width .3s;"></div>' +
+        '</div>' +
+        (finished ? '<div style="margin-top:10px; font-size:13px;">'+added+' prospecções criadas'+(errors>0?' · '+errors+' não identificadas ou duplicadas':'')+'</div>' : '') +
+      '</div>';
+  }
+
+  // fila estritamente sequencial — evita race condition
+  function processNext(index){
+    if(index >= total){ updateProgress(); return; }
+    extractInstagramData(files[index], function(parsed){
+      done++;
+      if(parsed && !parsed.error && (parsed.brandName||parsed.handle)){
+        var alreadyExists = state.prospects.find(function(pr){
+          return (parsed.handle && pr.contact && pr.contact.toLowerCase()===parsed.handle.toLowerCase()) ||
+                 (parsed.brandName && pr.brandName.toLowerCase()===parsed.brandName.toLowerCase());
+        });
+        if(!alreadyExists){
+          state.prospects.push({
+            id: uid(),
+            brandName: parsed.brandName||parsed.handle||'Sem nome',
+            contact: parsed.handle||'',
+            instagramUrl: parsed.url||'',
+            platformId: igPlatform ? igPlatform.id : '',
+            nicho: parsed.nicho||'',
+            notes: parsed.bio||'',
+            status: 'pendente',
+            createdAt: Date.now()
+          });
+          if(parsed.nicho && !state.nichos.includes(parsed.nicho)){
+            state.nichos.push(parsed.nicho);
+            saveNichos();
+          }
+          added++;
+        } else {
+          errors++;
+        }
+      } else {
+        errors++;
+      }
+      saveProspects();
+      updateProgress();
+      renderProspectKanban();
+      processNext(index+1);
+    });
+  }
+
+  updateProgress();
+  processNext(0);
+}
+
+function extractInstagramData(file, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var base64 = e.target.result.split(',')[1];
+    var mediaType = file.type || 'image/jpeg';
+    apiFetch({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 500,
+      messages: [{
+        role: 'user',
+        content: [
+          {type: 'image', source: {type: 'base64', media_type: mediaType, data: base64}},
+          {type: 'text', text: 'Este é um print de perfil do Instagram. Extraia as informações e responda SOMENTE com JSON válido, sem texto adicional:\n{"brandName":"nome visível da marca","handle":"@usuario","url":"https://www.instagram.com/usuario/","bio":"bio completa se visível","nicho":"categoria do negócio em 1-2 palavras, ex: Beleza, Moda, Skincare, Casa, Pets, Alimentos, Fitness, Tech, Outro"}\n\nSe não for um perfil do Instagram: {"error":"nao identificado"}'}
+        ]
+      }]
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var text = (data.content && data.content[0]) ? (data.content[0].text||'') : '';
+      var parsed = null;
+      try{ var m = text.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }catch(ex){}
+      callback(parsed);
+    })
+    .catch(function(){ callback(null); });
+  };
+  reader.onerror = function(){ callback(null); };
+  reader.readAsDataURL(file);
+}
+
+function extractInstagramFromImage(file){
+  var resultDiv = document.getElementById('prospectImportResult');
+  if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--magenta-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--magenta-deep); margin-bottom:16px;">📸 Lendo o print com IA... aguarde.</div>';
+
+  extractInstagramData(file, function(parsed){
+    if(!parsed || parsed.error){
+      if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--danger-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--danger); margin-bottom:16px;">Não consegui identificar um perfil do Instagram nesse print. Tente com a tela do perfil mais completa.</div>';
+      return;
+    }
+    if(resultDiv) resultDiv.innerHTML = '';
+
+    // pré-selecionar plataforma Instagram
+    var igPlatform = state.platforms.find(function(p){ return p.name.toLowerCase()==='instagram'; });
+
+    openProspectModal(null, 'pendente', {
+      brandName: parsed.brandName||'',
+      contact: parsed.handle||'',
+      instagramUrl: parsed.url||'',
+      notes: parsed.bio||'',
+      nicho: parsed.nicho||'',
+      platformId: igPlatform ? igPlatform.id : ''
+    });
+  });
+}
+
 function convertProspectToJob(p){
   // find or create a brand with this name
   var brand = findOrCreateBrandByName(p.brandName, {contact:p.contact||'', notes:'Criada automaticamente a partir da prospecção.'});
@@ -1546,36 +1866,47 @@ function convertProspectToJob(p){
   saveJobs();
 }
 
-function openProspectModal(prospectId, presetStatus){
+function openProspectModal(prospectId, presetStatus, prefill){
   var p = prospectId ? state.prospects.find(function(x){ return x.id===prospectId; }) : null;
   var isNew = !p;
+  prefill = prefill || {};
 
   var platformOptions = '<option value="">— nenhuma —</option>' + state.platforms.map(function(pl){
-    return '<option value="'+pl.id+'" '+(p&&p.platformId===pl.id?'selected':'')+'>'+escapeHtml(pl.name)+'</option>';
+    var selected = p ? (p.platformId===pl.id) : (prefill.platformId && prefill.platformId===pl.id);
+    return '<option value="'+pl.id+'" '+(selected?'selected':'')+'>'+escapeHtml(pl.name)+'</option>';
   }).join('');
 
   var statusOptions = PROSPECT_STATUS_FLOW.map(function(s){
     return '<option value="'+s.key+'" '+((p?p.status:presetStatus)===s.key?'selected':'')+'>'+escapeHtml(s.label)+'</option>';
   }).join('');
 
+  var initBrandName = p ? p.brandName : (prefill.brandName||'');
+  var initContact = p ? p.contact : (prefill.contact||'');
+  var initNotes = p ? p.notes : (prefill.notes||'');
+  var initUrl = p ? (p.instagramUrl||'') : (prefill.instagramUrl||'');
+  var initNicho = p ? (p.nicho||'') : (prefill.nicho||'');
+  var importBadge = prefill.brandName ? '<div style="padding:8px 12px; background:var(--sage-tint); border-radius:var(--radius-s); font-size:12.5px; color:var(--sage-deep); margin-bottom:14px;">✓ Dados extraídos do print — confira e ajuste se necessário</div>' : '';
+
   var modalHtml =
     '<div class="overlay" id="prospOverlay">' +
       '<div class="modal" role="dialog" aria-modal="true">' +
-        '<div class="modal-head"><h2>'+(isNew?'Nova prospecção':'Editar prospecção')+'</h2>' +
+        '<div class="modal-head"><h2>'+(isNew?'Nova prospecção':'Editar prospecção')+(prefill.brandName?' 📸':'')+'</h2>' +
           '<button class="modal-close" id="prospModalClose" aria-label="Fechar">✕</button></div>' +
-        '<div class="field"><label for="pBrandName">Nome da marca</label><input id="pBrandName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(p?p.brandName:'')+'" /></div>' +
+        importBadge +
+        '<div class="field"><label for="pBrandName">Nome da marca</label><input id="pBrandName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(initBrandName)+'" /></div>' +
         '<div class="field-row">' +
-          '<div class="field"><label for="pContact">Contato</label><input id="pContact" type="text" placeholder="DM Instagram, email..." value="'+escapeHtml(p?p.contact:'')+'" /></div>' +
+          '<div class="field"><label for="pContact">@ Instagram / contato</label><input id="pContact" type="text" placeholder="@usuario" value="'+escapeHtml(initContact)+'" /></div>' +
           '<div class="field"><label for="pPlatform">Plataforma</label><select id="pPlatform">'+platformOptions+'</select></div>' +
         '</div>' +
+        '<div class="field"><label for="pInstagramUrl">Link do perfil</label><input id="pInstagramUrl" type="url" placeholder="https://www.instagram.com/..." value="'+escapeHtml(initUrl)+'" /></div>' +
         '<div class="field-row">' +
           '<div class="field"><label for="pStatus">Status</label><select id="pStatus">'+statusOptions+'</select></div>' +
           '<div class="field"><label for="pNicho">Nicho</label>' +
-            '<input id="pNicho" type="text" list="pNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(p&&p.nicho?p.nicho:'')+'" autocomplete="off" />' +
+            '<input id="pNicho" type="text" list="pNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(initNicho)+'" autocomplete="off" />' +
             '<datalist id="pNichoList">'+state.nichos.map(function(n){ return '<option value="'+escapeHtml(n)+'"></option>'; }).join('')+'</datalist>' +
           '</div>' +
         '</div>' +
-        '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Histórico da conversa, valor proposto...">'+escapeHtml(p?p.notes:'')+'</textarea></div>' +
+        '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Histórico da conversa, valor proposto...">'+escapeHtml(initNotes)+'</textarea></div>' +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
           '<button class="btn btn-ghost" id="pCancel">cancelar</button>' +
@@ -1608,6 +1939,7 @@ function openProspectModal(prospectId, presetStatus){
     var data = {
       brandName: brandName,
       contact: document.getElementById('pContact').value.trim(),
+      instagramUrl: document.getElementById('pInstagramUrl').value.trim(),
       platformId: document.getElementById('pPlatform').value,
       nicho: (function(){
         var n = document.getElementById('pNicho').value.trim();
@@ -4307,6 +4639,8 @@ function render(){
   else if(state.route==='payments') renderPayments();
   else if(state.route==='metrics') renderMetrics();
   else if(state.route==='contracts') renderContracts();
+  else if(state.route==='assistant') renderAssistant();
+  else if(state.route==='theme') renderTheme();
   restoreScrollY();
 }
 
@@ -4531,6 +4865,1047 @@ function generateContractPdf(){
   showToast('Contrato gerado e baixado.');
 }
 
+/* ================================================================
+   ASSISTENTE DE PROSPECÇÃO
+   ================================================================ */
+
+/* ---------------- API Key management ---------------- */
+function getApiKey(){
+  try{ return localStorage.getItem('ugc_anthropic_key') || ''; }catch(e){ return ''; }
+}
+function saveApiKey(key){
+  try{ localStorage.setItem('ugc_anthropic_key', key.trim()); }catch(e){}
+}
+function isRunningInClaudeAi(){
+  // dentro do claude.ai o artifact tem origem claude.ai ou é servido do mesmo domínio
+  try{
+    return window.location.hostname.includes('claude.ai') ||
+           window.location.hostname.includes('anthropic') ||
+           window.parent !== window; // está em iframe (artifact do Claude.ai)
+  }catch(e){ return true; } // cross-origin = provavelmente iframe do Claude.ai
+}
+function hasApiKey(){
+  return !!getApiKey() || isRunningInClaudeAi();
+}
+function apiFetch(body){
+  var key = getApiKey();
+  var headers = {'Content-Type':'application/json'};
+  if(key) headers['x-api-key'] = key;
+  return fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST', headers:headers, body:JSON.stringify(body)
+  });
+}
+
+function saveCreatorProfile(profile){
+  state.creatorProfile = profile;
+  saveKey(STORE.creatorProfile, profile);
+}
+
+var lastProspectId = null; // id do prospect atualmente sendo trabalhado no chat
+
+function renderAssistant(){
+  var prof = state.creatorProfile;
+  var DEFAULT_PROFILE = "QUEM SOU:\nSou a Jamile Atique, fotógrafa e criadora de conteúdo UGC. Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo — transformando produtos em experiências reais que conectam e vendem.\nSou mãe e empreendedora, o que me dá autenticidade para abordar marcas de lifestyle, rotina corrida, maternidade, beleza e autocuidado.\nPortfólio: https://jamileatique.my.canva.site/\nAssino sempre: Jamile Atique 💐\n\nMEUS NICHOS PRINCIPAIS:\n- Moda e vestuário (versatilidade, looks, lifestyle)\n- Semijoias e acessórios (elegância, resistência, liberdade de usar todo dia)\n- Beleza, skincare e autocuidado\n- Alimentos e receitas (especialmente com contexto de maternidade/filha de 3 anos)\n- Lifestyle e rotina (romantizar pequenos momentos, vida real de mãe empreendedora)\n\nMEU ESTILO DE CONTEÚDO:\n- Storytelling autêntico — o produto entra naturalmente na história, não como propaganda\n- Estética premium com leveza e naturalidade\n- Conceitos visuais criativos (ex: tela dividida em 4 mostrando rotina corrida)\n- Gancho visual forte logo no início\n- Mostro a experiência real do produto, não só o produto\n- Contesto objeções de forma visual e natural\n- Tom: próximo, caloroso, sem ser robótico ou excessivamente vendedor\n\nCOMO ESTRUTURO MINHAS ABORDAGENS:\n1. Cumprimento leve e pessoal (nunca genérico)\n2. Me apresento brevemente (nome + área)\n3. Mostro que conheci/estudei a marca de verdade\n4. Apresento UMA ideia criativa específica para o produto deles\n5. Explico brevemente o conceito e o que vou mostrar\n6. Cito meu diferencial (estética premium, storytelling, potencial de desejo)\n7. CTA suave: 'Podemos conversar sobre essa proposta?'\n8. Assino com nome + link do portfólio\n\nTOM DAS MENSAGENS:\n- Direto mas caloroso\n- Não uso formalidade excessiva\n- Poucos emojis (1-2 no máximo, estratégicos)\n- Máximo 6-8 linhas\n- Sem expressões genéricas tipo 'estou entrando em contato para...'\n- Sempre com uma ideia criativa específica, nunca proposta genérica\n\nEXEMPLOS DE CONCEITOS QUE JÁ CRIEI:\n- Movimento Salga (roupas fitness): 'vem acompanhar um dia de uma mulher tentando romantizar os pequenos momentos' — rotina real com água de coco, parque, luz do sol\n- Murano (semijoias): gancho visual tela dividida em 4 mostrando rotina de mãe empreendedora + narrativa de liberdade de não tirar a joia\n- Sobral Mel: receitas fáceis com a filha de 3 anos (panqueca 3 ingredientes, suco, bolo de microondas) para mostrar o mel de forma natural\n- Doze Cascavel (discos de vinil): jornada da compra online até colocar o disco para tocar, conectando com coleção herdada do pai\n- Shop Brasie (vestido Carmen): 3 looks com uma mesma peça para contestar objeção de versatilidade\n\nFOLLOW-UP:\n- Follow-up 1 (3-5 dias): leve, sem pressão, reforça interesse com algo novo\n- Follow-up 2 (mais alguns dias): última tentativa gentil, deixa a porta aberta";
+
+  var profContext = (prof && prof.context) ? prof.context : DEFAULT_PROFILE;
+  var html =
+    '<div class="page-head"><div><h1>Assistente</h1><p class="page-sub">Seu assistente pessoal de prospecção UGC.</p></div></div>' +
+    '<div class="assistant-layout">' +
+
+      // painel esquerdo — perfil
+      '<div class="assistant-profile-panel">' +
+        '<div>' +
+          '<h3>✨ Seu perfil de criadora</h3>' +
+          '<p>Cole aqui tudo sobre você: nicho, estilo, valores, diferenciais, tom de voz, quanto cobra, o que oferece. O assistente vai usar isso para personalizar cada mensagem.</p>' +
+          '<textarea class="profile-textarea" id="creatorProfileText" placeholder="Descreva seu perfil de criadora...">'+escapeHtml(profContext)+'</textarea>' +
+          '<div style="margin-top:10px; display:flex; gap:8px;">' +
+            '<button class="btn btn-primary btn-sm" id="btnSaveProfile">Salvar perfil</button>' +
+            '<span id="profileSaveStatus" style="font-size:12px; color:var(--sage-deep); align-self:center;"></span>' +
+          '</div>' +
+        '</div>' +
+
+        '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
+
+        '<div>' +
+          '<h3 style="font-size:13px; margin:0 0 6px;">🔑 API Key (Anthropic)</h3>' +
+          '<p style="font-size:12px; color:var(--ink-soft); margin:0 0 8px; line-height:1.5;">Para usar o assistente no seu site, cole sua chave da Anthropic aqui. Fica salva só no seu navegador.</p>' +
+          '<input id="apiKeyInput" type="password" placeholder="sk-ant-..." style="width:100%; padding:9px 11px; border-radius:var(--radius-s); border:1px solid var(--line); background:var(--lilac); font-size:13px; outline:none;" value="'+escapeHtml(getApiKey())+'" />' +
+          '<div style="margin-top:8px; display:flex; gap:8px; align-items:center;">' +
+            '<button class="btn btn-sm" id="btnSaveApiKey">Salvar chave</button>' +
+            '<span id="apiKeyStatus" style="font-size:12px; color:'+(hasApiKey()?'var(--sage-deep)':'var(--danger)')+'">'+(hasApiKey()?'✓ Chave configurada':'⚠ Sem chave — assistente limitado')+'</span>' +
+          '</div>' +
+          '<p style="font-size:11px; color:var(--ink-faint); margin:8px 0 0; line-height:1.5;">Obtenha em: <a href="https://console.anthropic.com" target="_blank" style="color:var(--magenta-deep);">console.anthropic.com</a></p>' +
+        '</div>' +
+
+        '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
+
+        '<div>' +
+          '<p style="font-size:12px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin:0 0 8px;">Atalhos por etapa</p>' +
+          '<div style="display:flex; flex-direction:column; gap:6px;">' +
+            '<button class="chat-action-btn" data-quick="abordagem" data-status="pendente">💌 Abordagem fria <span style="font-size:11px; opacity:.7;">(pendentes)</span></button>' +
+            '<button class="chat-action-btn" data-quick="followup1" data-status="enviado">🔔 Follow-up 1 <span style="font-size:11px; opacity:.7;">(enviadas)</span></button>' +
+            '<button class="chat-action-btn" data-quick="followup2" data-status="followup1">⏰ Follow-up 2 <span style="font-size:11px; opacity:.7;">(follow-up 1)</span></button>' +
+            '<button class="chat-action-btn" data-quick="negociando" data-status="respondeu">💬 Ajuda na negociação <span style="font-size:11px; opacity:.7;">(responderam)</span></button>' +
+            '<button class="chat-action-btn" data-quick="negociando2" data-status="negociando">🤝 Fechar proposta <span style="font-size:11px; opacity:.7;">(negociando)</span></button>' +
+            '<button class="chat-action-btn" data-quick="prospectar">➕ Nova prospecção</button>' +
+          '</div>' +
+          '<div id="quickBrandList" style="margin-top:10px;"></div>' +
+        '</div>' +
+      '</div>' +
+
+      // painel direito — chat
+      '<div class="assistant-chat-panel">' +
+        '<div class="chat-messages" id="chatMessages"></div>' +
+        '<div class="chat-input-row">' +
+          '<textarea class="chat-input" id="chatInput" placeholder="Descreva a marca, peça uma mensagem, ou use os atalhos..." rows="1"></textarea>' +
+          '<button class="btn btn-primary" id="chatSendBtn" style="align-self:flex-end;">Enviar</button>' +
+        '</div>' +
+      '</div>' +
+
+    '</div>';
+
+  document.getElementById('pageContent').innerHTML = html;
+
+  // salvar API Key
+  document.getElementById('btnSaveApiKey').addEventListener('click', function(){
+    var key = document.getElementById('apiKeyInput').value.trim();
+    saveApiKey(key);
+    var status = document.getElementById('apiKeyStatus');
+    if(key){
+      status.textContent = '✓ Chave salva!';
+      status.style.color = 'var(--sage-deep)';
+    } else {
+      status.textContent = '⚠ Sem chave — assistente limitado';
+      status.style.color = 'var(--danger)';
+    }
+  });
+
+  // salvar perfil
+  document.getElementById('btnSaveProfile').addEventListener('click', function(){
+    var text = document.getElementById('creatorProfileText').value.trim();
+    saveCreatorProfile({context: text});
+    var status = document.getElementById('profileSaveStatus');
+    status.textContent = '✓ Salvo!';
+    setTimeout(function(){ status.textContent = ''; }, 2000);
+  });
+
+  // renderizar histórico existente
+  state.assistantMessages.forEach(function(msg){ appendChatMessage(msg.role, msg.content, false); });
+  if(state.assistantMessages.length === 0){
+    appendChatMessage('assistant',
+      'Olá, Jamile! 🌸 Sou seu assistente de abordagens UGC.\n\nUse os atalhos à esquerda para escolher uma marca pelo status, ou me diz:\n\n• Para qual marca quer a abordagem?\n• É para Instagram ou Seu Influencer?\n\nDepois me conta sua ideia e eu escrevo no seu estilo.',
+      false);
+  }
+  scrollChatToBottom();
+
+  // enviar mensagem
+  var input = document.getElementById('chatInput');
+  document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+  input.addEventListener('keydown', function(e){
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChatMessage(); }
+  });
+  // auto-resize do textarea
+  input.addEventListener('input', function(){
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120)+'px';
+  });
+
+  // atalhos rápidos com lista de marcas por status
+  var QUICK_CONFIG = {
+    abordagem:  {status:'pendente',   label:'Abordagem fria',    prompt: function(p){ return 'Cria uma mensagem de abordagem fria para a marca "'+p.brandName+'" ('+( p.contact||'sem @')+').'+(p.nicho?' Nicho: '+p.nicho+'.':"")+(p.notes?' Bio/contexto: '+p.notes:''); }},
+    followup1:  {status:'enviado',    label:'Follow-up 1',       prompt: function(p){ return 'Cria um follow-up 1 para a marca "'+p.brandName+'" ('+( p.contact||'sem @')+') que não respondeu minha abordagem inicial.'+(p.nicho?' Nicho: '+p.nicho:''); }},
+    followup2:  {status:'followup1',  label:'Follow-up 2',       prompt: function(p){ return 'Cria um follow-up 2 (última tentativa gentil) para a marca "'+p.brandName+'" ('+( p.contact||'sem @')+') que ainda não respondeu.'+(p.nicho?' Nicho: '+p.nicho:''); }},
+    negociando: {status:'respondeu',  label:'Ajuda na negociação', prompt: function(p){ return 'A marca "'+p.brandName+'" ('+( p.contact||'sem @')+') respondeu e estamos em contato. Me ajuda a formular uma resposta profissional e estratégica para avançar na negociação.'+(p.notes?' Contexto: '+p.notes:''); }},
+    negociando2:{status:'negociando', label:'Fechar proposta',   prompt: function(p){ return 'A marca "'+p.brandName+'" ('+( p.contact||'sem @')+') está em negociação. Me ajuda a criar uma mensagem para fechar a proposta de forma natural e sem pressão.'+(p.notes?' Contexto: '+p.notes:''); }},
+    prospectar: {status:null, label:'Nova prospecção', prompt:null}
+  };
+
+  document.querySelectorAll('[data-quick]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var type = btn.getAttribute('data-quick');
+      var config = QUICK_CONFIG[type];
+      if(!config) return;
+
+      // nova prospecção — só pede digitação
+      if(type === 'prospectar'){
+        input.value = 'Quero cadastrar uma nova prospecção. Me passa o nome da marca e o @ do Instagram.';
+        input.focus();
+        document.getElementById('quickBrandList').innerHTML = '';
+        return;
+      }
+
+      // buscar marcas no status correspondente
+      var marcas = state.prospects.filter(function(p){ return p.status === config.status; });
+      var listDiv = document.getElementById('quickBrandList');
+
+      // highlight botão ativo
+      document.querySelectorAll('[data-quick]').forEach(function(b){ b.style.background=''; b.style.color=''; });
+      btn.style.background = 'var(--magenta-tint)';
+      btn.style.color = 'var(--magenta-deep)';
+
+      if(marcas.length === 0){
+        listDiv.innerHTML =
+          '<div style="padding:10px 12px; background:var(--lilac); border-radius:var(--radius-s); font-size:12.5px; color:var(--ink-faint);">' +
+          'Nenhuma marca em "'+config.label+'" no momento.</div>';
+        return;
+      }
+
+      var html = '<div style="margin-top:2px;">' +
+        '<p style="font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin:0 0 6px;">'+config.label+' — escolha a marca:</p>' +
+        '<div style="display:flex; flex-direction:column; gap:5px;">';
+
+      marcas.forEach(function(p){
+        html += '<button class="brand-pick-btn" data-prospect-id="'+p.id+'" data-type="'+type+'" style="'+
+          'text-align:left; padding:8px 11px; border-radius:var(--radius-s); border:1px solid var(--line);'+
+          'background:var(--paper); font-size:13px; cursor:pointer; transition:all .1s ease;'+
+          'display:flex; flex-direction:column; gap:2px;">' +
+          '<span style="font-weight:600; color:var(--ink);">'+escapeHtml(p.brandName)+'</span>' +
+          (p.contact ? '<span style="font-size:11.5px; color:var(--ink-faint);">'+escapeHtml(p.contact)+'</span>' : '') +
+          (p.nicho ? '<span style="font-size:11px; color:var(--magenta-deep);">'+escapeHtml(p.nicho)+'</span>' : '') +
+        '</button>';
+      });
+
+      html += '</div></div>';
+      listDiv.innerHTML = html;
+
+      // ao clicar numa marca, gera a mensagem automaticamente
+      listDiv.querySelectorAll('.brand-pick-btn').forEach(function(brandBtn){
+        brandBtn.addEventListener('mouseenter', function(){ brandBtn.style.background='var(--magenta-tint)'; brandBtn.style.borderColor='var(--magenta)'; });
+        brandBtn.addEventListener('mouseleave', function(){ brandBtn.style.background='var(--paper)'; brandBtn.style.borderColor='var(--line)'; });
+        brandBtn.addEventListener('click', function(){
+          var pId = brandBtn.getAttribute('data-prospect-id');
+          var pType = brandBtn.getAttribute('data-type');
+          var prospect = state.prospects.find(function(p){ return p.id===pId; });
+          if(!prospect) return;
+          lastProspectId = pId; // salva qual prospect está sendo trabalhado
+          var cfg = QUICK_CONFIG[pType];
+          var promptText = cfg.prompt(prospect);
+          appendChatMessage('user', cfg.label+' para '+prospect.brandName);
+          listDiv.innerHTML = '';
+          document.querySelectorAll('[data-quick]').forEach(function(b){ b.style.background=''; b.style.color=''; });
+          callAssistantAPI(promptText);
+        });
+      });
+    });
+  });
+}
+
+function appendChatMessage(role, content, save){
+  var wrap = document.getElementById('chatMessages');
+  if(!wrap) return;
+
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+
+  var avatar = role==='user' ? '👤' : '🌸';
+  var bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+
+  // detecta blocos de mensagem prontos (delimitados por ---)
+  var parts = content.split('---MSG---');
+  if(parts.length > 1){
+    var mainText = document.createElement('div');
+    mainText.style.marginBottom = '12px';
+    mainText.textContent = parts[0];
+    bubble.appendChild(mainText);
+
+    parts.slice(1).forEach(function(msgBlock, idx){
+      var labels = ['💌 Abordagem fria','🔔 Follow-up 1','⏰ Follow-up 2'];
+      var statusMap = ['enviado','followup1','followup2'];
+      var label = labels[idx] || ('Mensagem '+(idx+1));
+      var nextStatus = statusMap[idx] || null;
+      var msgWrap = document.createElement('div');
+      msgWrap.style.cssText = 'background:var(--lilac); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px;';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:11px; font-weight:700; color:var(--magenta-deep); text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px;';
+      lbl.textContent = label;
+      var txt = document.createElement('pre');
+      txt.style.cssText = 'margin:0; font-family:Inter,sans-serif; font-size:13.5px; white-space:pre-wrap; color:var(--ink); line-height:1.6;';
+      txt.textContent = msgBlock.trim();
+
+      // botões
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;';
+
+      var copyBtn = document.createElement('button');
+      copyBtn.className = 'chat-copy-btn';
+      copyBtn.innerHTML = '📋 Copiar mensagem';
+      copyBtn.addEventListener('click', function(){
+        navigator.clipboard.writeText(msgBlock.trim()).then(function(){
+          copyBtn.innerHTML = '✓ Copiado!';
+          copyBtn.style.color = 'var(--sage-deep)';
+          setTimeout(function(){ copyBtn.innerHTML = '📋 Copiar mensagem'; copyBtn.style.color=''; }, 2000);
+        });
+      });
+      btnRow.appendChild(copyBtn);
+
+      // botão de atualizar status — só aparece se houver prospect associado
+      if(nextStatus && lastProspectId){
+        (function(pid, ns, lbl2){
+          var statusBtn = document.createElement('button');
+          statusBtn.className = 'chat-copy-btn';
+          var statusLabels = {enviado:'✓ Marcar como Enviado', followup1:'✓ Marcar Follow-up 1', followup2:'✓ Marcar Follow-up 2'};
+          statusBtn.innerHTML = statusLabels[ns] || '✓ Atualizar status';
+          statusBtn.style.borderColor = 'var(--sage)';
+          statusBtn.style.color = 'var(--sage-deep)';
+          statusBtn.addEventListener('click', function(){
+            var p = state.prospects.find(function(x){ return x.id===pid; });
+            if(p){
+              p.status = ns;
+              saveProspects();
+              statusBtn.innerHTML = '✓ Atualizado!';
+              statusBtn.disabled = true;
+              statusBtn.style.opacity = '0.6';
+              showToast('Status atualizado para "'+lbl2+'" na prospecção.');
+            }
+          });
+          btnRow.appendChild(statusBtn);
+        })(lastProspectId, nextStatus, (PROSPECT_STATUS_FLOW.find(function(s){return s.key===nextStatus;})||{}).label||nextStatus);
+      }
+
+      msgWrap.appendChild(lbl);
+      msgWrap.appendChild(txt);
+      msgWrap.appendChild(btnRow);
+      bubble.appendChild(msgWrap);
+    });
+  } else {
+    bubble.textContent = content;
+  }
+
+  div.innerHTML = '<div class="chat-avatar">'+avatar+'</div>';
+  div.appendChild(bubble);
+  wrap.appendChild(div);
+  scrollChatToBottom();
+
+  if(save !== false){
+    state.assistantMessages.push({role:role, content:content});
+    // limita histórico a 40 mensagens em memória
+    if(state.assistantMessages.length > 40) state.assistantMessages = state.assistantMessages.slice(-40);
+  }
+}
+
+function showTyping(){
+  var wrap = document.getElementById('chatMessages');
+  if(!wrap) return;
+  var div = document.createElement('div');
+  div.className = 'chat-msg assistant';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<div class="chat-avatar">🌸</div><div class="chat-typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(div);
+  scrollChatToBottom();
+}
+
+function hideTyping(){
+  var el = document.getElementById('typingIndicator');
+  if(el) el.remove();
+}
+
+function scrollChatToBottom(){
+  var wrap = document.getElementById('chatMessages');
+  if(wrap) wrap.scrollTop = wrap.scrollHeight;
+}
+
+function sendChatMessage(){
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  input.style.height = 'auto';
+  appendChatMessage('user', text);
+  callAssistantAPI(text);
+}
+
+function handleListarProspeccoes(){
+  var abertas = state.prospects.filter(function(p){ return p.status!=='fechou' && p.status!=='recusou'; });
+  if(abertas.length===0){
+    appendChatMessage('assistant', 'Você não tem prospecções abertas no momento. Quer começar uma nova abordagem? Me passa o nome e @ da marca! 🌸');
+    return;
+  }
+  var grupos = {};
+  abertas.forEach(function(p){
+    grupos[p.status] = grupos[p.status] || [];
+    grupos[p.status].push(p);
+  });
+  var msg = 'Suas prospecções abertas ('+abertas.length+' no total):\n\n';
+  Object.keys(grupos).forEach(function(status){
+    var label = (PROSPECT_STATUS_FLOW.find(function(s){return s.key===status;})||{}).label || status;
+    msg += '📌 '+label+' ('+grupos[status].length+'):\n';
+    grupos[status].forEach(function(p){
+      msg += '  • '+p.brandName+(p.contact?' ('+p.contact+')':'')+'\n';
+    });
+    msg += '\n';
+  });
+  msg += 'Quer que eu crie uma mensagem para alguma delas?';
+  appendChatMessage('assistant', msg);
+}
+
+function buildSystemPrompt(){
+  var prof = state.creatorProfile;
+  var extraContext = (prof && prof.context) ? '\n\nCONTEXTO ADICIONAL:\n'+prof.context : '';
+  var abertas = state.prospects.filter(function(p){ return p.status!=='fechou' && p.status!=='recusou'; }).slice(0,10);
+  var prospectsContext = abertas.length > 0
+    ? '\n\nPROSPECÇÕES ABERTAS NO APP:\n'+abertas.map(function(p){
+        return '- '+p.brandName+(p.contact?' ('+p.contact+')':'')+(p.status?' ['+p.status+']':'')+(p.nicho?' nicho:'+p.nicho:'')+(p.notes?' bio:'+p.notes:'');
+      }).join('\n')
+    : '';
+
+  var prompt = `ASSISTENTE DE ABORDAGENS UGC — JAMILE ATIQUE
+
+FLUXO OBRIGATÓRIO ANTES DE ESCREVER QUALQUER ABORDAGEM:
+Quando a Jamile pedir uma abordagem (Instagram ou Seu Influencer), NUNCA escreva direto.
+Primeiro pergunte exatamente isso:
+"Qual é a sua ideia para essa marca? Me conta o conceito, o produto, o que você quer mostrar — e depois eu escrevo para você."
+Só escreva a abordagem depois que ela responder com a ideia dela.
+Se ela já trouxer a ideia junto com o pedido, pode escrever direto.
+Se ela pedir follow-up e já informou a marca, escreva direto sem perguntar ideia.
+
+1. FUNÇÃO DO ASSISTENTE
+Você é o assistente estratégico de prospecção UGC da Jamile Atique.
+Sua função é transformar informações de uma marca, produto, campanha, briefing ou Instagram em uma abordagem comercial de UGC que pareça escrita pela própria Jamile.
+Seu trabalho: entender o produto; identificar o principal desejo, dor ou objeção do consumidor; criar uma ideia de conteúdo visualmente forte; fazer a marca conseguir imaginar o vídeo pronto; conectar à experiência real da Jamile quando isso fizer sentido; vender a solução criativa, não pedir uma oportunidade; adaptar ao canal usado.
+
+2. QUEM É A JAMILE
+Nome: Jamile Atique. Fotógrafa e criadora de conteúdo UGC.
+Diferencial: fotografia, direção visual, estética premium, storytelling, conteúdo sensorial, vídeos cinematográficos, macro e close-ups, atenção a textura, acabamento e detalhes, narrativa natural, demonstração real de produto, conteúdo pensado para gerar desejo e conversão.
+Nichos: beleza, maquiagem, skincare, cabelo, moda, acessórios, joias, perfumes, wellness/fitness, casa e decoração, lifestyle, produtos para rotina, maternidade quando fizer sentido.
+Jamile é mãe e empreendedora. A maternidade pode ser usada como diferencial narrativo quando houver conexão verdadeira com o produto.
+Portfólio: https://jamileatique.my.canva.site/
+Assinatura: Jamile Atique 💐
+
+3. TOM DE VOZ
+Humano, seguro, natural. NUNCA texto de agência, mensagem automática, genérico ou bajulação.
+Jamile fala como parceira criativa apresentando uma solução, não como alguém pedindo uma chance.
+Tom: simpático, profissional, estratégico, feminino, natural, confiante, visual, próximo, elegante.
+NUNCA use: "conteúdo autêntico e inovador", "conteúdo incrível", "conteúdo que conecta", "conteúdo diferenciado".
+SEMPRE substitua adjetivos por imagens. Em vez de "conteúdo sensorial", escreva o que será visto, ouvido, sentido visualmente.
+
+4. REGRA DE OURO: A MARCA PRECISA VISUALIZAR O VÍDEO
+Nunca diga só "Quero fazer um vídeo mostrando o produto."
+Descreva: primeira cena, gancho, transformação, demonstração, detalhes, uso, contexto, resultado.
+
+5. MÉTODO A.C.R.
+A — ATENÇÃO: Comece pela dor, desejo, objeção, situação cotidiana ou benefício. Nunca comece falando de si.
+Exemplos: "Um dia cheio pede um sapato que acompanhe tudo." / "Quem treina pesado sabe que a maior dificuldade é encontrar um look que passe no teste do agachamento sem transparência." / "Quem tem criança em casa sabe como é difícil variar as receitas do dia a dia."
+C — CONEXÃO: Por que a Jamile é a pessoa certa para contar essa história. Pode vir de rotina, maternidade, fotografia, moda, lifestyle, experiência real. Não force conexão inexistente.
+R — RESULTADO: Faça a marca visualizar o resultado: quais detalhes aparecerão, qual objeção será respondida, qual desejo será despertado.
+
+6. DIFERENÇA OBRIGATÓRIA ENTRE INSTAGRAM E SEU INFLUENCER
+
+INSTAGRAM — estrutura completa:
+"Oii, equipe [MARCA]! Tudo bem? [EMOJI]"
+"Me chamo Jamile Atique, sou fotógrafa e criadora de conteúdo UGC."
+Conexão específica com a marca/produto.
+Frase de transição natural para a ideia.
+Proposta visual concreta + como o produto será mostrado + resultado.
+"Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo."
+"Podemos conversar sobre essa proposta?"
+"Jamile Atique 💐"
+"https://jamileatique.my.canva.site/"
+Entre 120 e 220 palavras. Nunca remover estrutura, apenas condensar.
+
+SEU INFLUENCER — NÃO USAR: "Me chamo Jamile", apresentação longa, portfólio, link.
+Começa OBRIGATORIAMENTE com: "Oii, time [MARCA]! [EMOJI]"
+Depois: HOOK + dor/desejo + ideia + demonstração + resultado + diferencial + CTA.
+LIMITE ABSOLUTO: 900 caracteres.
+CTA preferido: "Vamos criar essa ideia juntas?" NUNCA terminar com "Aguardo retorno."
+
+7. EMOJIS
+Use 1-2 emojis estratégicos. Nunca encher.
+Beleza clean: 🤍🫧 | Perfume sofisticado: 🤎✨ | Moda preta: 🖤✨ | Joias: ✨🤎 | Casa: 🌷💖 | Fitness: 💪✨ | Mel: 🍯✨ | Vinil: 🖤🎶
+
+8. NUNCA USAR TRAVESSÃO. Substituir por vírgulas, pontos ou dois-pontos.
+
+9. NUNCA CRITICAR A MARCA. A proposta é uma soma, não uma crítica.
+
+10. LINGUAGEM DE PARCEIRA, NÃO DE PEDINTE.
+Evite: "Eu adoraria ter uma oportunidade", "Seria um sonho".
+Prefira: "Minha ideia é...", "A proposta é...", "Podemos conversar sobre essa ideia?"
+
+11. EXEMPLO DE INSTAGRAM APROVADO:
+"Oii, equipe Qolor! Tudo bem? 💛✨
+Me chamo Jamile Atique, sou fotógrafa e criadora de conteúdo UGC.
+Adorei a proposta da Qolor e, olhando o site, fiquei apaixonada pela Necessaire Stella G e tive uma ideia de conteúdo.
+A proposta é começar mostrando tudo que ela comporta, despertando aquela curiosidade de 'o que cabe aqui?', e depois mostrar como ela entra na minha rotina. Quero intercalar esses momentos com takes em macro da estampa, textura, costura e acabamento, mostrando de perto a qualidade da peça e como ela une funcionalidade e personalidade.
+Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo.
+Podemos conversar sobre essa proposta?
+Jamile Atique 💐
+https://jamileatique.my.canva.site/"
+
+12. EXEMPLO DE SEU INFLUENCER APROVADO:
+"Oii, time LEG GYM! 💪
+Quem treina pesado sabe que a maior dificuldade é encontrar um look que passe no teste do agachamento sem transparência e sem o cós enrolar na cintura.
+Minha proposta é criar um vídeo de 'Prova de Fogo', levando o conjunto para um treino de pernas real e mostrando movimentos de amplitude máxima para provar visualmente a performance da peça.
+A ideia é quebrar a objeção de quem tem medo de comprar online e a roupa não sustentar o treino. Nada de vídeo apenas posado, quero mostrar conforto e funcionalidade na prática.
+Topam esse desafio?"
+
+13. FOLLOW-UP
+Curto, educado, leve. Não repetir toda a proposta.
+Modelo: "Oii, equipe [marca]! Tudo bem? [emoji] Passando só para retomar minha mensagem anterior sobre a ideia de conteúdo que pensei para [produto]. Caso faça sentido para vocês, vou adorar desenvolver essa proposta. Podemos conversar?"
+
+14. PRINCÍPIO CENTRAL
+A Jamile não vende apenas um vídeo. Ela vende: IDEIA + DIREÇÃO CRIATIVA + ESTÉTICA + STORYTELLING + DEMONSTRAÇÃO + DESEJO.
+A melhor abordagem é a que faz a marca enxergar o próprio produto de uma maneira nova.
+
+FORMATO ESPECIAL PARA MENSAGENS PRONTAS:
+Quando gerar mensagens para copiar, use EXATAMENTE este formato:
+[texto introdutório curto]---MSG---[mensagem pronta]
+
+FORMATO ESPECIAL PARA CADASTRAR PROSPECÇÃO:
+CADASTRAR_PROSPECCAO:{"brandName":"...","contact":"@...","instagramUrl":"...","nicho":"...","status":"pendente"}
+E depois explique que foi cadastrada.`;
+
+  return prompt + extraContext + prospectsContext;
+}
+
+function callAssistantAPI(userMessage){
+  if(!hasApiKey()){
+    appendChatMessage('assistant', '🔑 Para usar o assistente no seu site, configure sua API Key da Anthropic no painel à esquerda.\n\nSe estiver usando pelo Claude.ai, a chave não é necessária — mas no GitHub Pages é preciso configurar.\n\nObtenha em: console.anthropic.com');
+    return;
+  }
+  showTyping();
+
+  // monta histórico para contexto (últimas 10 trocas)
+  var recentHistory = state.assistantMessages.slice(-20).map(function(m){
+    return {role: m.role, content: m.content};
+  });
+  // remove a última msg do user pois vamos passar abaixo
+  if(recentHistory.length > 0 && recentHistory[recentHistory.length-1].role==='user'){
+    recentHistory.pop();
+  }
+
+  var messages = recentHistory.concat([{role:'user', content: userMessage}]);
+
+  apiFetch({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1200,
+    system: buildSystemPrompt(),
+    messages: messages
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    hideTyping();
+    var reply = data.content && data.content[0] ? data.content[0].text : 'Desculpa, algo deu errado. Tente novamente.';
+
+    // detecta comando de cadastrar prospecção
+    var cadastroMatch = reply.match(/CADASTRAR_PROSPECCAO:(\{[\s\S]*?\})/);
+    if(cadastroMatch){
+      try{
+        var pData = JSON.parse(cadastroMatch[1]);
+        var igPlat = state.platforms.find(function(p){ return p.name.toLowerCase()==='instagram'; });
+        var jaExiste = state.prospects.find(function(p){
+          return p.brandName.toLowerCase()===(pData.brandName||'').toLowerCase();
+        });
+        if(!jaExiste){
+          state.prospects.push({
+            id: uid(),
+            brandName: pData.brandName||'',
+            contact: pData.contact||'',
+            instagramUrl: pData.instagramUrl||'',
+            platformId: igPlat ? igPlat.id : '',
+            nicho: pData.nicho||'',
+            notes: '',
+            status: pData.status||'pendente',
+            createdAt: Date.now()
+          });
+          saveProspects();
+        }
+        // remove o JSON da resposta antes de exibir
+        reply = reply.replace(/CADASTRAR_PROSPECCAO:\{[\s\S]*?\}/, '').trim();
+      }catch(e){}
+    }
+
+    appendChatMessage('assistant', reply);
+  })
+  .catch(function(){
+    hideTyping();
+    appendChatMessage('assistant', 'Erro de conexão. Verifique sua internet e tente novamente. 🌸');
+  });
+}
+
+/* ================================================================
+   TEMA — PALETA DE CORES
+   ================================================================ */
+
+var THEME_STORE_KEY = 'ugc_theme_v1';
+
+var THEME_PRESETS = [
+  {name:'Borboleta', bg:'#F2BCF2', accent:'#642437', text:'#642437'},
+  {name:'Romântico', bg:'#F7E3E1', accent:'#7B3741', text:'#3A1E22'},
+  {name:'Lilás & Vinho', bg:'#F8F0F5', accent:'#A73768', text:'#3D2040'},
+  {name:'Natureza', bg:'#F8F3CE', accent:'#3D591A', text:'#2A3018'},
+  {name:'Tranquilidade', bg:'#E5ADAD', accent:'#344048', text:'#1E2A30'},
+  {name:'Cisne', bg:'#FDEAE1', accent:'#4D8F8D', text:'#1E3530'},
+  {name:'Floral Rosa', bg:'#FCBCE7', accent:'#943769', text:'#3D2040'},
+  {name:'Nostalgia', bg:'#FAF4EE', accent:'#7B6040', text:'#3A2820'},
+  {name:'Cacau & Creme', bg:'#FDFBF8', accent:'#831218', text:'#3A1010'},
+  {name:'Cinza & Teal', bg:'#E2EBEF', accent:'#1E6B69', text:'#1A3530'},
+  {name:'Preto & Creme', bg:'#F7EEDF', accent:'#3E3C41', text:'#1E1E20'},
+  {name:'Rosa Malva', bg:'#FCEEE8', accent:'#A53268', text:'#3D1E35'},
+  {name:'Pêssego', bg:'#FCE0DC', accent:'#8A4E2E', text:'#3A2018'},
+  {name:'Caramelo & Bege', bg:'#FCF2E2', accent:'#834718', text:'#3A2818'},
+  {name:'Azul Bebe', bg:'#E8EBFF', accent:'#3A4A8A', text:'#1E2A50'},
+  {name:'Rosa & Lilás', bg:'#FCE8F0', accent:'#943769', text:'#3D2040'},
+  {name:'Café Late', bg:'#FAF0E8', accent:'#7A5040', text:'#3A2820'},
+  {name:'Nude & Taupe', bg:'#F8F2EE', accent:'#8E6239', text:'#3A2A20'}
+];
+
+function loadTheme(){
+  try{
+    var saved = localStorage.getItem(THEME_STORE_KEY);
+    if(saved) return JSON.parse(saved);
+  }catch(e){}
+  return {bg:'#FAF4ED', accent:'#8E3B52', text:'#2B1A1E'};
+}
+function saveTheme(theme){
+  try{ localStorage.setItem(THEME_STORE_KEY, JSON.stringify(theme)); }catch(e){}
+}
+function luminance(hex){
+  var c = hexToRgb(hex);
+  var r = c.r/255, g = c.g/255, b = c.b/255;
+  r = r<=0.03928?r/12.92:Math.pow((r+0.055)/1.055,2.4);
+  g = g<=0.03928?g/12.92:Math.pow((g+0.055)/1.055,2.4);
+  b = b<=0.03928?b/12.92:Math.pow((b+0.055)/1.055,2.4);
+  return 0.2126*r+0.7152*g+0.0722*b;
+}
+function isDark(hex){ return luminance(hex)<0.35; }
+
+function applyTheme(theme){
+  var root = document.documentElement;
+  var bgLum = luminance(theme.bg);
+  var bgDark = bgLum < 0.35;
+
+  // fundo e variações
+  root.style.setProperty('--lilac', theme.bg);
+  root.style.setProperty('--blush', adjustColor(theme.bg, bgDark ? 12 : -6));
+  root.style.setProperty('--line', adjustColor(theme.bg, bgDark ? 25 : -18));
+
+  // paper (cards, modais, sidebar) — sempre mais claro que o fundo
+  var paperColor = bgDark ? adjustColor(theme.bg, 22) : lightenToWhite(theme.bg, 0.6);
+  root.style.setProperty('--paper', paperColor);
+
+  // acento
+  root.style.setProperty('--magenta', theme.accent);
+  root.style.setProperty('--magenta-deep', adjustColor(theme.accent, -18));
+  root.style.setProperty('--magenta-tint', hexToTint(theme.accent, 0.14));
+
+  // texto — garante contraste mínimo com o paper
+  var textColor = theme.text;
+  // se fundo escuro e texto também escuro, usa texto claro
+  if(bgDark && luminance(textColor) < 0.2){
+    textColor = '#F0EAE4';
+  }
+  // se fundo claro mas texto muito claro, escurece
+  if(!bgDark && luminance(textColor) > 0.5){
+    textColor = '#2A2018';
+  }
+  root.style.setProperty('--ink', textColor);
+  root.style.setProperty('--ink-soft', hexToTint(textColor, bgDark ? 0.55 : 0.42));
+  root.style.setProperty('--ink-faint', hexToTint(textColor, bgDark ? 0.35 : 0.25));
+}
+
+function lightenToWhite(hex, factor){
+  var c = hexToRgb(hex);
+  var r = Math.round(c.r + (255-c.r)*factor);
+  var g = Math.round(c.g + (255-c.g)*factor);
+  var b = Math.round(c.b + (255-c.b)*factor);
+  return rgbToHex(r,g,b);
+}
+function hexToRgb(hex){
+  hex = hex.replace('#','');
+  if(hex.length===3) hex = hex.split('').map(function(c){return c+c;}).join('');
+  var n = parseInt(hex,16);
+  return {r:(n>>16)&255, g:(n>>8)&255, b:n&255};
+}
+function rgbToHex(r,g,b){
+  return '#'+[r,g,b].map(function(v){ return Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0'); }).join('').toUpperCase();
+}
+function adjustColor(hex, amount){
+  var c = hexToRgb(hex);
+  return rgbToHex(c.r+amount, c.g+amount, c.b+amount);
+}
+function hexToTint(hex, alpha){
+  var c = hexToRgb(hex);
+  var r = Math.round(c.r + (255-c.r)*(1-alpha));
+  var g = Math.round(c.g + (255-c.g)*(1-alpha));
+  var b = Math.round(c.b + (255-c.b)*(1-alpha));
+  return rgbToHex(r,g,b);
+}
+function hsvToRgb(h,s,v){
+  var r,g,b,i=Math.floor(h*6),f=h*6-i,p=v*(1-s),q=v*(1-f*s),t=v*(1-(1-f)*s);
+  switch(i%6){case 0:r=v,g=t,b=p;break;case 1:r=q,g=v,b=p;break;case 2:r=p,g=v,b=t;break;case 3:r=p,g=q,b=v;break;case 4:r=t,g=p,b=v;break;case 5:r=v,g=p,b=q;break;}
+  return {r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};
+}
+function rgbToHsv(r,g,b){
+  r/=255;g/=255;b/=255;
+  var max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min,h,s=max===0?0:d/max,v=max;
+  if(max===min){h=0;}
+  else{switch(max){case r:h=(g-b)/d+(g<b?6:0);break;case g:h=(b-r)/d+2;break;case b:h=(r-g)/d+4;break;}h/=6;}
+  return {h,s,v};
+}
+
+function renderTheme(){
+  var currentTheme = loadTheme();
+  var html = '<div class="page-head"><div><h1>Tema</h1><p class="page-sub">Personalize as cores e veja a prévia ao vivo.</p></div></div>';
+
+  html += '<div style="margin-bottom:18px;"><p style="font-size:13px; color:var(--ink-soft); margin:0 0 10px; font-weight:600;">Temas prontos</p><div class="theme-presets" id="themePresets">';
+  THEME_PRESETS.forEach(function(p,i){
+    html += '<button class="theme-preset-btn" data-preset="'+i+'" title="'+escapeHtml(p.name)+'">'+
+      '<span style="display:flex;border-radius:999px;overflow:hidden;width:22px;height:22px;flex-shrink:0;border:1px solid rgba(0,0,0,0.1);">'+
+        '<span style="flex:1;background:'+p.bg+';"></span>'+
+        '<span style="flex:1;background:'+p.accent+';"></span>'+
+      '</span>'+
+      escapeHtml(p.name)+
+    '</button>';
+  });
+  html += '</div></div>';
+
+  // layout: seletores | prévia
+  html += '<div style="display:grid; grid-template-columns:1fr 360px; gap:24px; align-items:start;">';
+
+  // coluna esquerda — seletores
+  html += '<div>';
+  var colorDefs = [
+    {
+      key:'bg', label:'🎨 Cor de fundo',
+      desc:'Fundo geral do app e das páginas',
+      elements:'Fundo das páginas · Fundo do kanban · Fundo da sidebar'
+    },
+    {
+      key:'accent', label:'✨ Cor de destaque',
+      desc:'Botões principais, links, elementos ativos e destaques',
+      elements:'Botões · Tabs ativas · Badges · Bordas de foco · Status badges'
+    },
+    {
+      key:'text', label:'✍️ Cor do texto',
+      desc:'Texto principal em todo o app',
+      elements:'Títulos · Parágrafos · Labels · Nomes de marcas'
+    }
+  ];
+
+  colorDefs.forEach(function(cd){
+    html += '<div class="theme-card" style="margin-bottom:16px;">' +
+      '<p class="theme-card-label">'+cd.label+'</p>' +
+      '<p style="font-size:12px; color:var(--ink-faint); margin:-6px 0 4px; line-height:1.5;">Afeta: <em>'+escapeHtml(cd.elements)+'</em></p>' +
+      '<div class="color-picker-wrap" id="picker-'+cd.key+'">' +
+        '<div class="color-canvas-wrap" id="canvas-wrap-'+cd.key+'">' +
+          '<canvas class="color-canvas" id="canvas-'+cd.key+'" width="400" height="140"></canvas>' +
+          '<div class="color-cursor" id="cursor-'+cd.key+'"></div>' +
+        '</div>' +
+        '<div class="hue-slider-wrap">' +
+          '<input class="hue-slider" type="range" min="0" max="360" value="0" id="hue-'+cd.key+'" />' +
+        '</div>' +
+        '<div class="color-input-row">' +
+          '<div class="color-preview-swatch" id="swatch-'+cd.key+'" style="background:'+escapeHtml(currentTheme[cd.key]||'#8E3B52')+';"></div>' +
+          '<div class="color-mode-toggle">' +
+            '<button class="color-mode-btn active" data-mode="hex" data-target="'+cd.key+'">HEX</button>' +
+            '<button class="color-mode-btn" data-mode="rgb" data-target="'+cd.key+'">RGB</button>' +
+          '</div>' +
+        '</div>' +
+        '<div id="hex-wrap-'+cd.key+'">' +
+          '<input class="color-hex-input" type="text" id="hex-'+cd.key+'" value="'+escapeHtml((currentTheme[cd.key]||'#8E3B52').replace('#',''))+'" maxlength="6" placeholder="ex: 8E3B52" />' +
+          '<p style="font-size:11px; color:var(--ink-faint); margin:4px 0 0;">6 caracteres sem o #</p>' +
+        '</div>' +
+        '<div id="rgb-wrap-'+cd.key+'" style="display:none;">' +
+          '<div class="color-rgb-row">' +
+            '<div><input class="color-rgb-input" type="number" min="0" max="255" id="rgb-r-'+cd.key+'" placeholder="R" /><p class="color-rgb-label">R</p></div>' +
+            '<div><input class="color-rgb-input" type="number" min="0" max="255" id="rgb-g-'+cd.key+'" placeholder="G" /><p class="color-rgb-label">G</p></div>' +
+            '<div><input class="color-rgb-input" type="number" min="0" max="255" id="rgb-b-'+cd.key+'" placeholder="B" /><p class="color-rgb-label">B</p></div>' +
+          '</div>' +
+          '<p style="font-size:11px; color:var(--ink-faint); margin:4px 0 0;">ex: 252, 225, 231</p>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+
+  html += '<div style="display:flex; gap:12px; flex-wrap:wrap;">' +
+    '<button class="btn btn-primary" id="btnApplyTheme">✓ Aplicar tema</button>' +
+    '<button class="btn" id="btnResetTheme">Restaurar padrão</button>' +
+  '</div></div>';
+
+  // coluna direita — prévia ao vivo
+  html += '<div style="position:sticky; top:20px;">' +
+    '<p style="font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin:0 0 10px;">Prévia ao vivo</p>' +
+    '<div id="themePreview" style="border-radius:var(--radius-l); overflow:hidden; border:1px solid var(--line); box-shadow:var(--shadow-soft);">' +
+      buildThemePreview(currentTheme) +
+    '</div>' +
+    '<p style="font-size:11.5px; color:var(--ink-faint); margin:10px 0 0; text-align:center;">A prévia atualiza enquanto você escolhe as cores</p>' +
+  '</div>';
+
+  html += '</div>'; // fim grid
+
+  document.getElementById('pageContent').innerHTML = html;
+
+  // inicializar cada picker
+  var pickerState = {};
+  colorDefs.forEach(function(cd){
+    var hex = currentTheme[cd.key] || '#8E3B52';
+    var rgb = hexToRgb(hex);
+    var hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+    pickerState[cd.key] = {h: hsv.h, s: hsv.s, v: hsv.v, hex: hex.replace('#','').toUpperCase()};
+    initColorPicker(cd.key, pickerState, function(){
+      // callback: atualiza prévia ao vivo
+      var liveTheme = {
+        bg: '#'+pickerState.bg.hex,
+        accent: '#'+pickerState.accent.hex,
+        text: '#'+pickerState.text.hex
+      };
+      var prev = document.getElementById('themePreview');
+      if(prev) prev.innerHTML = buildThemePreview(liveTheme);
+    });
+  });
+
+  // presets
+  document.getElementById('themePresets').addEventListener('click', function(e){
+    var btn = e.target.closest('[data-preset]');
+    if(!btn) return;
+    var preset = THEME_PRESETS[parseInt(btn.getAttribute('data-preset'))];
+    colorDefs.forEach(function(cd){
+      var hex = preset[cd.key];
+      var rgb = hexToRgb(hex);
+      var hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      pickerState[cd.key] = {h:hsv.h, s:hsv.s, v:hsv.v, hex:hex.replace('#','').toUpperCase()};
+      drawCanvas(cd.key, pickerState[cd.key].h);
+      updatePickerUI(cd.key, pickerState[cd.key]);
+    });
+    var liveTheme = {bg:preset.bg, accent:preset.accent, text:preset.text};
+    var prev = document.getElementById('themePreview');
+    if(prev) prev.innerHTML = buildThemePreview(liveTheme);
+  });
+
+  // aplicar
+  document.getElementById('btnApplyTheme').addEventListener('click', function(){
+    var theme = {};
+    colorDefs.forEach(function(cd){ theme[cd.key] = '#'+pickerState[cd.key].hex; });
+    saveTheme(theme);
+    applyTheme(theme);
+    showToast('Tema aplicado! 🎨');
+  });
+
+  // restaurar
+  document.getElementById('btnResetTheme').addEventListener('click', function(){
+    var def = {bg:'#FAF4ED', accent:'#8E3B52', text:'#3A2B2A'};
+    saveTheme(def);
+    applyTheme(def);
+    showToast('Tema restaurado.');
+    renderTheme();
+  });
+}
+
+function buildThemePreview(t){
+  var bg = t.bg||'#FAF4ED';
+  var accent = t.accent||'#8E3B52';
+  var text = t.text||'#3A2B2A';
+  var accentTint = hexToTint(accent, 0.15);
+  var textSoft = hexToTint(text, 0.45);
+  var bgDeep = adjustColor(bg, -10);
+  var line = adjustColor(bg, -15);
+
+  return '<div style="background:'+bg+'; font-family:Inter,sans-serif; padding:0;">' +
+
+    // mini sidebar
+    '<div style="display:flex; height:320px;">' +
+      '<div style="width:110px; background:#fff; border-right:1px solid '+line+'; padding:12px 8px; display:flex; flex-direction:column; gap:4px; flex-shrink:0;">' +
+        '<div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">' +
+          '<div style="width:20px;height:20px;border-radius:6px;background:'+accent+';"></div>' +
+          '<span style="font-size:10px;font-weight:700;color:'+text+';">Studio</span>' +
+        '</div>' +
+        ['painel','trabalhos','prospecção','planner','marcas'].map(function(item, i){
+          var isActive = i===0;
+          return '<div style="padding:5px 7px; border-radius:6px; font-size:10px; font-weight:'+(isActive?'600':'500')+'; color:'+(isActive?accent:textSoft)+'; background:'+(isActive?accentTint:'transparent')+';">'+item+'</div>';
+        }).join('') +
+      '</div>' +
+
+      // conteúdo principal
+      '<div style="flex:1; padding:16px; overflow:hidden;">' +
+        // título
+        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">' +
+          '<span style="font-size:14px; font-weight:700; color:'+text+';">Painel</span>' +
+          '<div style="background:'+accent+'; color:#fff; font-size:9px; font-weight:700; padding:5px 10px; border-radius:6px;">+ Novo trabalho</div>' +
+        '</div>' +
+
+        // cards de métrica
+        '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px;">' +
+          '<div style="background:#fff; border:1px solid '+line+'; border-radius:8px; padding:8px 10px;">' +
+            '<p style="font-size:8px; font-weight:700; color:'+textSoft+'; margin:0 0 3px; text-transform:uppercase;">A receber</p>' +
+            '<p style="font-size:13px; font-weight:700; color:'+accent+'; margin:0;">R$ 3.760</p>' +
+          '</div>' +
+          '<div style="background:#fff; border:1px solid '+line+'; border-radius:8px; padding:8px 10px;">' +
+            '<p style="font-size:8px; font-weight:700; color:'+textSoft+'; margin:0 0 3px; text-transform:uppercase;">Recebido</p>' +
+            '<p style="font-size:13px; font-weight:700; color:#4E7A5C; margin:0;">R$ 2.935</p>' +
+          '</div>' +
+        '</div>' +
+
+        // mini kanban
+        '<div style="display:flex; gap:6px;">' +
+          [
+            {col:'Prospecção', count:19, cards:['Auraya Joias','Espaço Tecelã']},
+            {col:'Enviado', count:4, cards:['Danay','Noir store']}
+          ].map(function(col){
+            return '<div style="flex:1; min-width:0;">' +
+              '<div style="font-size:8px; font-weight:700; color:'+textSoft+'; text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px;">'+col.col+' ('+col.count+')</div>' +
+              '<div style="background:rgba(255,255,255,0.5); border:1.5px dashed '+line+'; border-radius:8px; padding:5px; display:flex; flex-direction:column; gap:4px;">' +
+                col.cards.map(function(name){
+                  return '<div style="background:#fff; border:1px solid '+line+'; border-radius:6px; padding:6px 7px; font-size:9px; font-weight:600; color:'+text+';">'+name+'</div>';
+                }).join('') +
+              '</div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+
+        // botão exemplo
+        '<div style="margin-top:10px; display:flex; gap:6px;">' +
+          '<div style="background:'+accent+'; color:#fff; font-size:9px; font-weight:700; padding:6px 12px; border-radius:999px;">Aplicar tema</div>' +
+          '<div style="background:#fff; border:1px solid '+line+'; color:'+textSoft+'; font-size:9px; font-weight:600; padding:6px 12px; border-radius:999px;">Cancelar</div>' +
+        '</div>' +
+
+      '</div>' +
+    '</div>' +
+
+  '</div>';
+}
+
+function initColorPicker(key, pickerState, onUpdate){
+  var canvas = document.getElementById('canvas-'+key);
+  var cursor = document.getElementById('cursor-'+key);
+  var hueSlider = document.getElementById('hue-'+key);
+  var hexInput = document.getElementById('hex-'+key);
+  var swatch = document.getElementById('swatch-'+key);
+  var rgbR = document.getElementById('rgb-r-'+key);
+  var rgbG = document.getElementById('rgb-g-'+key);
+  var rgbB = document.getElementById('rgb-b-'+key);
+  var hexWrap = document.getElementById('hex-wrap-'+key);
+  var rgbWrap = document.getElementById('rgb-wrap-'+key);
+
+  // set hue slider
+  hueSlider.value = Math.round(pickerState[key].h * 360);
+  drawCanvas(key, pickerState[key].h);
+  updatePickerUI(key, pickerState[key]);
+
+  // toggle HEX / RGB
+  document.querySelectorAll('[data-mode][data-target="'+key+'"]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('[data-mode][data-target="'+key+'"]').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var mode = btn.getAttribute('data-mode');
+      hexWrap.style.display = mode==='hex' ? '' : 'none';
+      rgbWrap.style.display = mode==='rgb' ? '' : 'none';
+      if(mode==='rgb'){
+        var rgb = hexToRgb('#'+pickerState[key].hex);
+        rgbR.value = rgb.r; rgbG.value = rgb.g; rgbB.value = rgb.b;
+      }
+    });
+  });
+
+  // drag no canvas
+  var dragging = false;
+  function pickFromCanvas(e){
+    var rect = canvas.getBoundingClientRect();
+    var x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    var y = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+    pickerState[key].s = x;
+    pickerState[key].v = 1 - y;
+    var rgb = hsvToRgb(pickerState[key].h, pickerState[key].s, pickerState[key].v);
+    pickerState[key].hex = rgbToHex(rgb.r, rgb.g, rgb.b).replace('#','').toUpperCase();
+    updatePickerUI(key, pickerState[key]);
+    if(rgbR) syncRgbInputs(key, pickerState[key]);
+    if(onUpdate) onUpdate();
+  }
+  canvas.addEventListener('mousedown', function(e){ dragging=true; pickFromCanvas(e); });
+  canvas.addEventListener('touchstart', function(e){ dragging=true; pickFromCanvas(e.touches[0]); e.preventDefault(); }, {passive:false});
+  window.addEventListener('mousemove', function(e){ if(dragging) pickFromCanvas(e); });
+  window.addEventListener('touchmove', function(e){ if(dragging) pickFromCanvas(e.touches[0]); }, {passive:false});
+  window.addEventListener('mouseup', function(){ dragging=false; });
+  window.addEventListener('touchend', function(){ dragging=false; });
+
+  // hue slider
+  hueSlider.addEventListener('input', function(){
+    pickerState[key].h = parseInt(hueSlider.value) / 360;
+    drawCanvas(key, pickerState[key].h);
+    var rgb = hsvToRgb(pickerState[key].h, pickerState[key].s, pickerState[key].v);
+    pickerState[key].hex = rgbToHex(rgb.r, rgb.g, rgb.b).replace('#','').toUpperCase();
+    updatePickerUI(key, pickerState[key]);
+    syncRgbInputs(key, pickerState[key]);
+    if(onUpdate) onUpdate();
+  });
+
+  hexInput.addEventListener('input', function(){
+    var val = hexInput.value.replace(/[^0-9a-fA-F]/g,'');
+    hexInput.value = val;
+    if(val.length===6){
+      var rgb = hexToRgb('#'+val);
+      var hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      pickerState[key].h = hsv.h; pickerState[key].s = hsv.s; pickerState[key].v = hsv.v;
+      pickerState[key].hex = val.toUpperCase();
+      hueSlider.value = Math.round(hsv.h*360);
+      drawCanvas(key, hsv.h);
+      updatePickerUI(key, pickerState[key]);
+      syncRgbInputs(key, pickerState[key]);
+      if(onUpdate) onUpdate();
+    }
+  });
+
+  function applyRgbInput(){
+    var r = Math.max(0,Math.min(255,parseInt(rgbR.value)||0));
+    var g = Math.max(0,Math.min(255,parseInt(rgbG.value)||0));
+    var b = Math.max(0,Math.min(255,parseInt(rgbB.value)||0));
+    var hex = rgbToHex(r,g,b);
+    var hsv = rgbToHsv(r,g,b);
+    pickerState[key].h = hsv.h; pickerState[key].s = hsv.s; pickerState[key].v = hsv.v;
+    pickerState[key].hex = hex.replace('#','').toUpperCase();
+    hueSlider.value = Math.round(hsv.h*360);
+    drawCanvas(key, hsv.h);
+    updatePickerUI(key, pickerState[key]);
+    if(onUpdate) onUpdate();
+  }
+  [rgbR, rgbG, rgbB].forEach(function(inp){ if(inp) inp.addEventListener('input', applyRgbInput); });
+}
+
+function syncRgbInputs(key, ps){
+  var rgb = hexToRgb('#'+ps.hex);
+  var r = document.getElementById('rgb-r-'+key);
+  var g = document.getElementById('rgb-g-'+key);
+  var b = document.getElementById('rgb-b-'+key);
+  if(r && document.activeElement!==r) r.value = rgb.r;
+  if(g && document.activeElement!==g) g.value = rgb.g;
+  if(b && document.activeElement!==b) b.value = rgb.b;
+}
+
+function drawCanvas(key, hue){
+  var canvas = document.getElementById('canvas-'+key);
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var w = canvas.width, h = canvas.height;
+  var rgb = hsvToRgb(hue, 1, 1);
+  var hueColor = 'rgb('+rgb.r+','+rgb.g+','+rgb.b+')';
+  // gradiente horizontal: branco → hue
+  var gradH = ctx.createLinearGradient(0,0,w,0);
+  gradH.addColorStop(0,'#fff');
+  gradH.addColorStop(1, hueColor);
+  ctx.fillStyle = gradH;
+  ctx.fillRect(0,0,w,h);
+  // gradiente vertical: transparente → preto
+  var gradV = ctx.createLinearGradient(0,0,0,h);
+  gradV.addColorStop(0,'rgba(0,0,0,0)');
+  gradV.addColorStop(1,'rgba(0,0,0,1)');
+  ctx.fillStyle = gradV;
+  ctx.fillRect(0,0,w,h);
+}
+
+function updatePickerUI(key, ps){
+  var cursor = document.getElementById('cursor-'+key);
+  var hexInput = document.getElementById('hex-'+key);
+  var swatch = document.getElementById('swatch-'+key);
+  var canvas = document.getElementById('canvas-'+key);
+  if(!canvas) return;
+  var rect = canvas.getBoundingClientRect();
+  var x = ps.s * 100;
+  var y = (1-ps.v) * 100;
+  if(cursor){ cursor.style.left=x+'%'; cursor.style.top=y+'%'; }
+  if(hexInput && document.activeElement !== hexInput) hexInput.value = ps.hex;
+  var fullHex = '#'+ps.hex;
+  if(swatch) swatch.style.background = fullHex;
+}
+
 /* ---------------- brand logo (floral illustration, embedded SVG) ---------------- */
 var BRAND_LOGO_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">' +
   '<rect width="100" height="100" rx="22" fill="#F3E7DD"/>' +
@@ -4576,6 +5951,7 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 
 (async function init(){
   applyBrandLogo();
+  applyTheme(loadTheme());
   setupCloudAuthUI();
   navigate('dashboard');
   await loadAll();
@@ -4588,6 +5964,4 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 </script>
 </body>
 </html>
-
-
 
