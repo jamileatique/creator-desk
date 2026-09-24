@@ -5384,7 +5384,10 @@ function callAssistantAPI(userMessage){
   .then(function(r){ return r.json(); })
   .then(function(data){
     hideTyping();
-    var reply = data.content && data.content[0] ? data.content[0].text : 'Desculpa, algo deu errado. Tente novamente.';
+    var reply = data.content && data.content[0] ? data.content[0].text : '';
+    if(!reply){
+      reply = 'Erro da API: ' + JSON.stringify(data).slice(0, 200);
+    }
 
     // detecta comando de cadastrar prospecção
     var cadastroMatch = reply.match(/CADASTRAR_PROSPECCAO:(\{[\s\S]*?\})/);
@@ -5416,9 +5419,9 @@ function callAssistantAPI(userMessage){
 
     appendChatMessage('assistant', reply);
   })
-  .catch(function(){
+  .catch(function(err){
     hideTyping();
-    appendChatMessage('assistant', 'Erro de conexão. Verifique sua internet e tente novamente. 🌸');
+    appendChatMessage('assistant', 'Erro: '+( err && err.message ? err.message : JSON.stringify(err)) + '\n\nVerifique se a API Key está salva corretamente no painel esquerdo.');
   });
 }
 
