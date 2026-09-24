@@ -4889,7 +4889,11 @@ function hasApiKey(){
 }
 function apiFetch(body){
   var key = getApiKey();
-  var headers = {'Content-Type':'application/json', 'anthropic-dangerous-direct-browser-access':'true'};
+  var headers = {
+    'Content-Type':'application/json',
+    'anthropic-version':'2023-06-01',
+    'anthropic-dangerous-direct-browser-access':'true'
+  };
   if(key) headers['x-api-key'] = key;
   return fetch('https://api.anthropic.com/v1/messages', {
     method:'POST', headers:headers, body:JSON.stringify(body)
