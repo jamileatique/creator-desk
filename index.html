@@ -1717,6 +1717,13 @@ function findOrCreateBrandByName(rawName, extra){
 /* ---------------- importar print do Instagram com IA ---------------- */
 function processMultiplePrints(files){
   if(!files || files.length===0) return;
+  // bloqueia se não estiver logada — evita gastar créditos sem salvar na conta
+  if(!cloudUser){
+    showToast('⚠️ Faça login com Google antes de importar prints para salvar na sua conta.');
+    var resultDiv = document.getElementById('prospectImportResult');
+    if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--amber-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--amber-deep); margin-bottom:16px;">⚠️ Você precisa estar logada com Google para importar prints. Assim as marcas ficam salvas na sua conta e aparecem em todos os dispositivos.</div>';
+    return;
+  }
   var resultDiv = document.getElementById('prospectImportResult');
 
   if(files.length === 1){
