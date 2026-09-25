@@ -1185,6 +1185,7 @@ function getStatePayload(){
     notificationsRead: state.notificationsRead,
     exchangeRates: state.exchangeRates,
     nichos: state.nichos,
+    creatorProfile: state.creatorProfile,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
 }
@@ -1199,9 +1200,9 @@ function pushAllToCloud(){
   if(!ref) return Promise.resolve();
   return ref.set(getStatePayload(), {merge: true}).then(function(){
     updateSyncUI();
-  }).catch(function(){
+  }).catch(function(err){
     setCloudSyncStatus('off', 'Falha ao sincronizar. Dados salvos neste navegador.');
-    showToast('Falha ao sincronizar na nuvem.');
+    showToast('Falha ao sincronizar: ' + (err && err.message ? err.message : 'erro desconhecido'));
   });
 }
 function persistAllLocalQuiet(){
@@ -1247,6 +1248,9 @@ function applyRemoteData(data){
   state.exchangeRates = data.exchangeRates && typeof data.exchangeRates === 'object' && !Array.isArray(data.exchangeRates)
     ? Object.assign({BRL:1}, data.exchangeRates) : state.exchangeRates;
   state.nichos = ensureArray(data.nichos);
+  if(data.creatorProfile && typeof data.creatorProfile === 'object'){
+    state.creatorProfile = data.creatorProfile;
+  }
   applyingRemote = false;
 }
 function subscribeCloudData(){
@@ -4903,6 +4907,7 @@ function apiFetch(body){
 function saveCreatorProfile(profile){
   state.creatorProfile = profile;
   saveKey(STORE.creatorProfile, profile);
+  scheduleCloudSync();
 }
 
 var lastProspectId = null; // id do prospect atualmente sendo trabalhado no chat
