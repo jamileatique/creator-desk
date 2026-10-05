@@ -191,7 +191,7 @@
   .pill-tab.active{background:var(--ink); color:#fff; border-color:var(--ink);}
 
   /* ---- kanban ---- */
-  .kanban{display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; align-items:flex-start; height:calc(100vh - 270px); min-height:340px;}
+  .kanban{display:flex; gap:16px; overflow-x:auto; padding-bottom:8px; align-items:stretch; height:calc(100vh - 270px); min-height:340px;}
   .kanban-col{
     flex:0 0 270px; width:270px;
     display:flex; flex-direction:column; height:100%;
@@ -1620,8 +1620,9 @@ function renderProspectKanban(){
   var wrap = document.getElementById('prospectKanban');
   if(!wrap) return;
 
-  // salva scroll horizontal do wrapper E scroll vertical de cada coluna
+  // salva scroll horizontal do wrapper, vertical de cada coluna E do #main
   var savedScrollX = wrap.scrollLeft;
+  var savedMainY = (document.getElementById('main') || {}).scrollTop || 0;
   var savedColScrolls = {};
   wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
     var key = col.getAttribute('data-prospect-col');
@@ -1640,9 +1641,11 @@ function renderProspectKanban(){
   });
   wrap.innerHTML = html;
 
-  // restaura scroll horizontal e vertical de cada coluna
+  // restaura todos os scrolls
   requestAnimationFrame(function(){
     wrap.scrollLeft = savedScrollX;
+    var mainEl = document.getElementById('main');
+    if(mainEl && savedMainY) mainEl.scrollTop = savedMainY;
     wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
       var key = col.getAttribute('data-prospect-col');
       if(savedColScrolls[key]) col.scrollTop = savedColScrolls[key];
@@ -2047,8 +2050,9 @@ function renderKanban(){
   var wrap = document.getElementById('kanbanWrap');
   if(!wrap) return;
 
-  // salva scroll horizontal e vertical de cada coluna
+  // salva scroll horizontal, vertical de cada coluna E do #main
   var savedScrollX = wrap.scrollLeft;
+  var savedMainY = (document.getElementById('main') || {}).scrollTop || 0;
   var savedColScrolls = {};
   wrap.querySelectorAll('[data-status-col]').forEach(function(col){
     var key = col.getAttribute('data-status-col');
@@ -2067,9 +2071,11 @@ function renderKanban(){
   });
   wrap.innerHTML = html;
 
-  // restaura scrolls
+  // restaura todos os scrolls
   requestAnimationFrame(function(){
     wrap.scrollLeft = savedScrollX;
+    var mainEl = document.getElementById('main');
+    if(mainEl && savedMainY) mainEl.scrollTop = savedMainY;
     wrap.querySelectorAll('[data-status-col]').forEach(function(col){
       var key = col.getAttribute('data-status-col');
       if(savedColScrolls[key]) col.scrollTop = savedColScrolls[key];
