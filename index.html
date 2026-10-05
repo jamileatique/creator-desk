@@ -1618,7 +1618,16 @@ function renderProspects(){
 
 function renderProspectKanban(){
   var wrap = document.getElementById('prospectKanban');
-  var savedScroll = wrap ? wrap.scrollLeft : 0;
+  if(!wrap) return;
+
+  // salva scroll horizontal do wrapper E scroll vertical de cada coluna
+  var savedScrollX = wrap.scrollLeft;
+  var savedColScrolls = {};
+  wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
+    var key = col.getAttribute('data-prospect-col');
+    if(col.scrollTop > 0) savedColScrolls[key] = col.scrollTop;
+  });
+
   var html = '';
   PROSPECT_STATUS_FLOW.forEach(function(s){
     var items = state.prospects.filter(function(p){ return p.status===s.key; });
@@ -1630,8 +1639,15 @@ function renderProspectKanban(){
     html += '</div></div>';
   });
   wrap.innerHTML = html;
-  // restaura posição de scroll
-  requestAnimationFrame(function(){ if(wrap) wrap.scrollLeft = savedScroll; });
+
+  // restaura scroll horizontal e vertical de cada coluna
+  requestAnimationFrame(function(){
+    wrap.scrollLeft = savedScrollX;
+    wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
+      var key = col.getAttribute('data-prospect-col');
+      if(savedColScrolls[key]) col.scrollTop = savedColScrolls[key];
+    });
+  });
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
     card.addEventListener('click', function(){
@@ -2031,6 +2047,14 @@ function renderKanban(){
   var wrap = document.getElementById('kanbanWrap');
   if(!wrap) return;
 
+  // salva scroll horizontal e vertical de cada coluna
+  var savedScrollX = wrap.scrollLeft;
+  var savedColScrolls = {};
+  wrap.querySelectorAll('[data-status-col]').forEach(function(col){
+    var key = col.getAttribute('data-status-col');
+    if(col.scrollTop > 0) savedColScrolls[key] = col.scrollTop;
+  });
+
   var html = '';
   KANBAN_STATUSES.forEach(function(s){
     var colJobs = jobs.filter(function(j){ return j.status===s.key; });
@@ -2042,6 +2066,15 @@ function renderKanban(){
     html += '</div></div>';
   });
   wrap.innerHTML = html;
+
+  // restaura scrolls
+  requestAnimationFrame(function(){
+    wrap.scrollLeft = savedScrollX;
+    wrap.querySelectorAll('[data-status-col]').forEach(function(col){
+      var key = col.getAttribute('data-status-col');
+      if(savedColScrolls[key]) col.scrollTop = savedColScrolls[key];
+    });
+  });
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
     card.addEventListener('click', function(e){
