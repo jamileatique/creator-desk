@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -5155,28 +5154,52 @@ function appendChatMessage(role, content, save){
       });
       btnRow.appendChild(copyBtn);
 
-      // botão de atualizar status — só aparece se houver prospect associado
-      if(nextStatus && lastProspectId){
-        (function(pid, ns, lbl2){
+      // seletor de status + botão de atualizar
+      if(lastProspectId){
+        (function(pid, defaultStatus){
+          // seletor de para qual status mover
+          var statusSelect = document.createElement('select');
+          statusSelect.style.cssText = 'padding:5px 8px; border-radius:var(--radius-s); border:1px solid var(--sage); background:var(--sage-tint); font-size:12px; color:var(--sage-deep); outline:none; cursor:pointer;';
+          PROSPECT_STATUS_FLOW.forEach(function(s){
+            var opt = document.createElement('option');
+            opt.value = s.key;
+            opt.textContent = s.label;
+            if(s.key === defaultStatus) opt.selected = true;
+            statusSelect.appendChild(opt);
+          });
+          // opção cancelado
+          var optCanc = document.createElement('option');
+          optCanc.value = 'recusou'; optCanc.textContent = 'Recusou';
+          statusSelect.appendChild(optCanc);
+
           var statusBtn = document.createElement('button');
           statusBtn.className = 'chat-copy-btn';
-          var statusLabels = {enviado:'✓ Marcar como Enviado', followup1:'✓ Marcar Follow-up 1', followup2:'✓ Marcar Follow-up 2'};
-          statusBtn.innerHTML = statusLabels[ns] || '✓ Atualizar status';
+          statusBtn.innerHTML = '✓ Mover prospecção';
           statusBtn.style.borderColor = 'var(--sage)';
           statusBtn.style.color = 'var(--sage-deep)';
+
           statusBtn.addEventListener('click', function(){
             var p = state.prospects.find(function(x){ return x.id===pid; });
             if(p){
-              p.status = ns;
+              var chosenStatus = statusSelect.value;
+              var chosenLabel = (PROSPECT_STATUS_FLOW.find(function(s){return s.key===chosenStatus;})||{}).label || chosenStatus;
+              p.status = chosenStatus;
               saveProspects();
-              statusBtn.innerHTML = '✓ Atualizado!';
+              statusBtn.innerHTML = '✓ Movida para "'+chosenLabel+'"!';
               statusBtn.disabled = true;
               statusBtn.style.opacity = '0.6';
-              showToast('Status atualizado para "'+lbl2+'" na prospecção.');
+              statusSelect.disabled = true;
+              showToast('Prospecção movida para "'+chosenLabel+'".');
+              // atualiza o kanban de prospecção se estiver aberto
+              if(state.route === 'prospects'){
+                renderProspectKanban();
+              }
             }
           });
+
+          btnRow.appendChild(statusSelect);
           btnRow.appendChild(statusBtn);
-        })(lastProspectId, nextStatus, (PROSPECT_STATUS_FLOW.find(function(s){return s.key===nextStatus;})||{}).label||nextStatus);
+        })(lastProspectId, nextStatus || 'enviado');
       }
 
       msgWrap.appendChild(lbl);
