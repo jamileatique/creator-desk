@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1937,7 +1938,8 @@ function openProspectModal(prospectId, presetStatus, prefill){
     document.getElementById('pDelete').addEventListener('click', function(){
       if(confirm('Excluir esta prospecção?')){
         state.prospects = state.prospects.filter(function(x){ return x.id!==p.id; });
-        saveProspects(); close(); showToast('Prospecção excluída.'); render();
+        saveProspects(); close(); showToast('Prospecção excluída.');
+        if(state.route==='prospects') renderProspectKanban(); else render();
       }
     });
   }
@@ -1970,7 +1972,7 @@ function openProspectModal(prospectId, presetStatus, prefill){
       close();
       if(newStatus==='fechou'){ convertProspectToJob(data); showToast('Prospecção criada e trabalho gerado.'); }
       else showToast('Prospecção criada.');
-      render();
+      if(state.route==='prospects') renderProspectKanban(); else render();
     } else {
       var statusChanged = p.status!==newStatus;
       Object.assign(p, data);
@@ -1979,10 +1981,11 @@ function openProspectModal(prospectId, presetStatus, prefill){
       if(statusChanged && newStatus==='fechou'){
         convertProspectToJob(p);
         showToast('Prospecção fechada — trabalho criado.');
+        render();
       } else {
         showToast('Alterações salvas.');
+        if(state.route==='prospects') renderProspectKanban(); else render();
       }
-      render();
     }
   });
 }
@@ -4029,7 +4032,7 @@ function openJobModal(jobId, presetStatus){
         saveJobs();
         close();
         showToast('Trabalho excluído.');
-        render();
+        if(state.route==='jobs') renderKanban(); else render();
       }
     });
   }
@@ -4097,7 +4100,8 @@ function openJobModal(jobId, presetStatus){
     btn.disabled = true;
     saveJobs().then(function(){
       close();
-      render();
+      if(state.route==='jobs') renderKanban();
+      else render();
     }).catch(function(){
       btn.disabled = false;
     });
