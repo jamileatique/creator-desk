@@ -6196,8 +6196,11 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
     showApp(); return;
   }
 
-  // verifica se Firebase Auth já tem sessão ativa
-  if(typeof firebase !== 'undefined' && firebase.auth){
+  // garante que o Firebase está inicializado antes de usar o auth
+  if(typeof firebase !== 'undefined' && isCloudConfigured()){
+    if(!firebase.apps.length){
+      firebase.initializeApp(FIREBASE_CONFIG);
+    }
     firebase.auth().onAuthStateChanged(function(user){
       if(user){
         showApp();
@@ -6206,6 +6209,7 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
       }
     });
   } else {
+    // Firebase não disponível — mostra login de qualquer forma
     showLoginScreen();
   }
 
