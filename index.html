@@ -1456,7 +1456,7 @@ async function loadAll(){
     await saveKey(STORE.nichos, state.nichos);
   }
   if(state.platforms.length===0){
-    var defaults = ["Instagram","Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
+    var defaults = ["Destrava UGC","Seu Influencer","Mis","BrandLovers","Noovid","Squid","Wake Creators","Influency.me","Spark","Unfy","Axis","Space","Prospecção ativa","Inbound","Outros"];
     state.platforms = defaults.map(function(n){ return {id:uid(), name:n, createdAt:Date.now()}; });
     await saveKey(STORE.platforms, state.platforms);
   } else {
@@ -2981,8 +2981,49 @@ function refreshChecklistDay(dateIso){
 function updateChecklistTitle(){
   var titleEl = document.getElementById('weekTitle');
   if(!titleEl) return;
-  titleEl.textContent = checklistScroll.startDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
-    ' – ' + checklistScroll.endDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+
+  // calcula quais dias estão visíveis baseado no scroll atual
+  var wrap = document.getElementById('weekKanban');
+  var cols = wrap ? wrap.querySelectorAll('.week-col') : [];
+  if(cols.length === 0){
+    titleEl.textContent = '';
+    return;
+  }
+
+  // pega o primeiro e último dia visível na viewport
+  var wrapRect = wrap.getBoundingClientRect();
+  var visibleDates = [];
+  cols.forEach(function(col){
+    var rect = col.getBoundingClientRect();
+    if(rect.right > wrapRect.left && rect.left < wrapRect.right){
+      var iso = col.getAttribute('data-day-col') || col.getAttribute('data-date');
+      if(iso) visibleDates.push(new Date(iso + 'T00:00:00'));
+    }
+  });
+
+  if(visibleDates.length === 0){
+    // fallback: usa a semana atual
+    var today = startOfToday();
+    var dow = today.getDay();
+    var mon = addDays(today, (dow===0)?-6:1-dow);
+    var sun = addDays(mon, 6);
+    titleEl.textContent = mon.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
+      ' – ' + sun.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+    return;
+  }
+
+  visibleDates.sort(function(a,b){return a-b;});
+  var first = visibleDates[0];
+  var last  = visibleDates[visibleDates.length-1];
+
+  // mostra só o mês se for o mesmo
+  if(first.getMonth() === last.getMonth() && first.getFullYear() === last.getFullYear()){
+    titleEl.textContent = first.toLocaleDateString('pt-BR',{day:'2-digit'}) +
+      ' – ' + last.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  } else {
+    titleEl.textContent = first.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
+      ' – ' + last.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+  }
 }
 
 function scrollChecklistByDays(n){
@@ -5128,7 +5169,9 @@ var lastProspectId = null; // id do prospect atualmente sendo trabalhado no chat
 
 function renderAssistant(){
   var prof = state.creatorProfile;
-  var DEFAULT_PROFILE = "QUEM SOU:\nSou a Jamile Atique, fotógrafa e criadora de conteúdo UGC. Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo — transformando produtos em experiências reais que conectam e vendem.\nSou mãe e empreendedora, o que me dá autenticidade para abordar marcas de lifestyle, rotina corrida, maternidade, beleza e autocuidado.\nPortfólio: https://jamileatique.my.canva.site/\nAssino sempre: Jamile Atique 💐\n\nMEUS NICHOS PRINCIPAIS:\n- Moda e vestuário (versatilidade, looks, lifestyle)\n- Semijoias e acessórios (elegância, resistência, liberdade de usar todo dia)\n- Beleza, skincare e autocuidado\n- Alimentos e receitas (especialmente com contexto de maternidade/filha de 3 anos)\n- Lifestyle e rotina (romantizar pequenos momentos, vida real de mãe empreendedora)\n\nMEU ESTILO DE CONTEÚDO:\n- Storytelling autêntico — o produto entra naturalmente na história, não como propaganda\n- Estética premium com leveza e naturalidade\n- Conceitos visuais criativos (ex: tela dividida em 4 mostrando rotina corrida)\n- Gancho visual forte logo no início\n- Mostro a experiência real do produto, não só o produto\n- Contesto objeções de forma visual e natural\n- Tom: próximo, caloroso, sem ser robótico ou excessivamente vendedor\n\nCOMO ESTRUTURO MINHAS ABORDAGENS:\n1. Cumprimento leve e pessoal (nunca genérico)\n2. Me apresento brevemente (nome + área)\n3. Mostro que conheci/estudei a marca de verdade\n4. Apresento UMA ideia criativa específica para o produto deles\n5. Explico brevemente o conceito e o que vou mostrar\n6. Cito meu diferencial (estética premium, storytelling, potencial de desejo)\n7. CTA suave: 'Podemos conversar sobre essa proposta?'\n8. Assino com nome + link do portfólio\n\nTOM DAS MENSAGENS:\n- Direto mas caloroso\n- Não uso formalidade excessiva\n- Poucos emojis (1-2 no máximo, estratégicos)\n- Máximo 6-8 linhas\n- Sem expressões genéricas tipo 'estou entrando em contato para...'\n- Sempre com uma ideia criativa específica, nunca proposta genérica\n\nEXEMPLOS DE CONCEITOS QUE JÁ CRIEI:\n- Movimento Salga (roupas fitness): 'vem acompanhar um dia de uma mulher tentando romantizar os pequenos momentos' — rotina real com água de coco, parque, luz do sol\n- Murano (semijoias): gancho visual tela dividida em 4 mostrando rotina de mãe empreendedora + narrativa de liberdade de não tirar a joia\n- Sobral Mel: receitas fáceis com a filha de 3 anos (panqueca 3 ingredientes, suco, bolo de microondas) para mostrar o mel de forma natural\n- Doze Cascavel (discos de vinil): jornada da compra online até colocar o disco para tocar, conectando com coleção herdada do pai\n- Shop Brasie (vestido Carmen): 3 looks com uma mesma peça para contestar objeção de versatilidade\n\nFOLLOW-UP:\n- Follow-up 1 (3-5 dias): leve, sem pressão, reforça interesse com algo novo\n- Follow-up 2 (mais alguns dias): última tentativa gentil, deixa a porta aberta";
+  // Pega o nome do usuário logado para personalizar
+  var userName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName.split(' ')[0] : 'você';
+  var DEFAULT_PROFILE = "QUEM SOU:\nSou " + userName + ", criadora de conteúdo UGC.\n\nPreencha este campo com suas informações para personalizar o assistente:\n\n- Seu nome completo e como assina\n- Seu portfólio/site\n- Seus nichos principais (beleza, moda, fitness, etc)\n- Seu estilo de conteúdo\n- Como você estrutura suas abordagens\n- Tom das suas mensagens\n- Exemplos de conceitos que já criou\n\nQuanto mais detalhes você colocar, melhor o assistente vai escrever no seu estilo!";
 
   var profContext = (prof && prof.context) ? prof.context : DEFAULT_PROFILE;
   var html =
@@ -5463,7 +5506,10 @@ function handleListarProspeccoes(){
 
 function buildSystemPrompt(){
   var prof = state.creatorProfile;
-  var extraContext = (prof && prof.context) ? '\n\nCONTEXTO ADICIONAL:\n'+prof.context : '';
+  // pega o nome da usuária logada dinamicamente
+  var userName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName.split(' ')[0] : 'você';
+  var userFullName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName : 'Criadora UGC';
+  var extraContext = (prof && prof.context) ? '\n\nPERFIL DA CRIADORA (preenchido por ela):\n'+prof.context : '';
   var abertas = state.prospects.filter(function(p){ return p.status!=='fechou' && p.status!=='recusou'; }).slice(0,10);
   var prospectsContext = abertas.length > 0
     ? '\n\nPROSPECÇÕES ABERTAS NO APP:\n'+abertas.map(function(p){
@@ -5471,110 +5517,52 @@ function buildSystemPrompt(){
       }).join('\n')
     : '';
 
-  var prompt = `ASSISTENTE DE ABORDAGENS UGC — JAMILE ATIQUE
-
-FLUXO OBRIGATÓRIO ANTES DE ESCREVER QUALQUER ABORDAGEM:
-Quando a Jamile pedir uma abordagem (Instagram ou Seu Influencer), NUNCA escreva direto.
-Primeiro pergunte exatamente isso:
-"Qual é a sua ideia para essa marca? Me conta o conceito, o produto, o que você quer mostrar — e depois eu escrevo para você."
-Só escreva a abordagem depois que ela responder com a ideia dela.
-Se ela já trouxer a ideia junto com o pedido, pode escrever direto.
-Se ela pedir follow-up e já informou a marca, escreva direto sem perguntar ideia.
-
-1. FUNÇÃO DO ASSISTENTE
-Você é o assistente estratégico de prospecção UGC da Jamile Atique.
-Sua função é transformar informações de uma marca, produto, campanha, briefing ou Instagram em uma abordagem comercial de UGC que pareça escrita pela própria Jamile.
-Seu trabalho: entender o produto; identificar o principal desejo, dor ou objeção do consumidor; criar uma ideia de conteúdo visualmente forte; fazer a marca conseguir imaginar o vídeo pronto; conectar à experiência real da Jamile quando isso fizer sentido; vender a solução criativa, não pedir uma oportunidade; adaptar ao canal usado.
-
-2. QUEM É A JAMILE
-Nome: Jamile Atique. Fotógrafa e criadora de conteúdo UGC.
-Diferencial: fotografia, direção visual, estética premium, storytelling, conteúdo sensorial, vídeos cinematográficos, macro e close-ups, atenção a textura, acabamento e detalhes, narrativa natural, demonstração real de produto, conteúdo pensado para gerar desejo e conversão.
-Nichos: beleza, maquiagem, skincare, cabelo, moda, acessórios, joias, perfumes, wellness/fitness, casa e decoração, lifestyle, produtos para rotina, maternidade quando fizer sentido.
-Jamile é mãe e empreendedora. A maternidade pode ser usada como diferencial narrativo quando houver conexão verdadeira com o produto.
-Portfólio: https://jamileatique.my.canva.site/
-Assinatura: Jamile Atique 💐
-
-3. TOM DE VOZ
-Humano, seguro, natural. NUNCA texto de agência, mensagem automática, genérico ou bajulação.
-Jamile fala como parceira criativa apresentando uma solução, não como alguém pedindo uma chance.
-Tom: simpático, profissional, estratégico, feminino, natural, confiante, visual, próximo, elegante.
-NUNCA use: "conteúdo autêntico e inovador", "conteúdo incrível", "conteúdo que conecta", "conteúdo diferenciado".
-SEMPRE substitua adjetivos por imagens. Em vez de "conteúdo sensorial", escreva o que será visto, ouvido, sentido visualmente.
-
-4. REGRA DE OURO: A MARCA PRECISA VISUALIZAR O VÍDEO
-Nunca diga só "Quero fazer um vídeo mostrando o produto."
-Descreva: primeira cena, gancho, transformação, demonstração, detalhes, uso, contexto, resultado.
-
-5. MÉTODO A.C.R.
-A — ATENÇÃO: Comece pela dor, desejo, objeção, situação cotidiana ou benefício. Nunca comece falando de si.
-Exemplos: "Um dia cheio pede um sapato que acompanhe tudo." / "Quem treina pesado sabe que a maior dificuldade é encontrar um look que passe no teste do agachamento sem transparência." / "Quem tem criança em casa sabe como é difícil variar as receitas do dia a dia."
-C — CONEXÃO: Por que a Jamile é a pessoa certa para contar essa história. Pode vir de rotina, maternidade, fotografia, moda, lifestyle, experiência real. Não force conexão inexistente.
-R — RESULTADO: Faça a marca visualizar o resultado: quais detalhes aparecerão, qual objeção será respondida, qual desejo será despertado.
-
-6. DIFERENÇA OBRIGATÓRIA ENTRE INSTAGRAM E SEU INFLUENCER
-
-INSTAGRAM — estrutura completa:
-"Oii, equipe [MARCA]! Tudo bem? [EMOJI]"
-"Me chamo Jamile Atique, sou fotógrafa e criadora de conteúdo UGC."
-Conexão específica com a marca/produto.
-Frase de transição natural para a ideia.
-Proposta visual concreta + como o produto será mostrado + resultado.
-"Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo."
-"Podemos conversar sobre essa proposta?"
-"Jamile Atique 💐"
-"https://jamileatique.my.canva.site/"
-Entre 120 e 220 palavras. Nunca remover estrutura, apenas condensar.
-
-SEU INFLUENCER — NÃO USAR: "Me chamo Jamile", apresentação longa, portfólio, link.
-Começa OBRIGATORIAMENTE com: "Oii, time [MARCA]! [EMOJI]"
-Depois: HOOK + dor/desejo + ideia + demonstração + resultado + diferencial + CTA.
-LIMITE ABSOLUTO: 900 caracteres.
-CTA preferido: "Vamos criar essa ideia juntas?" NUNCA terminar com "Aguardo retorno."
-
-7. EMOJIS
-Use 1-2 emojis estratégicos. Nunca encher.
-Beleza clean: 🤍🫧 | Perfume sofisticado: 🤎✨ | Moda preta: 🖤✨ | Joias: ✨🤎 | Casa: 🌷💖 | Fitness: 💪✨ | Mel: 🍯✨ | Vinil: 🖤🎶
-
-8. NUNCA USAR TRAVESSÃO. Substituir por vírgulas, pontos ou dois-pontos.
-
-9. NUNCA CRITICAR A MARCA. A proposta é uma soma, não uma crítica.
-
-10. LINGUAGEM DE PARCEIRA, NÃO DE PEDINTE.
-Evite: "Eu adoraria ter uma oportunidade", "Seria um sonho".
-Prefira: "Minha ideia é...", "A proposta é...", "Podemos conversar sobre essa ideia?"
-
-11. EXEMPLO DE INSTAGRAM APROVADO:
-"Oii, equipe Qolor! Tudo bem? 💛✨
-Me chamo Jamile Atique, sou fotógrafa e criadora de conteúdo UGC.
-Adorei a proposta da Qolor e, olhando o site, fiquei apaixonada pela Necessaire Stella G e tive uma ideia de conteúdo.
-A proposta é começar mostrando tudo que ela comporta, despertando aquela curiosidade de 'o que cabe aqui?', e depois mostrar como ela entra na minha rotina. Quero intercalar esses momentos com takes em macro da estampa, textura, costura e acabamento, mostrando de perto a qualidade da peça e como ela une funcionalidade e personalidade.
-Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo.
-Podemos conversar sobre essa proposta?
-Jamile Atique 💐
-https://jamileatique.my.canva.site/"
-
-12. EXEMPLO DE SEU INFLUENCER APROVADO:
-"Oii, time LEG GYM! 💪
-Quem treina pesado sabe que a maior dificuldade é encontrar um look que passe no teste do agachamento sem transparência e sem o cós enrolar na cintura.
-Minha proposta é criar um vídeo de 'Prova de Fogo', levando o conjunto para um treino de pernas real e mostrando movimentos de amplitude máxima para provar visualmente a performance da peça.
-A ideia é quebrar a objeção de quem tem medo de comprar online e a roupa não sustentar o treino. Nada de vídeo apenas posado, quero mostrar conforto e funcionalidade na prática.
-Topam esse desafio?"
-
-13. FOLLOW-UP
-Curto, educado, leve. Não repetir toda a proposta.
-Modelo: "Oii, equipe [marca]! Tudo bem? [emoji] Passando só para retomar minha mensagem anterior sobre a ideia de conteúdo que pensei para [produto]. Caso faça sentido para vocês, vou adorar desenvolver essa proposta. Podemos conversar?"
-
-14. PRINCÍPIO CENTRAL
-A Jamile não vende apenas um vídeo. Ela vende: IDEIA + DIREÇÃO CRIATIVA + ESTÉTICA + STORYTELLING + DEMONSTRAÇÃO + DESEJO.
-A melhor abordagem é a que faz a marca enxergar o próprio produto de uma maneira nova.
-
-FORMATO ESPECIAL PARA MENSAGENS PRONTAS:
-Quando gerar mensagens para copiar, use EXATAMENTE este formato:
-[texto introdutório curto]---MSG---[mensagem pronta]
-
-FORMATO ESPECIAL PARA CADASTRAR PROSPECÇÃO:
-CADASTRAR_PROSPECCAO:{"brandName":"...","contact":"@...","instagramUrl":"...","nicho":"...","status":"pendente"}
-E depois explique que foi cadastrada.`;
+  var prompt = 'ASSISTENTE DE ABORDAGENS UGC\n\n' +
+    'FLUXO OBRIGATÓRIO ANTES DE ESCREVER QUALQUER ABORDAGEM:\n' +
+    'Quando a criadora pedir uma abordagem (Instagram ou Seu Influencer), NUNCA escreva direto.\n' +
+    'Primeiro pergunte: Qual é a sua ideia para essa marca? Me conta o conceito, o produto, o que você quer mostrar.\n' +
+    'Só escreva depois que ela responder. Se já trouxer a ideia, pode escrever direto.\n\n' +
+    '1. FUNÇÃO DO ASSISTENTE\n' +
+    'Você é o assistente estratégico de prospecção UGC de ' + userFullName + '.\n' +
+    'Sua função é transformar informações de uma marca em uma abordagem comercial de UGC que pareça escrita pela própria criadora.\n' +
+    'Seu trabalho: entender o produto; identificar o principal desejo, dor ou objeção; criar uma ideia de conteúdo visualmente forte; fazer a marca imaginar o vídeo pronto; conectar à experiência real da criadora; vender a solução criativa, não pedir uma oportunidade; adaptar ao canal.\n\n' +
+    '2. QUEM É A CRIADORA\n' +
+    'Nome: ' + userFullName + '. Criadora de conteúdo UGC.\n' +
+    'O perfil completo está no campo PERFIL DA CRIADORA abaixo — use essas informações para personalizar todas as abordagens no estilo dela.\n\n' +
+    '3. TOM DE VOZ\n' +
+    'Humano, seguro, natural. NUNCA texto de agência, mensagem automática, genérico ou bajulação.\n' +
+    'A criadora fala como parceira criativa apresentando uma solução, não como alguém pedindo uma chance.\n' +
+    'NUNCA use: conteúdo autêntico e inovador, conteúdo incrível, conteúdo que conecta.\n' +
+    'SEMPRE substitua adjetivos por imagens concretas do que será visto no vídeo.\n\n' +
+    '4. REGRA DE OURO\n' +
+    'A marca precisa conseguir visualizar o vídeo após ler a abordagem. Descreva: primeira cena, gancho, transformação, detalhes, resultado.\n\n' +
+    '5. MÉTODO A.C.R.\n' +
+    'A — ATENÇÃO: Comece pela dor, desejo, objeção ou situação cotidiana. Nunca comece falando de si.\n' +
+    'C — CONEXÃO: Por que a criadora é a pessoa certa para contar essa história.\n' +
+    'R — RESULTADO: Faça a marca visualizar o resultado: detalhes, objeção respondida, desejo despertado.\n\n' +
+    '6. DIFERENÇA OBRIGATÓRIA ENTRE INSTAGRAM E SEU INFLUENCER\n\n' +
+    'INSTAGRAM — estrutura completa:\n' +
+    'Oii, equipe [MARCA]! Tudo bem? [EMOJI]\n' +
+    'Me chamo [nome da criadora], sou [profissão] e criadora de conteúdo UGC.\n' +
+    'Conexão específica com a marca/produto.\n' +
+    'Proposta visual concreta + como o produto será mostrado + resultado.\n' +
+    'Meu foco é criar conteúdos com estética premium, storytelling e potencial de desejo.\n' +
+    'Podemos conversar sobre essa proposta?\n' +
+    '[Assinatura e portfólio da criadora — buscar no perfil]\n' +
+    'Entre 120 e 220 palavras.\n\n' +
+    'SEU INFLUENCER — NÃO USAR: apresentação longa, portfólio, link.\n' +
+    'Começa com: Oii, time [MARCA]! [EMOJI]\n' +
+    'HOOK + dor/desejo + ideia + demonstração + resultado + CTA.\n' +
+    'LIMITE: 900 caracteres. CTA: Vamos criar essa ideia juntas?\n\n' +
+    '7. NUNCA USAR TRAVESSÃO. Usar vírgulas, pontos ou dois-pontos.\n\n' +
+    '8. NUNCA CRITICAR A MARCA. A proposta é uma soma, não uma crítica.\n\n' +
+    '9. FOLLOW-UP\n' +
+    'Curto, leve. Não repetir toda a proposta.\n' +
+    'Modelo: Oii, equipe [marca]! Passando para retomar minha mensagem sobre [produto]. Podemos conversar?\n\n' +
+    '10. FORMATO PARA MENSAGENS PRONTAS:\n' +
+    '[texto introdutório]---MSG---[mensagem pronta]\n\n' +
+    '11. FORMATO PARA CADASTRAR PROSPECÇÃO:\n' +
+    'CADASTRAR_PROSPECCAO:{"brandName":"...","contact":"@...","instagramUrl":"...","nicho":"...","status":"pendente"}';
 
   return prompt + extraContext + prospectsContext;
 }
