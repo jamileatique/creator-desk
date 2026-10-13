@@ -2535,12 +2535,16 @@ function renderWeeklyChecklist(){
     '</div>' +
     '<div class="week-scroll-viewport"><div class="week-kanban" id="weekKanban"></div></div>';
 
+  // sempre reseta para a semana atual ao abrir
   var today = startOfToday();
   var dow = today.getDay();
   var diffToMonday = (dow === 0) ? -6 : 1 - dow;
   var monday = addDays(today, diffToMonday);
-  checklistScroll.startDate = monday;
-  checklistScroll.endDate = addDays(monday, 6);
+  // reseta completamente o estado do scroll
+  checklistScroll.startDate = addDays(monday, -7); // uma semana antes
+  checklistScroll.endDate = addDays(monday, 13);   // duas semanas depois
+  checklistScroll.dayWidth = null;
+  checklistScroll.loadingEdge = false;
 
   buildChecklistDays({initial:true});
 
