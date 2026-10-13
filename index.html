@@ -2535,15 +2535,16 @@ function renderWeeklyChecklist(){
     '</div>' +
     '<div class="week-scroll-viewport"><div class="week-kanban" id="weekKanban"></div></div>';
 
-  // sempre reseta para a semana atual ao abrir
+  // sempre reseta para a semana atual ao abrir o planner
   var today = startOfToday();
   var dow = today.getDay();
   var diffToMonday = (dow === 0) ? -6 : 1 - dow;
   var monday = addDays(today, diffToMonday);
-  // reseta completamente o estado do scroll
-  checklistScroll.startDate = addDays(monday, -7); // uma semana antes
-  checklistScroll.endDate = addDays(monday, 13);   // duas semanas depois
-  checklistScroll.dayWidth = null;
+
+  // reseta completamente — garante que não carrega datas de sessões antigas
+  checklistScroll.startDate = addDays(monday, -7);  // semana anterior
+  checklistScroll.endDate   = addDays(monday, 13);  // duas semanas à frente
+  checklistScroll.dayWidth  = null;
   checklistScroll.loadingEdge = false;
 
   buildChecklistDays({initial:true});
@@ -2967,19 +2968,36 @@ function bindChecklistDayHandlers(wrap){
 function refreshChecklistDay(dateIso){
   var wrap = document.getElementById('weekKanban');
   if(!wrap) return;
+
+  // salva scroll atual ANTES de qualquer mudança
+  var savedScroll = wrap.scrollLeft;
+
   var col = wrap.querySelector('[data-day-col="'+dateIso+'"]');
   if(!col){
-    var savedScroll = wrap.scrollLeft;
+    // coluna não existe — garante que checklistScroll está na semana atual antes de rebuildar
+    var today = startOfToday();
+    var dow = today.getDay();
+    var monday = addDays(today, (dow===0)?-6:1-dow);
+    var targetDate = new Date(dateIso+'T00:00:00');
+    // só reseta se a data alvo estiver fora do range atual
+    if(targetDate < checklistScroll.startDate || targetDate > checklistScroll.endDate){
+      checklistScroll.startDate = addDays(monday, -7);
+      checklistScroll.endDate = addDays(monday, 13);
+    }
     buildChecklistDays();
     requestAnimationFrame(function(){ wrap.scrollLeft = savedScroll; });
     return;
   }
+
+  // atualiza só a coluna do dia sem mexer no scroll
   var d = new Date(dateIso+"T00:00:00");
   var todayIso = isoDate(startOfToday());
   var temp = document.createElement('div');
   temp.innerHTML = checklistDayColumnHtml(d, todayIso);
   col.replaceWith(temp.firstElementChild);
   bindChecklistDayHandlers(wrap);
+  // restaura scroll após atualização
+  requestAnimationFrame(function(){ wrap.scrollLeft = savedScroll; });
 }
 
 function updateChecklistTitle(){
