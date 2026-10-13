@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -761,13 +760,132 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
-<div id="app">
+
+<!-- ── Tela de login ──────────────────────────────────────── -->
+<div id="loginScreen" style="display:none; position:fixed; inset:0; z-index:9999; font-family:'Inter',sans-serif; align-items:center; justify-content:center; background:linear-gradient(135deg,#f5e6e8 0%,#e8dff5 35%,#ddeef5 65%,#f5eee8 100%);">
+<style>
+  #loginScreen input { transition: border-color .2s; }
+  #loginScreen input:focus { border-color: rgba(255,255,255,0.9) !important; outline:none; }
+  #loginGoogleBtn:hover { background: rgba(255,255,255,0.98) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important; }
+  #loginBtn:hover { opacity:.92; }
+  #loginBtn:active, #loginGoogleBtn:active { transform:scale(0.98); }
+  @keyframes loginFadeIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  #loginCard { animation: loginFadeIn .4s ease both; }
+</style>
+
+  <!-- card central estilo glassmorphism -->
+  <div id="loginCard" style="
+    width:100%; max-width:360px; margin:20px;
+    background:rgba(255,255,255,0.45);
+    backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,0.7);
+    box-shadow:0 8px 40px rgba(100,60,60,0.12);
+    padding:40px 32px 36px;
+    text-align:center;
+  ">
+    <!-- logo -->
+    <div style="margin-bottom:28px;">
+      <span style="font-size:36px;">🌸</span>
+      <h1 style="font-family:'Fraunces',serif;font-size:30px;color:#2B1A1E;margin:8px 0 4px;font-weight:700;letter-spacing:-.02em;">Creator Desk</h1>
+      <p style="font-size:13px;color:rgba(60,40,40,0.55);margin:0;">controle de jobs UGC</p>
+    </div>
+
+    <!-- título -->
+    <h2 style="font-family:'Fraunces',serif;font-size:22px;color:#2B1A1E;font-weight:600;margin:0 0 24px;line-height:1.3;">Entrar na sua conta</h2>
+
+    <!-- email -->
+    <input id="loginEmail" type="email" placeholder="Email" style="
+      width:100%;box-sizing:border-box;
+      padding:13px 16px;margin-bottom:2px;
+      background:rgba(255,255,255,0.55);
+      border:none;border-bottom:1.5px solid rgba(100,60,60,0.2);
+      border-radius:0;font-size:14px;color:#2B1A1E;
+      font-family:'Inter',sans-serif;
+    "/>
+
+    <!-- senha -->
+    <div style="position:relative;margin-bottom:18px;">
+      <input id="loginPassword" type="password" placeholder="Senha" style="
+        width:100%;box-sizing:border-box;
+        padding:13px 44px 13px 16px;
+        background:rgba(255,255,255,0.55);
+        border:none;border-bottom:1.5px solid rgba(100,60,60,0.2);
+        border-radius:0;font-size:14px;color:#2B1A1E;
+        font-family:'Inter',sans-serif;
+      "/>
+      <button id="togglePwd" type="button" style="
+        position:absolute;right:8px;top:50%;transform:translateY(-50%);
+        border:none;background:transparent;cursor:pointer;
+        color:rgba(60,40,40,0.4);font-size:15px;padding:4px;
+      ">👁</button>
+      <div style="text-align:right;margin-top:6px;">
+        <span style="font-size:12px;color:rgba(60,40,40,0.45);cursor:pointer;">Esqueceu?</span>
+      </div>
+    </div>
+
+    <!-- erro -->
+    <div id="loginError" style="display:none;font-size:12.5px;color:#a93226;margin-bottom:12px;padding:8px 12px;background:rgba(169,50,38,0.08);border-radius:10px;text-align:left;"></div>
+
+    <!-- botão entrar -->
+    <button id="loginBtn" style="
+      width:100%;padding:14px;border-radius:999px;
+      background:#7C2D3E;border:none;color:#fff;
+      font-size:15px;font-weight:700;cursor:pointer;
+      font-family:'Inter',sans-serif;margin-bottom:16px;
+      letter-spacing:.01em;transition:opacity .12s,transform .08s;
+    ">Entrar</button>
+
+    <!-- divisor -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="flex:1;height:1px;background:rgba(100,60,60,0.15);"></div>
+      <span style="font-size:12px;color:rgba(60,40,40,0.4);font-weight:600;">ou continue com</span>
+      <div style="flex:1;height:1px;background:rgba(100,60,60,0.15);"></div>
+    </div>
+
+    <!-- botão Google -->
+    <button id="loginGoogleBtn" style="
+      width:100%;padding:13px 16px;border-radius:999px;
+      background:rgba(255,255,255,0.75);
+      border:1.5px solid rgba(255,255,255,0.9);
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      font-size:14px;font-weight:600;color:#3C2828;cursor:pointer;
+      font-family:'Inter',sans-serif;
+      box-shadow:0 2px 12px rgba(0,0,0,0.08);
+      transition:all .15s;
+    ">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+      Login with Google
+    </button>
+
+    <!-- criar conta -->
+    <p style="margin:20px 0 0;font-size:13px;color:rgba(60,40,40,0.5);">
+      Não tem conta?
+      <button id="showSignupBtn" style="border:none;background:transparent;color:#7C2D3E;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;">Sign up</button>
+    </p>
+
+    <!-- signup -->
+    <div id="signupSection" style="display:none;margin-top:20px;border-top:1px solid rgba(100,60,60,0.12);padding-top:20px;text-align:left;">
+      <p style="font-size:13px;font-weight:700;color:#2B1A1E;margin:0 0 14px;text-align:center;">Criar nova conta</p>
+      <input id="signupName" type="text" placeholder="Seu nome" style="width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;margin-bottom:10px;border:1.5px solid rgba(100,60,60,0.18);background:rgba(255,255,255,0.6);font-size:14px;color:#2B1A1E;font-family:'Inter',sans-serif;"/>
+      <input id="signupEmail" type="email" placeholder="Email" style="width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;margin-bottom:10px;border:1.5px solid rgba(100,60,60,0.18);background:rgba(255,255,255,0.6);font-size:14px;color:#2B1A1E;font-family:'Inter',sans-serif;"/>
+      <input id="signupPassword" type="password" placeholder="Senha (mín. 6 caracteres)" style="width:100%;box-sizing:border-box;padding:12px 14px;border-radius:10px;margin-bottom:12px;border:1.5px solid rgba(100,60,60,0.18);background:rgba(255,255,255,0.6);font-size:14px;color:#2B1A1E;font-family:'Inter',sans-serif;"/>
+      <div id="signupError" style="display:none;font-size:12.5px;color:#a93226;margin-bottom:10px;padding:8px 12px;background:rgba(169,50,38,0.08);border-radius:8px;"></div>
+      <button id="signupBtn" style="width:100%;padding:13px;border-radius:999px;background:#2B1A1E;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Criar conta</button>
+    </div>
+
+  </div>
+
+</div>
+<!-- ── fim login ──────────────────────────────────────────── -->
+
+<div id="app" style="display:none;">
 
   <nav class="sidebar" id="sidebar" aria-label="Navegação principal">
     <div class="brand">
       <div class="brand-mark" id="brandMark"></div>
       <div>
-        <div class="brand-name">Studio</div>
+        <div class="brand-name">Creator Desk</div>
         <div class="brand-sub">controle de jobs UGC</div>
       </div>
     </div>
@@ -1151,9 +1269,13 @@ function setupCloudAuthUI(){
       return;
     }
     if(cloudUser){
-      firebase.auth().signOut().catch(function(){
+      if(typeof firebase !== 'undefined') firebase.auth().signOut().catch(function(){
         showToast('Não foi possível sair. Tente novamente.');
       });
+      return;
+    }
+    if(typeof firebase === 'undefined'){
+      showToast('Firebase não disponível neste ambiente.');
       return;
     }
     setCloudSyncStatus('pending', 'Abrindo login...');
@@ -1622,12 +1744,14 @@ function renderProspectKanban(){
 
   // salva scroll horizontal do wrapper, vertical de cada coluna E do #main
   var savedScrollX = wrap.scrollLeft;
-  var savedMainY = (document.getElementById('main') || {}).scrollTop || 0;
+  var mainEl = document.getElementById('main');
+  var savedMainY = mainEl ? mainEl.scrollTop : 0;
   var savedColScrolls = {};
   wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
     var key = col.getAttribute('data-prospect-col');
-    if(col.scrollTop > 0) savedColScrolls[key] = col.scrollTop;
+    savedColScrolls[key] = col.scrollTop; // salva mesmo se 0
   });
+  console.log('SCROLL ANTES — main:', savedMainY, 'cols:', JSON.stringify(savedColScrolls), 'wrapX:', savedScrollX);
 
   var html = '';
   PROSPECT_STATUS_FLOW.forEach(function(s){
@@ -1644,12 +1768,13 @@ function renderProspectKanban(){
   // restaura todos os scrolls
   requestAnimationFrame(function(){
     wrap.scrollLeft = savedScrollX;
-    var mainEl = document.getElementById('main');
-    if(mainEl && savedMainY) mainEl.scrollTop = savedMainY;
+    var mainEl2 = document.getElementById('main');
+    if(mainEl2) mainEl2.scrollTop = savedMainY;
     wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
       var key = col.getAttribute('data-prospect-col');
-      if(savedColScrolls[key]) col.scrollTop = savedColScrolls[key];
+      col.scrollTop = savedColScrolls[key] || 0;
     });
+    console.log('SCROLL DEPOIS — main:', mainEl2 ? mainEl2.scrollTop : 'n/a');
   });
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
@@ -4923,34 +5048,74 @@ function generateContractPdf(){
    ================================================================ */
 
 /* ---------------- API Key management ---------------- */
-function getApiKey(){
-  try{ return localStorage.getItem('ugc_anthropic_key') || ''; }catch(e){ return ''; }
-}
-function saveApiKey(key){
-  try{ localStorage.setItem('ugc_anthropic_key', key.trim()); }catch(e){}
-}
+/* ── Secure Backend Proxy ─────────────────────────────────
+   A chave Anthropic NUNCA é exposta no frontend.
+   Todas as chamadas em produção passam pelo backend seguro.
+   Configure STUDIO_BACKEND_URL no seu HTML ou abaixo.
+   ───────────────────────────────────────────────────────── */
+var BACKEND_URL = (function(){
+  if(window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'){
+    return 'http://localhost:3000';
+  }
+  return window.STUDIO_BACKEND_URL || 'https://SEU-BACKEND.railway.app';
+})();
+
 function isRunningInClaudeAi(){
-  // dentro do claude.ai o artifact tem origem claude.ai ou é servido do mesmo domínio
   try{
     return window.location.hostname.includes('claude.ai') ||
            window.location.hostname.includes('anthropic') ||
-           window.parent !== window; // está em iframe (artifact do Claude.ai)
-  }catch(e){ return true; } // cross-origin = provavelmente iframe do Claude.ai
+           window.parent !== window;
+  }catch(e){ return true; }
 }
-function hasApiKey(){
-  return !!getApiKey() || isRunningInClaudeAi();
-}
+
+// Chave nunca exposta — funções mantidas por compatibilidade interna
+function getApiKey(){ return ''; }
+function saveApiKey(){ }
+function hasApiKey(){ return true; }
+
 function apiFetch(body){
-  var key = getApiKey();
-  var headers = {
-    'Content-Type':'application/json',
-    'anthropic-version':'2023-06-01',
-    'anthropic-dangerous-direct-browser-access':'true'
-  };
-  if(key) headers['x-api-key'] = key;
-  return fetch('https://api.anthropic.com/v1/messages', {
-    method:'POST', headers:headers, body:JSON.stringify(body)
+  // Dentro do Claude.ai (dev): chama Anthropic diretamente
+  if(isRunningInClaudeAi()){
+    return fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify(body)
+    });
+  }
+  // Produção (GitHub Pages): chama o backend seguro
+  var hasImage = body.messages && body.messages.some(function(m){
+    return Array.isArray(m.content) && m.content.some(function(c){ return c.type === 'image'; });
   });
+  var endpoint = hasImage
+    ? BACKEND_URL + '/api/extract-instagram'
+    : BACKEND_URL + '/api/assistant';
+
+  return fetch(endpoint, {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'X-App-Auth': getAppToken()   // token enviado ao backend para validação
+    },
+    body:JSON.stringify(body)
+  });
+}
+
+/* ── Auth token helper ──────────────────────────────────── */
+function getAppToken(){
+  try{ return localStorage.getItem('studio_auth_token') || ''; }catch(e){ return ''; }
+}
+function setAppToken(t){
+  try{ localStorage.setItem('studio_auth_token', t); }catch(e){}
+}
+function clearAppToken(){
+  try{ localStorage.removeItem('studio_auth_token'); }catch(e){}
+}
+function isAuthenticated(){
+  return !!getAppToken();
 }
 
 function saveCreatorProfile(profile){
@@ -4984,17 +5149,6 @@ function renderAssistant(){
 
         '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
 
-        '<div>' +
-          '<h3 style="font-size:13px; margin:0 0 6px;">🔑 API Key (Anthropic)</h3>' +
-          '<p style="font-size:12px; color:var(--ink-soft); margin:0 0 8px; line-height:1.5;">Para usar o assistente no seu site, cole sua chave da Anthropic aqui. Fica salva só no seu navegador.</p>' +
-          '<input id="apiKeyInput" type="password" placeholder="sk-ant-..." style="width:100%; padding:9px 11px; border-radius:var(--radius-s); border:1px solid var(--line); background:var(--lilac); font-size:13px; outline:none;" value="'+escapeHtml(getApiKey())+'" />' +
-          '<div style="margin-top:8px; display:flex; gap:8px; align-items:center;">' +
-            '<button class="btn btn-sm" id="btnSaveApiKey">Salvar chave</button>' +
-            '<span id="apiKeyStatus" style="font-size:12px; color:'+(hasApiKey()?'var(--sage-deep)':'var(--danger)')+'">'+(hasApiKey()?'✓ Chave configurada':'⚠ Sem chave — assistente limitado')+'</span>' +
-          '</div>' +
-          '<p style="font-size:11px; color:var(--ink-faint); margin:8px 0 0; line-height:1.5;">Obtenha em: <a href="https://console.anthropic.com" target="_blank" style="color:var(--magenta-deep);">console.anthropic.com</a></p>' +
-        '</div>' +
-
         '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
 
         '<div>' +
@@ -5023,20 +5177,6 @@ function renderAssistant(){
     '</div>';
 
   document.getElementById('pageContent').innerHTML = html;
-
-  // salvar API Key
-  document.getElementById('btnSaveApiKey').addEventListener('click', function(){
-    var key = document.getElementById('apiKeyInput').value.trim();
-    saveApiKey(key);
-    var status = document.getElementById('apiKeyStatus');
-    if(key){
-      status.textContent = '✓ Chave salva!';
-      status.style.color = 'var(--sage-deep)';
-    } else {
-      status.textContent = '⚠ Sem chave — assistente limitado';
-      status.style.color = 'var(--danger)';
-    }
-  });
 
   // salvar perfil
   document.getElementById('btnSaveProfile').addEventListener('click', function(){
@@ -5440,10 +5580,7 @@ E depois explique que foi cadastrada.`;
 }
 
 function callAssistantAPI(userMessage){
-  if(!hasApiKey()){
-    appendChatMessage('assistant', '🔑 Para usar o assistente no seu site, configure sua API Key da Anthropic no painel à esquerda.\n\nSe estiver usando pelo Claude.ai, a chave não é necessária — mas no GitHub Pages é preciso configurar.\n\nObtenha em: console.anthropic.com');
-    return;
-  }
+
   showTyping();
 
   // monta histórico para contexto (últimas 10 trocas)
@@ -5792,7 +5929,7 @@ function buildThemePreview(t){
       '<div style="width:110px; background:#fff; border-right:1px solid '+line+'; padding:12px 8px; display:flex; flex-direction:column; gap:4px; flex-shrink:0;">' +
         '<div style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">' +
           '<div style="width:20px;height:20px;border-radius:6px;background:'+accent+';"></div>' +
-          '<span style="font-size:10px;font-weight:700;color:'+text+';">Studio</span>' +
+          '<span style="font-size:10px;font-weight:700;color:'+text+';">Creator Desk</span>' +
         '</div>' +
         ['painel','trabalhos','prospecção','planner','marcas'].map(function(item, i){
           var isActive = i===0;
@@ -6037,12 +6174,122 @@ window.addEventListener('resize', function(){ if(state.notifPanelOpen) closeNoti
 (async function init(){
   applyBrandLogo();
   applyTheme(loadTheme());
-  setupCloudAuthUI();
-  navigate('dashboard');
-  await loadAll();
-  await initCloudSync();
-  updateSyncUI();
-  render();
+
+  var loginScreen = document.getElementById('loginScreen');
+  var appDiv      = document.getElementById('app');
+
+  function showApp(){
+    loginScreen.style.display = 'none';
+    appDiv.style.display = 'flex';
+    setupCloudAuthUI();
+    navigate('dashboard');
+    loadAll().then(function(){
+      initCloudSync().then(function(){
+        updateSyncUI();
+        render();
+      });
+    });
+  }
+
+  // em dev (Claude.ai) entra direto
+  if(isRunningInClaudeAi()){
+    showApp(); return;
+  }
+
+  // verifica se Firebase Auth já tem sessão ativa
+  if(typeof firebase !== 'undefined' && firebase.auth){
+    firebase.auth().onAuthStateChanged(function(user){
+      if(user){
+        showApp();
+      } else {
+        showLoginScreen();
+      }
+    });
+  } else {
+    showLoginScreen();
+  }
+
+  function showLoginScreen(){
+    loginScreen.style.display = 'flex';
+    appDiv.style.display = 'none';
+
+    var emailInput   = document.getElementById('loginEmail');
+    var pwdInput     = document.getElementById('loginPassword');
+    var loginBtn     = document.getElementById('loginBtn');
+    var googleBtn    = document.getElementById('loginGoogleBtn');
+    var errDiv       = document.getElementById('loginError');
+    var togglePwd    = document.getElementById('togglePwd');
+    var showSignup   = document.getElementById('showSignupBtn');
+    var signupSec    = document.getElementById('signupSection');
+    var signupBtn    = document.getElementById('signupBtn');
+    var signupErr    = document.getElementById('signupError');
+
+    // mostrar/ocultar senha
+    togglePwd.addEventListener('click', function(){
+      pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
+      togglePwd.textContent = pwdInput.type === 'password' ? '👁' : '🙈';
+    });
+
+    // alternar cadastro
+    showSignup.addEventListener('click', function(){
+      var open = signupSec.style.display === 'block';
+      signupSec.style.display = open ? 'none' : 'block';
+      showSignup.textContent = open ? 'Criar conta' : 'Já tenho conta';
+    });
+
+    // login com Google
+    googleBtn.addEventListener('click', function(){
+      if(typeof firebase === 'undefined') return showToastLogin('Firebase não disponível.');
+      var provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then(function(){ showApp(); })
+        .catch(function(e){ showErrLogin(errDiv, e.message); });
+    });
+
+    // login com email/senha
+    loginBtn.addEventListener('click', function(){ tryEmailLogin(); });
+    pwdInput.addEventListener('keydown', function(e){ if(e.key==='Enter') tryEmailLogin(); });
+    emailInput.focus();
+
+    function tryEmailLogin(){
+      var email = emailInput.value.trim();
+      var pwd   = pwdInput.value;
+      if(!email || !pwd){ showErrLogin(errDiv, 'Preencha email e senha.'); return; }
+      loginBtn.disabled = true; loginBtn.textContent = 'Entrando...';
+      errDiv.style.display = 'none';
+      if(typeof firebase === 'undefined'){ showErrLogin(errDiv, 'Firebase não disponível.'); loginBtn.disabled=false; loginBtn.textContent='Entrar no Creator Desk'; return; }
+      firebase.auth().signInWithEmailAndPassword(email, pwd)
+        .then(function(){ showApp(); })
+        .catch(function(e){
+          showErrLogin(errDiv, e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found'
+            ? 'Email ou senha incorretos.' : e.message);
+          loginBtn.disabled = false; loginBtn.textContent = 'Entrar no Creator Desk';
+        });
+    }
+
+    // cadastro
+    signupBtn.addEventListener('click', function(){
+      var name  = document.getElementById('signupName').value.trim();
+      var email = document.getElementById('signupEmail').value.trim();
+      var pwd   = document.getElementById('signupPassword').value;
+      if(!name || !email || !pwd){ showErrLogin(signupErr, 'Preencha todos os campos.'); return; }
+      if(pwd.length < 6){ showErrLogin(signupErr, 'Senha mínima de 6 caracteres.'); return; }
+      signupBtn.disabled = true; signupBtn.textContent = 'Criando conta...';
+      signupErr.style.display = 'none';
+      firebase.auth().createUserWithEmailAndPassword(email, pwd)
+        .then(function(cred){
+          return cred.user.updateProfile({displayName: name});
+        })
+        .then(function(){ showApp(); })
+        .catch(function(e){
+          showErrLogin(signupErr, e.message);
+          signupBtn.disabled = false; signupBtn.textContent = 'Criar conta';
+        });
+    });
+  }
+
+  function showErrLogin(el, msg){ el.textContent = msg; el.style.display = 'block'; }
+  function showToastLogin(msg){ alert(msg); }
 })();
 
 })();
