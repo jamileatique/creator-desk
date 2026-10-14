@@ -2888,13 +2888,11 @@ function buildChecklistDays(opts){
   var today = startOfToday();
   var todayIso = isoDate(today);
 
-  // garante que hoje está sempre dentro do range
-  if(!checklistScroll.startDate || today < checklistScroll.startDate || today > checklistScroll.endDate){
-    var dow = today.getDay();
-    var monday = addDays(today, (dow===0)?-6:1-dow);
-    checklistScroll.startDate = addDays(monday, -7);
-    checklistScroll.endDate   = addDays(monday, 13);
-  }
+  // SEMPRE usa hoje como centro ao construir as colunas (ignora estado antigo)
+  var dow = today.getDay();
+  var monday = addDays(today, (dow===0)?-6:1-dow);
+  checklistScroll.startDate = addDays(monday, -7);
+  checklistScroll.endDate   = addDays(monday, 14);
 
   var html = '';
   var cursor = new Date(checklistScroll.startDate);
@@ -2907,38 +2905,13 @@ function buildChecklistDays(opts){
   updateChecklistTitle();
 
   if(opts.initial){
-    // usa setTimeout para garantir que o DOM está completamente renderizado
     setTimeout(function(){
       var todayCol = wrap.querySelector('.week-col.is-today');
       if(todayCol){
-        var target = todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2);
-        wrap.scrollLeft = Math.max(0, target);
+        wrap.scrollLeft = Math.max(0, todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2));
         updateChecklistTitle();
-      } else {
-        // hoje não está no range — força recalcular com hoje no centro
-        var today2 = startOfToday();
-        var dow2 = today2.getDay();
-        var monday2 = addDays(today2, (dow2===0)?-6:1-dow2);
-        checklistScroll.startDate = addDays(monday2, -7);
-        checklistScroll.endDate   = addDays(monday2, 13);
-        var html2 = '';
-        var cursor2 = new Date(checklistScroll.startDate);
-        var todayIso2 = isoDate(today2);
-        while(cursor2 <= checklistScroll.endDate){
-          html2 += checklistDayColumnHtml(cursor2, todayIso2);
-          cursor2 = addDays(cursor2, 1);
-        }
-        wrap.innerHTML = html2;
-        bindChecklistDayHandlers(wrap);
-        setTimeout(function(){
-          var tc = wrap.querySelector('.week-col.is-today');
-          if(tc){
-            wrap.scrollLeft = Math.max(0, tc.offsetLeft - (wrap.clientWidth/2) + (tc.offsetWidth/2));
-            updateChecklistTitle();
-          }
-        }, 50);
       }
-    }, 80);
+    }, 100);
   }
 }
 
@@ -3044,47 +3017,47 @@ function updateChecklistTitle(){
   var titleEl = document.getElementById('weekTitle');
   if(!titleEl) return;
 
-  // calcula quais dias estão visíveis baseado no scroll atual
   var wrap = document.getElementById('weekKanban');
-  var cols = wrap ? wrap.querySelectorAll('.week-col') : [];
-  if(cols.length === 0){
-    titleEl.textContent = '';
-    return;
-  }
+  if(!wrap){ titleEl.textContent = ''; return; }
 
-  // pega o primeiro e último dia visível na viewport
-  var wrapRect = wrap.getBoundingClientRect();
+  // lê as datas diretamente do DOM — ignora checklistScroll completamente
+  var cols = wrap.querySelectorAll('.week-col[data-day-col]');
+  if(cols.length === 0){ titleEl.textContent = ''; return; }
+
+  var wrapLeft = wrap.getBoundingClientRect().left;
+  var wrapRight = wrap.getBoundingClientRect().right;
   var visibleDates = [];
+
   cols.forEach(function(col){
     var rect = col.getBoundingClientRect();
-    if(rect.right > wrapRect.left && rect.left < wrapRect.right){
-      var iso = col.getAttribute('data-day-col') || col.getAttribute('data-date');
-      if(iso) visibleDates.push(new Date(iso + 'T00:00:00'));
+    var iso = col.getAttribute('data-day-col');
+    if(iso && rect.right > wrapLeft + 10 && rect.left < wrapRight - 10){
+      visibleDates.push(new Date(iso + 'T00:00:00'));
     }
   });
 
+  // fallback: pega todas se nenhuma visível
   if(visibleDates.length === 0){
-    // fallback: usa a semana atual
-    var today = startOfToday();
-    var dow = today.getDay();
-    var mon = addDays(today, (dow===0)?-6:1-dow);
-    var sun = addDays(mon, 6);
-    titleEl.textContent = mon.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
-      ' – ' + sun.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
-    return;
+    cols.forEach(function(col){
+      var iso = col.getAttribute('data-day-col');
+      if(iso) visibleDates.push(new Date(iso + 'T00:00:00'));
+    });
   }
 
-  visibleDates.sort(function(a,b){return a-b;});
-  var first = visibleDates[0];
-  var last  = visibleDates[visibleDates.length-1];
+  if(visibleDates.length === 0){ titleEl.textContent = ''; return; }
 
-  // mostra só o mês se for o mesmo
+  visibleDates.sort(function(a,b){ return a - b; });
+  var first = visibleDates[0];
+  var last  = visibleDates[visibleDates.length - 1];
+
   if(first.getMonth() === last.getMonth() && first.getFullYear() === last.getFullYear()){
-    titleEl.textContent = first.toLocaleDateString('pt-BR',{day:'2-digit'}) +
-      ' – ' + last.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    titleEl.textContent =
+      first.toLocaleDateString('pt-BR',{day:'2-digit'}) + ' – ' +
+      last.toLocaleDateString('pt-BR',{day:'2-digit', month:'long', year:'numeric'});
   } else {
-    titleEl.textContent = first.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'}) +
-      ' – ' + last.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+    titleEl.textContent =
+      first.toLocaleDateString('pt-BR',{day:'2-digit', month:'short'}) + ' – ' +
+      last.toLocaleDateString('pt-BR',{day:'2-digit', month:'short', year:'numeric'});
   }
 }
 
@@ -3125,6 +3098,8 @@ function onChecklistScroll(e){
   } else if(nearLeftEdge){
     prependChecklistDays(CHECKLIST_CHUNK);
   }
+  // atualiza título com os dias visíveis após scroll
+  updateChecklistTitle();
 }
 
 function appendChecklistDays(n){
