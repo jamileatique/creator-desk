@@ -2868,6 +2868,14 @@ function buildChecklistDays(opts){
   var today = startOfToday();
   var todayIso = isoDate(today);
 
+  // garante que hoje está sempre dentro do range
+  if(!checklistScroll.startDate || today < checklistScroll.startDate || today > checklistScroll.endDate){
+    var dow = today.getDay();
+    var monday = addDays(today, (dow===0)?-6:1-dow);
+    checklistScroll.startDate = addDays(monday, -7);
+    checklistScroll.endDate   = addDays(monday, 13);
+  }
+
   var html = '';
   var cursor = new Date(checklistScroll.startDate);
   while(cursor <= checklistScroll.endDate){
@@ -2879,12 +2887,20 @@ function buildChecklistDays(opts){
   updateChecklistTitle();
 
   if(opts.initial){
-    // Center on today after first paint.
+    // centraliza em hoje de forma confiável
     requestAnimationFrame(function(){
       var todayCol = wrap.querySelector('.week-col.is-today');
       if(todayCol){
-        var target = todayCol.offsetLeft - (wrap.clientWidth - todayCol.offsetWidth)/2;
+        var target = todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2);
         wrap.scrollLeft = Math.max(0, target);
+        updateChecklistTitle();
+      } else {
+        // fallback: centraliza na coluna mais próxima da data de hoje
+        var cols = wrap.querySelectorAll('.week-col');
+        if(cols.length > 0){
+          var mid = Math.floor(cols.length/2);
+          wrap.scrollLeft = cols[mid].offsetLeft - wrap.clientWidth/2;
+        }
       }
     });
   }
