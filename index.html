@@ -2907,22 +2907,38 @@ function buildChecklistDays(opts){
   updateChecklistTitle();
 
   if(opts.initial){
-    // centraliza em hoje de forma confiável
-    requestAnimationFrame(function(){
+    // usa setTimeout para garantir que o DOM está completamente renderizado
+    setTimeout(function(){
       var todayCol = wrap.querySelector('.week-col.is-today');
       if(todayCol){
         var target = todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2);
         wrap.scrollLeft = Math.max(0, target);
         updateChecklistTitle();
       } else {
-        // fallback: centraliza na coluna mais próxima da data de hoje
-        var cols = wrap.querySelectorAll('.week-col');
-        if(cols.length > 0){
-          var mid = Math.floor(cols.length/2);
-          wrap.scrollLeft = cols[mid].offsetLeft - wrap.clientWidth/2;
+        // hoje não está no range — força recalcular com hoje no centro
+        var today2 = startOfToday();
+        var dow2 = today2.getDay();
+        var monday2 = addDays(today2, (dow2===0)?-6:1-dow2);
+        checklistScroll.startDate = addDays(monday2, -7);
+        checklistScroll.endDate   = addDays(monday2, 13);
+        var html2 = '';
+        var cursor2 = new Date(checklistScroll.startDate);
+        var todayIso2 = isoDate(today2);
+        while(cursor2 <= checklistScroll.endDate){
+          html2 += checklistDayColumnHtml(cursor2, todayIso2);
+          cursor2 = addDays(cursor2, 1);
         }
+        wrap.innerHTML = html2;
+        bindChecklistDayHandlers(wrap);
+        setTimeout(function(){
+          var tc = wrap.querySelector('.week-col.is-today');
+          if(tc){
+            wrap.scrollLeft = Math.max(0, tc.offsetLeft - (wrap.clientWidth/2) + (tc.offsetWidth/2));
+            updateChecklistTitle();
+          }
+        }, 50);
       }
-    });
+    }, 80);
   }
 }
 
