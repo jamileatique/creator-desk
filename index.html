@@ -1394,11 +1394,14 @@ function subscribeCloudData(){
     applyRemoteData(snap.data());
     persistAllLocalQuiet().then(function(){
       if(state.loaded){
-        // não re-renderiza se o usuário estiver digitando no planner
         var activeEl = document.activeElement;
+        // não re-renderiza se digitando no planner diário
         var plannerInputs = ['dpPhrase','dpP1','dpP2','dpP3'];
         var typingInPlanner = activeEl && plannerInputs.indexOf(activeEl.id) !== -1;
-        if(!typingInPlanner){
+        // não re-renderiza se estiver no planner semanal (evita voltar para maio)
+        var inWeeklyPlanner = state.route === 'checklist' && state.plannerView === 'weekly';
+
+        if(!typingInPlanner && !inWeeklyPlanner){
           document.getElementById('modalRoot').innerHTML = '';
           render();
         }
