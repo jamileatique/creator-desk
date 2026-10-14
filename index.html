@@ -1423,6 +1423,23 @@ function initCloudSync(){
   return new Promise(function(resolve){
     var ready = false;
     firebase.auth().onAuthStateChanged(function(user){
+      // detecta troca de usuário e limpa localStorage para não vazar dados
+      var previousUid = null;
+      try{ previousUid = localStorage.getItem('studio_current_uid'); }catch(e){}
+      if(user && previousUid && previousUid !== user.uid){
+        // usuário diferente — limpa todos os dados locais
+        var keysToRemove = Object.values(STORE);
+        keysToRemove.forEach(function(k){
+          try{ localStorage.removeItem(k); }catch(e){}
+        });
+        try{ localStorage.removeItem('studio_auth_token'); }catch(e){}
+      }
+      if(user){
+        try{ localStorage.setItem('studio_current_uid', user.uid); }catch(e){}
+      } else {
+        try{ localStorage.removeItem('studio_current_uid'); }catch(e){}
+      }
+
       cloudUser = user;
       if(cloudUnsubscribe){ cloudUnsubscribe(); cloudUnsubscribe = null; }
 
@@ -2985,35 +3002,23 @@ function refreshChecklistDay(dateIso){
   var wrap = document.getElementById('weekKanban');
   if(!wrap) return;
 
-  // salva scroll atual ANTES de qualquer mudança
+  // salva scroll ANTES de qualquer mudança
   var savedScroll = wrap.scrollLeft;
 
   var col = wrap.querySelector('[data-day-col="'+dateIso+'"]');
-  if(!col){
-    // coluna não existe — garante que checklistScroll está na semana atual antes de rebuildar
-    var today = startOfToday();
-    var dow = today.getDay();
-    var monday = addDays(today, (dow===0)?-6:1-dow);
-    var targetDate = new Date(dateIso+'T00:00:00');
-    // só reseta se a data alvo estiver fora do range atual
-    if(targetDate < checklistScroll.startDate || targetDate > checklistScroll.endDate){
-      checklistScroll.startDate = addDays(monday, -7);
-      checklistScroll.endDate = addDays(monday, 13);
-    }
-    buildChecklistDays();
-    requestAnimationFrame(function(){ wrap.scrollLeft = savedScroll; });
-    return;
+  if(col){
+    // coluna existe — só atualiza ela, sem tocar no scroll
+    var d = new Date(dateIso+'T00:00:00');
+    var todayIso = isoDate(startOfToday());
+    var temp = document.createElement('div');
+    temp.innerHTML = checklistDayColumnHtml(d, todayIso);
+    col.replaceWith(temp.firstElementChild);
+    bindChecklistDayHandlers(wrap);
   }
-
-  // atualiza só a coluna do dia sem mexer no scroll
-  var d = new Date(dateIso+"T00:00:00");
-  var todayIso = isoDate(startOfToday());
-  var temp = document.createElement('div');
-  temp.innerHTML = checklistDayColumnHtml(d, todayIso);
-  col.replaceWith(temp.firstElementChild);
-  bindChecklistDayHandlers(wrap);
-  // restaura scroll após atualização
-  requestAnimationFrame(function(){ wrap.scrollLeft = savedScroll; });
+  // sempre restaura o scroll — mesmo que a coluna não exista
+  requestAnimationFrame(function(){
+    wrap.scrollLeft = savedScroll;
+  });
 }
 
 function updateChecklistTitle(){
@@ -5211,7 +5216,9 @@ function renderAssistant(){
   var userName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName.split(' ')[0] : 'você';
   var DEFAULT_PROFILE = "QUEM SOU:\nSou " + userName + ", criadora de conteúdo UGC.\n\nPreencha este campo com suas informações para personalizar o assistente:\n\n- Seu nome completo e como assina\n- Seu portfólio/site\n- Seus nichos principais (beleza, moda, fitness, etc)\n- Seu estilo de conteúdo\n- Como você estrutura suas abordagens\n- Tom das suas mensagens\n- Exemplos de conceitos que já criou\n\nQuanto mais detalhes você colocar, melhor o assistente vai escrever no seu estilo!";
 
-  var profContext = (prof && prof.context) ? prof.context : DEFAULT_PROFILE;
+  // só usa DEFAULT_PROFILE se o usuário nunca preencheu nada
+  // (prof.context === '' significa que ele abriu mas apagou, não mostra o default)
+  var profContext = (prof && prof.context !== undefined) ? prof.context : DEFAULT_PROFILE;
   var html =
     '<div class="page-head"><div><h1>Assistente</h1><p class="page-sub">Seu assistente pessoal de prospecção UGC.</p></div></div>' +
     '<div class="assistant-layout">' +
