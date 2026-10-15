@@ -5165,7 +5165,11 @@ var CONTRACT_FIELDS = [
 ];
 // tira um CEP digitado dentro do endereço (o contrato já tem campo próprio de CEP)
 function addressSemCep(addr){
-  return String(addr||'').replace(/[,\-–\s]*\bcep\b[:.\s]*\d{2}\.?\d{3}-?\d{3}/ig,'').replace(/[,\s]+$/,'').trim();
+  return String(addr||'')
+    .replace(/[,;\-–\s]*\bcep\b[^0-9a-z]{0,4}[\d][\d.\s\-]{6,10}\d/ig, '')   // "cep 18110650", "CEP: 18.110-650"
+    .replace(/[,;\-–\s]*\b\d{2}\.?\d{3}-\d{3}\b/g, '')                       // "18110-650" solto
+    .replace(/[,;\-–\s]*\b\d{8}\b/g, '')                                     // "18110650" solto
+    .replace(/\s{2,}/g, ' ').replace(/[,;\-–\s]+$/,'').replace(/[,;\-–\s]+\./g,'.').trim();
 }
 function allContractFieldKeys(){
   var k = []; CONTRACT_FIELDS.forEach(function(g){ g.fields.forEach(function(f){ k.push(f[0]); }); }); return k;
