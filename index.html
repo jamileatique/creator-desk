@@ -5267,7 +5267,6 @@ function apiFetch(body){
 
   var headers = {
     'Content-Type':'application/json',
-    'X-App-Auth': getAppToken(),      // autenticação do app
     'X-User-Api-Key': getApiKey()     // chave da própria usuária
   };
   return fetch(endpoint, { method:'POST', headers:headers, body:JSON.stringify(body) });
