@@ -5294,10 +5294,26 @@ function saveCreatorProfile(profile){
 
 var lastProspectId = null; // id do prospect atualmente sendo trabalhado no chat
 
+function getUserFirstName(){
+  // 1) nome do perfil Google/cadastro  2) parte do e-mail antes do @
+  if(cloudUser && cloudUser.displayName && cloudUser.displayName.trim()){
+    return cloudUser.displayName.trim().split(' ')[0];
+  }
+  if(cloudUser && cloudUser.email){
+    var base = cloudUser.email.split('@')[0].split(/[._\-+0-9]/)[0];
+    if(base) return base.charAt(0).toUpperCase() + base.slice(1).toLowerCase();
+  }
+  return '';
+}
+function getUserFullName(){
+  if(cloudUser && cloudUser.displayName && cloudUser.displayName.trim()) return cloudUser.displayName.trim();
+  return getUserFirstName() || 'Criadora UGC';
+}
+
 function renderAssistant(){
   var prof = state.creatorProfile;
   // Pega o nome do usuário logado para personalizar
-  var userName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName.split(' ')[0] : 'você';
+  var userName = getUserFirstName() || 'você';
   var DEFAULT_PROFILE = "QUEM SOU:\nSou " + userName + ", criadora de conteúdo UGC.\n\nPreencha este campo com suas informações para personalizar o assistente:\n\n- Seu nome completo e como assina\n- Seu portfólio/site\n- Seus nichos principais (beleza, moda, fitness, etc)\n- Seu estilo de conteúdo\n- Como você estrutura suas abordagens\n- Tom das suas mensagens\n- Exemplos de conceitos que já criou\n\nQuanto mais detalhes você colocar, melhor o assistente vai escrever no seu estilo!";
 
   // só usa DEFAULT_PROFILE se o usuário nunca preencheu nada
@@ -5388,8 +5404,9 @@ function renderAssistant(){
   // renderizar histórico existente
   state.assistantMessages.forEach(function(msg){ appendChatMessage(msg.role, msg.content, false); });
   if(state.assistantMessages.length === 0){
+    var greetName = getUserFirstName();
     appendChatMessage('assistant',
-      'Olá, Jamile! 🌸 Sou seu assistente de abordagens UGC.\n\nUse os atalhos à esquerda para escolher uma marca pelo status, ou me diz:\n\n• Para qual marca quer a abordagem?\n• É para Instagram ou Seu Influencer?\n\nDepois me conta sua ideia e eu escrevo no seu estilo.',
+      'Olá' + (greetName ? ', ' + greetName : '') + '! 🌸 Sou seu assistente de abordagens UGC.\n\nUse os atalhos à esquerda para escolher uma marca pelo status, ou me diz:\n\n• Para qual marca quer a abordagem?\n• É para Instagram ou Seu Influencer?\n\nDepois me conta sua ideia e eu escrevo no seu estilo.',
       false);
   }
   scrollChatToBottom();
@@ -5662,8 +5679,8 @@ function handleListarProspeccoes(){
 function buildSystemPrompt(){
   var prof = state.creatorProfile;
   // pega o nome da usuária logada dinamicamente
-  var userName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName.split(' ')[0] : 'você';
-  var userFullName = (cloudUser && cloudUser.displayName) ? cloudUser.displayName : 'Criadora UGC';
+  var userName = getUserFirstName() || 'você';
+  var userFullName = getUserFullName();
   var extraContext = (prof && prof.context) ? '\n\nPERFIL DA CRIADORA (preenchido por ela):\n'+prof.context : '';
   var abertas = state.prospects.filter(function(p){ return p.status!=='fechou' && p.status!=='recusou'; }).slice(0,10);
   var prospectsContext = abertas.length > 0
