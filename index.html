@@ -1062,7 +1062,8 @@ var STORE = {
   nichos: "ugc_nichos_v1",
   planner: "ugc_planner_v1",
   creatorProfile: "ugc_creator_profile_v1",
-  assistantHistory: "ugc_assistant_history_v1"
+  assistantHistory: "ugc_assistant_history_v1",
+  customContract: "ugc_custom_contract_v1"
 };
 
 var state = {
@@ -1091,7 +1092,8 @@ var state = {
   planner: {},
   timer: {running:false, seconds:25*60, mode:'work', interval:null},
   creatorProfile: null,       // perfil de criadora para o assistente
-  assistantMessages: []       // histórico do chat do assistente (só em memória)
+  assistantMessages: [],      // histórico do chat do assistente (só em memória)
+  customContractTemplate: null // contrato personalizado da usuária
 };
 
 var FIREBASE_CONFIG = {
@@ -1500,6 +1502,22 @@ async function loadAll(){
   try{
     state.creatorProfile = await loadKeyObj(STORE.creatorProfile);
   }catch(e){ state.creatorProfile = null; }
+  try{
+    state.customContractTemplate = await loadKeyObj(STORE.customContract);
+  }catch(e){ state.customContractTemplate = null; }
+
+  // carrega API Key do Firebase se usuária estiver logada
+  if(cloudUser && cloudDb){
+    try{
+      var keyDoc = await cloudDb.collection('users').doc(cloudUser.uid).collection('settings').doc('apikey').get();
+      if(keyDoc.exists && keyDoc.data().key){
+        state.userApiKey = keyDoc.data().key;
+        // sincroniza com localStorage local
+        try{ localStorage.setItem('studio_user_api_key_'+cloudUser.uid, state.userApiKey); }catch(e){}
+      }
+    }catch(e){ /* sem chave salva ainda */ }
+  }
+
   state.loaded = true;
 }
 function saveJobs(){ return saveKey(STORE.jobs, state.jobs); }
@@ -4921,6 +4939,25 @@ function renderContracts(){
   }
   html += '</div>';
 
+  // seção de contrato personalizado
+  var hasCustomTemplate = state.customContractTemplate ? true : false;
+  html += '<div class="section"><div class="section-head"><h2>📄 Modelo de contrato</h2></div>';
+  html += '<div class="table-wrap" style="padding:18px 20px;">';
+  if(hasCustomTemplate){
+    html += '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">' +
+      '<span style="font-size:13px;color:var(--sage-deep);">✓ Você tem um contrato personalizado salvo</span>' +
+      '<button class="btn btn-sm btn-ghost" id="btnRemoveTemplate">remover</button>' +
+    '</div>';
+  } else {
+    html += '<p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;">Usando o modelo padrão do Creator Desk. Você pode fazer upload do seu próprio contrato.</p>';
+  }
+  html += '<div style="display:flex;gap:10px;flex-wrap:wrap;">' +
+    '<button class="btn btn-sm" id="btnUploadTemplate">📤 Upload do meu contrato (.docx ou .pdf)</button>' +
+    (hasCustomTemplate ? '<button class="btn btn-sm btn-ghost" id="btnDownloadTemplate">⬇ Baixar meu modelo</button>' : '') +
+  '</div>';
+  html += '<input type="file" id="contractTemplateInput" accept=".docx,.pdf" style="display:none;"/>';
+  html += '</div></div>';
+
   html += '<div class="section"><div class="section-head"><h2>Gerar novo contrato</h2></div>';
   if(!prof){
     html += emptyState("Cadastre seus dados acima antes de gerar um contrato.");
@@ -4955,6 +4992,47 @@ function renderContracts(){
   if(btnEmpty) btnEmpty.addEventListener('click', function(){ openContractProfileModal(); });
   var btnGen = document.getElementById('btnGenContract');
   if(btnGen) btnGen.addEventListener('click', generateContractPdf);
+
+  // upload de contrato personalizado
+  var templateInput = document.getElementById('contractTemplateInput');
+  var btnUpload = document.getElementById('btnUploadTemplate');
+  if(btnUpload) btnUpload.addEventListener('click', function(){ templateInput && templateInput.click(); });
+  if(templateInput) templateInput.addEventListener('change', function(){
+    if(!templateInput.files || !templateInput.files[0]) return;
+    var file = templateInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e){
+      state.customContractTemplate = {
+        name: file.name,
+        type: file.type,
+        data: e.target.result
+      };
+      saveKey(STORE.customContract, state.customContractTemplate);
+      showToast('✓ Contrato personalizado salvo!');
+      renderContracts();
+    };
+    reader.readAsDataURL(file);
+    templateInput.value = '';
+  });
+
+  var btnRemove = document.getElementById('btnRemoveTemplate');
+  if(btnRemove) btnRemove.addEventListener('click', function(){
+    if(confirm('Remover seu contrato personalizado? Voltará a usar o modelo padrão.')){
+      state.customContractTemplate = null;
+      saveKey(STORE.customContract, null);
+      showToast('Contrato personalizado removido.');
+      renderContracts();
+    }
+  });
+
+  var btnDownload = document.getElementById('btnDownloadTemplate');
+  if(btnDownload) btnDownload.addEventListener('click', function(){
+    if(!state.customContractTemplate) return;
+    var a = document.createElement('a');
+    a.href = state.customContractTemplate.data;
+    a.download = state.customContractTemplate.name;
+    a.click();
+  });
 }
 
 function openContractProfileModal(){
@@ -5146,10 +5224,25 @@ function isRunningInClaudeAi(){
   }catch(e){ return true; }
 }
 
-// Chave nunca exposta — funções mantidas por compatibilidade interna
-function getApiKey(){ return ''; }
-function saveApiKey(){ }
-function hasApiKey(){ return true; }
+// API Key de cada usuária — salva no Firebase vinculada ao uid dela
+function getApiKey(){
+  // tenta pegar do state (carregado do Firebase)
+  if(state.userApiKey) return state.userApiKey;
+  // fallback para localStorage (só na mesma máquina)
+  try{ return localStorage.getItem('studio_user_api_key_'+(cloudUser?cloudUser.uid:'')) || ''; }catch(e){ return ''; }
+}
+function saveApiKey(key){
+  state.userApiKey = key.trim();
+  // salva no localStorage como cache local
+  try{ localStorage.setItem('studio_user_api_key_'+(cloudUser?cloudUser.uid:''), key.trim()); }catch(e){}
+  // salva no Firebase vinculado ao uid da usuária
+  if(cloudUser && cloudDb){
+    cloudDb.collection('users').doc(cloudUser.uid).collection('settings').doc('apikey')
+      .set({ key: key.trim(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() })
+      .catch(function(e){ console.error('Erro ao salvar API Key:', e); });
+  }
+}
+function hasApiKey(){ return !!getApiKey() || isRunningInClaudeAi(); }
 
 function apiFetch(body){
   // Dentro do Claude.ai (dev): chama Anthropic diretamente
@@ -5172,14 +5265,12 @@ function apiFetch(body){
     ? BACKEND_URL + '/api/extract-instagram'
     : BACKEND_URL + '/api/assistant';
 
-  return fetch(endpoint, {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'X-App-Auth': getAppToken()   // token enviado ao backend para validação
-    },
-    body:JSON.stringify(body)
-  });
+  var headers = {
+    'Content-Type':'application/json',
+    'X-App-Auth': getAppToken(),      // autenticação do app
+    'X-User-Api-Key': getApiKey()     // chave da própria usuária
+  };
+  return fetch(endpoint, { method:'POST', headers:headers, body:JSON.stringify(body) });
 }
 
 /* ── Auth token helper ──────────────────────────────────── */
@@ -5234,6 +5325,18 @@ function renderAssistant(){
         '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
 
         '<div>' +
+          '<h3 style="font-size:13px; margin:0 0 8px;">🔑 Sua API Key (Anthropic)</h3>' +
+          '<input id="apiKeyInput" type="password" placeholder="sk-ant-..." style="width:100%; padding:9px 11px; border-radius:var(--radius-s); border:1px solid var(--line); background:var(--lilac); font-size:13px; outline:none; box-sizing:border-box;" value="'+escapeHtml(getApiKey())+'" />' +
+          '<div style="margin-top:8px; display:flex; gap:8px; align-items:center;">' +
+            '<button class="btn btn-sm" id="btnSaveApiKey">Salvar</button>' +
+            '<span id="apiKeyStatus" style="font-size:12px; color:'+(hasApiKey()?'var(--sage-deep)':'var(--danger)')+'">'+(getApiKey()?'✓ Chave salva':'⚠ Sem chave')+'</span>' +
+          '</div>' +
+          '<p style="font-size:11px; color:var(--ink-faint); margin:6px 0 0;">Obtenha em: <a href="https://console.anthropic.com" target="_blank" style="color:var(--magenta-deep);">console.anthropic.com</a></p>' +
+        '</div>' +
+
+        '<hr style="border:none; border-top:1px solid var(--line); margin:4px 0;">' +
+
+        '<div>' +
           '<p style="font-size:12px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:.04em; margin:0 0 8px;">Atalhos por etapa</p>' +
           '<div style="display:flex; flex-direction:column; gap:6px;">' +
             '<button class="chat-action-btn" data-quick="abordagem" data-status="pendente">💌 Abordagem fria <span style="font-size:11px; opacity:.7;">(pendentes)</span></button>' +
@@ -5259,6 +5362,20 @@ function renderAssistant(){
     '</div>';
 
   document.getElementById('pageContent').innerHTML = html;
+
+  // salvar API Key
+  var btnSaveKey = document.getElementById('btnSaveApiKey');
+  if(btnSaveKey) btnSaveKey.addEventListener('click', function(){
+    var key = document.getElementById('apiKeyInput').value.trim();
+    if(key && !key.startsWith('sk-ant-')){ showToast('Chave inválida. Deve começar com sk-ant-'); return; }
+    saveApiKey(key);
+    var status = document.getElementById('apiKeyStatus');
+    if(status){
+      status.textContent = key ? '✓ Chave salva!' : '⚠ Sem chave';
+      status.style.color = key ? 'var(--sage-deep)' : 'var(--danger)';
+    }
+    showToast(key ? '🔑 API Key salva com segurança!' : 'API Key removida.');
+  });
 
   // salvar perfil
   document.getElementById('btnSaveProfile').addEventListener('click', function(){
