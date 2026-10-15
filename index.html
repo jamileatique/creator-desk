@@ -1346,6 +1346,14 @@ function persistAllLocalQuiet(){
     saveKeyQuiet(STORE.nichos, state.nichos)
   ]).finally(function(){ applyingRemote = false; });
 }
+// "assinatura" dos dados sincronizados, pra saber se um update da nuvem mudou algo de verdade
+function cloudDataSignature(){
+  try{
+    return JSON.stringify([state.jobs, state.brands, state.platforms, state.checklist, state.expenses,
+      state.prospects, state.products, state.contractProfile, state.notificationsRead,
+      state.exchangeRates, state.nichos, state.creatorProfile]);
+  }catch(e){ return String(Math.random()); }
+}
 function applyRemoteData(data){
   if(!data) return;
   // Se os dados remotos chegaram completamente vazios mas temos dados locais,
@@ -1394,9 +1402,13 @@ function subscribeCloudData(){
       return;
     }
 
+    var sigBefore = cloudDataSignature();
     applyRemoteData(snap.data());
+    var dataChanged = cloudDataSignature() !== sigBefore;
     persistAllLocalQuiet().then(function(){
-      if(state.loaded){
+      // eco do próprio salvamento (nada mudou de verdade): não redesenha a tela
+      // — era isso que fazia a prospecção voltar pro início e fechar modais
+      if(state.loaded && dataChanged){
         var activeEl = document.activeElement;
         // não re-renderiza se digitando no planner diário
         var plannerInputs = ['dpPhrase','dpP1','dpP2','dpP3'];
@@ -1655,6 +1667,7 @@ function navigate(route){
   document.getElementById('modalRoot').innerHTML = '';
   if(state.notifPanelOpen) closeNotifPanel();
   _savedScrollY = 0; // nova rota sempre começa do topo
+  if(route === 'checklist') state.plannerDay = null; // planner sempre abre em hoje
   state.route = route;
   document.querySelectorAll('.nav-item').forEach(function(el){
     el.classList.toggle('active', el.getAttribute('data-route')===route);
@@ -1802,7 +1815,6 @@ function renderProspectKanban(){
     var key = col.getAttribute('data-prospect-col');
     savedColScrolls[key] = col.scrollTop; // salva mesmo se 0
   });
-  console.log('SCROLL ANTES — main:', savedMainY, 'cols:', JSON.stringify(savedColScrolls), 'wrapX:', savedScrollX);
 
   var html = '';
   PROSPECT_STATUS_FLOW.forEach(function(s){
@@ -1817,15 +1829,15 @@ function renderProspectKanban(){
   wrap.innerHTML = html;
 
   // restaura todos os scrolls
+  setScrollLeftInstant(wrap, savedScrollX);
   requestAnimationFrame(function(){
-    wrap.scrollLeft = savedScrollX;
+    setScrollLeftInstant(wrap, savedScrollX);
     var mainEl2 = document.getElementById('main');
     if(mainEl2) mainEl2.scrollTop = savedMainY;
     wrap.querySelectorAll('[data-prospect-col]').forEach(function(col){
       var key = col.getAttribute('data-prospect-col');
       col.scrollTop = savedColScrolls[key] || 0;
     });
-    console.log('SCROLL DEPOIS — main:', mainEl2 ? mainEl2.scrollTop : 'n/a');
   });
 
   wrap.querySelectorAll('.kanban-card').forEach(function(card){
@@ -2248,8 +2260,9 @@ function renderKanban(){
   wrap.innerHTML = html;
 
   // restaura todos os scrolls
+  setScrollLeftInstant(wrap, savedScrollX);
   requestAnimationFrame(function(){
-    wrap.scrollLeft = savedScrollX;
+    setScrollLeftInstant(wrap, savedScrollX);
     var mainEl = document.getElementById('main');
     if(mainEl && savedMainY) mainEl.scrollTop = savedMainY;
     wrap.querySelectorAll('[data-status-col]').forEach(function(col){
@@ -2635,6 +2648,25 @@ var DAILY_PHRASES = [
   "Cada tarefa concluída é uma promessa cumprida a você. 🌼",
   "Disciplina hoje, liberdade amanhã. 🌸"
 ];
+
+/* Virada do dia: se o app ficou aberto de um dia pro outro, volta o planner
+   pra "hoje" e redesenha (checa ao voltar pra aba, ao focar e a cada minuto). */
+var _lastKnownToday = null;
+function checkDayChange(){
+  var t = isoDate(startOfToday());
+  if(_lastKnownToday === null){ _lastKnownToday = t; return; }
+  if(t === _lastKnownToday) return;
+  _lastKnownToday = t;
+  state.plannerDay = null;
+  if(!state.loaded) return;
+  var a = document.activeElement;
+  var typing = a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA');
+  if(!typing && !document.querySelector('#modalRoot .overlay')) render();
+}
+document.addEventListener('visibilitychange', function(){ if(!document.hidden) checkDayChange(); });
+window.addEventListener('focus', checkDayChange);
+setInterval(checkDayChange, 60000);
+checkDayChange();
 
 function getPlannerDay(){
   return state.plannerDay || isoDate(startOfToday());
@@ -4903,29 +4935,54 @@ function closeNotifPanel(){
 /* ---------------- scroll preservation: keeps the user's position after any re-render ---------------- */
 var _savedScrollY = 0;
 var _savedKanbanScrolls = {};
+var _savedMainY = 0;
+var _savedColScrolls = {};
+var _lastRenderedRoute = null;
+var _sameRoute = false;
 
 function saveScrollY(){
+  _sameRoute = (_lastRenderedRoute === state.route);
+  _lastRenderedRoute = state.route;
   _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  var mainEl = document.getElementById('main');
+  _savedMainY = mainEl ? mainEl.scrollTop : 0;
   _savedKanbanScrolls = {};
   ['kanbanWrap','prospectKanban','weekKanban'].forEach(function(id){
     var el = document.getElementById(id);
     if(el && el.scrollLeft > 0) _savedKanbanScrolls[id] = el.scrollLeft;
   });
+  // rolagem vertical de cada coluna dos kanbans
+  _savedColScrolls = {};
+  document.querySelectorAll('[data-prospect-col],[data-status-col]').forEach(function(col){
+    var key = col.hasAttribute('data-prospect-col') ? 'p:' + col.getAttribute('data-prospect-col') : 's:' + col.getAttribute('data-status-col');
+    if(col.scrollTop > 0) _savedColScrolls[key] = col.scrollTop;
+  });
 }
 
 function restoreScrollY(){
-  if(_savedScrollY > 0){
-    requestAnimationFrame(function(){ window.scrollTo(0, _savedScrollY); });
+  if(!_sameRoute){
+    // mudou de aba: começa do topo
+    var m = document.getElementById('main');
+    if(m) m.scrollTop = 0;
+    return;
   }
-  var saved = _savedKanbanScrolls;
-  if(Object.keys(saved).length > 0){
-    requestAnimationFrame(function(){
-      Object.keys(saved).forEach(function(id){
-        var el = document.getElementById(id);
-        if(el) el.scrollLeft = saved[id];
-      });
+  var winY = _savedScrollY, mainY = _savedMainY, kan = _savedKanbanScrolls, cols = _savedColScrolls;
+  function apply(){
+    if(winY > 0) window.scrollTo(0, winY);
+    var mainEl = document.getElementById('main');
+    if(mainEl && mainY > 0) mainEl.scrollTop = mainY;
+    Object.keys(kan).forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) setScrollLeftInstant(el, kan[id]);
+    });
+    Object.keys(cols).forEach(function(key){
+      var attr = key.charAt(0) === 'p' ? 'data-prospect-col' : 'data-status-col';
+      var col = document.querySelector('['+attr+'="'+key.slice(2)+'"]');
+      if(col) col.scrollTop = cols[key];
     });
   }
+  apply();                       // na hora (evita "piscar" no início)
+  requestAnimationFrame(apply);  // e de novo após o layout final
 }
 
 /* ---------------- main render dispatcher ---------------- */
