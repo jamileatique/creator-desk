@@ -2526,8 +2526,25 @@ var checklistScroll = {
   startDate: null,   // Date object, inclusive
   endDate: null,      // Date object, inclusive
   dayWidth: null,      // measured px width of one day column (for scroll math)
-  loadingEdge: false
+  loadingEdge: false,
+  positioning: false   // true enquanto centraliza em hoje (bloqueia o scroll infinito)
 };
+
+/* Move o scroll SEM animação. O CSS tem scroll-behavior:smooth, e um scroll
+   animado passando perto da borda esquerda disparava o "carregar dias anteriores"
+   em cadeia — era isso que fazia o planner abrir meses atrás. */
+function setScrollLeftInstant(wrap, left){
+  var prev = wrap.style.scrollBehavior;
+  wrap.style.scrollBehavior = 'auto';
+  wrap.scrollLeft = left;
+  wrap.style.scrollBehavior = prev;
+}
+function centerChecklistOnToday(wrap){
+  var todayCol = wrap.querySelector('.week-col.is-today');
+  if(!todayCol) return;
+  setScrollLeftInstant(wrap, Math.max(0, todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2)));
+  updateChecklistTitle();
+}
 var CHECKLIST_INITIAL_SPAN = 7;   // days visible on first paint
 var CHECKLIST_CHUNK = 7;          // days appended per lazy-load step
 var CHECKLIST_EDGE_THRESHOLD = 320; // px from edge that triggers loading more days
@@ -2906,11 +2923,13 @@ function buildChecklistDays(opts){
   var today = startOfToday();
   var todayIso = isoDate(today);
 
-  // SEMPRE usa hoje como centro ao construir as colunas (ignora estado antigo)
-  var dow = today.getDay();
-  var monday = addDays(today, (dow===0)?-6:1-dow);
-  checklistScroll.startDate = addDays(monday, -7);
-  checklistScroll.endDate   = addDays(monday, 14);
+  // na abertura (ou sem intervalo definido) centraliza a janela de datas em hoje
+  if(opts.initial || !checklistScroll.startDate || !checklistScroll.endDate){
+    var dow = today.getDay();
+    var monday = addDays(today, (dow===0)?-6:1-dow);
+    checklistScroll.startDate = addDays(monday, -7);
+    checklistScroll.endDate   = addDays(monday, 14);
+  }
 
   var html = '';
   var cursor = new Date(checklistScroll.startDate);
@@ -2923,13 +2942,16 @@ function buildChecklistDays(opts){
   updateChecklistTitle();
 
   if(opts.initial){
-    setTimeout(function(){
-      var todayCol = wrap.querySelector('.week-col.is-today');
-      if(todayCol){
-        wrap.scrollLeft = Math.max(0, todayCol.offsetLeft - (wrap.clientWidth/2) + (todayCol.offsetWidth/2));
-        updateChecklistTitle();
-      }
-    }, 100);
+    // trava o scroll infinito até terminar de posicionar em hoje
+    checklistScroll.positioning = true;
+    centerChecklistOnToday(wrap);                 // já posiciona na hora
+    requestAnimationFrame(function(){
+      centerChecklistOnToday(wrap);               // reposiciona após o layout final
+      setTimeout(function(){
+        if(document.getElementById('weekKanban') === wrap) centerChecklistOnToday(wrap);
+        checklistScroll.positioning = false;
+      }, 250);
+    });
   }
 }
 
@@ -3027,7 +3049,7 @@ function refreshChecklistDay(dateIso){
   }
   // sempre restaura o scroll — mesmo que a coluna não exista
   requestAnimationFrame(function(){
-    wrap.scrollLeft = savedScroll;
+    setScrollLeftInstant(wrap, savedScroll);
   });
 }
 
@@ -3090,8 +3112,6 @@ function scrollChecklistByDays(n){
 function scrollChecklistToToday(){
   var today = startOfToday();
   if(today < checklistScroll.startDate || today > checklistScroll.endDate){
-    checklistScroll.startDate = addDays(today, -Math.floor(CHECKLIST_INITIAL_SPAN/2));
-    checklistScroll.endDate = addDays(checklistScroll.startDate, CHECKLIST_INITIAL_SPAN - 1);
     buildChecklistDays({initial:true});
     return;
   }
@@ -3106,6 +3126,7 @@ function scrollChecklistToToday(){
 /* Infinite scroll: as the user nears either edge, prepend/append more days
    without resetting scroll position. */
 function onChecklistScroll(e){
+  if(checklistScroll.positioning){ updateChecklistTitle(); return; }
   if(checklistScroll.loadingEdge) return;
   var wrap = e.target;
   var nearRightEdge = wrap.scrollLeft + wrap.clientWidth >= wrap.scrollWidth - CHECKLIST_EDGE_THRESHOLD;
@@ -3161,7 +3182,7 @@ function prependChecklistDays(n){
   updateChecklistTitle();
 
   // Preserve visual scroll position since we just inserted content to the left.
-  wrap.scrollLeft = prevScrollLeft + (wrap.scrollWidth - prevScrollWidth);
+  setScrollLeftInstant(wrap, prevScrollLeft + (wrap.scrollWidth - prevScrollWidth));
   checklistScroll.loadingEdge = false;
 }
 
