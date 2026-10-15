@@ -5163,6 +5163,10 @@ var CONTRACT_FIELDS = [
   {group:'Valores', fields:[['valor','valor total, ex: 540,00'],['valor_extenso','valor por extenso'],['sinal','50% de sinal'],['valor_final','50% final']]},
   {group:'Fechamento', fields:[['cidade','cidade do contrato'],['data','data por extenso'],['foro','comarca do foro']]}
 ];
+// tira um CEP digitado dentro do endereço (o contrato já tem campo próprio de CEP)
+function addressSemCep(addr){
+  return String(addr||'').replace(/[,\-–\s]*\bcep\b[:.\s]*\d{2}\.?\d{3}-?\d{3}/ig,'').replace(/[,\s]+$/,'').trim();
+}
 function allContractFieldKeys(){
   var k = []; CONTRACT_FIELDS.forEach(function(g){ g.fields.forEach(function(f){ k.push(f[0]); }); }); return k;
 }
@@ -5265,12 +5269,12 @@ function buildContractValues(){
     nacionalidade: prof.nationality || blank,
     estado_civil: prof.maritalStatus || blank,
     cpf_contratada: prof.document || blank,
-    endereco_contratada: prof.address || blank,
+    endereco_contratada: addressSemCep(prof.address) || blank,
     cep_contratada: prof.cep || blank,
     pix: prof.pixKey || blank,
     marca: v('cBrandName') || blank,
     cnpj_marca: v('cBrandDoc') || blank,
-    endereco_marca: v('cBrandAddress') || blank,
+    endereco_marca: addressSemCep(v('cBrandAddress')) || blank,
     cep_marca: v('cBrandCep') || blank,
     videos: comExtenso(n('cVideos', 0)),
     fotos: comExtenso(n('cPhotos', 0)),
@@ -5415,13 +5419,13 @@ function generateContractPdf(){
     (prof.nationality ? ', ' + prof.nationality : '') +
     (prof.maritalStatus ? ', ' + prof.maritalStatus : '') +
     ', CPF/CNPJ nº ' + (prof.document || blank) +
-    ', residente e domiciliada à ' + (prof.address || blank) +
+    ', residente e domiciliada à ' + (addressSemCep(prof.address) || blank) +
     ', CEP ' + (prof.cep || blank) +
     ', doravante denominada simplesmente CONTRATADA.';
   addParagraph('CONTRATADA: ' + contratadaQual);
   addParagraph('CONTRATANTE: ' + brandName +
     ', CPF/CNPJ nº ' + (brandDoc || blank) +
-    ', com sede/residência à ' + (brandAddress || blank) +
+    ', com sede/residência à ' + (addressSemCep(brandAddress) || blank) +
     ', CEP ' + (brandCep || blank) +
     ', doravante denominada simplesmente CONTRATANTE.');
   addParagraph('As partes acima qualificadas, de comum acordo e na melhor forma de direito, firmam o presente Contrato de Prestação de Serviços de Conteúdo UGC, mediante as seguintes cláusulas e condições:', {spacingAfter:12});
