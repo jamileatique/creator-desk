@@ -2165,7 +2165,7 @@ function openProspectModal(prospectId, presetStatus, prefill){
         '<div class="modal-head"><h2>'+(isNew?'Nova prospecção':'Editar prospecção')+(prefill.brandName?' 📸':'')+'</h2>' +
           '<button class="modal-close" id="prospModalClose" aria-label="Fechar">✕</button></div>' +
         importBadge +
-        '<div class="field"><label for="pBrandName">Nome da marca</label><input id="pBrandName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(initBrandName)+'" /></div>' +
+        '<div class="field"><label for="pBrandName">Nome da marca</label><input id="pBrandName" type="text" placeholder="Nome da marca como aparece no perfil" value="'+escapeHtml(initBrandName)+'" /></div>' +
         '<div class="field-row">' +
           '<div class="field"><label for="pContact">@ Instagram / contato</label><input id="pContact" type="text" placeholder="@usuario" value="'+escapeHtml(initContact)+'" /></div>' +
           '<div class="field"><label for="pPlatform">Plataforma</label><select id="pPlatform">'+platformOptions+'</select></div>' +
@@ -2174,11 +2174,11 @@ function openProspectModal(prospectId, presetStatus, prefill){
         '<div class="field-row">' +
           '<div class="field"><label for="pStatus">Status</label><select id="pStatus">'+statusOptions+'</select></div>' +
           '<div class="field"><label for="pNicho">Nicho</label>' +
-            '<input id="pNicho" type="text" list="pNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(initNicho)+'" autocomplete="off" />' +
+            '<input id="pNicho" type="text" list="pNichoList" placeholder="Escolha da lista ou digite um nicho" value="'+escapeHtml(initNicho)+'" autocomplete="off" />' +
             '<datalist id="pNichoList">'+state.nichos.map(function(n){ return '<option value="'+escapeHtml(n)+'"></option>'; }).join('')+'</datalist>' +
           '</div>' +
         '</div>' +
-        '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Histórico da conversa, valor proposto...">'+escapeHtml(initNotes)+'</textarea></div>' +
+        '<div class="field"><label for="pNotes">Notas</label><textarea id="pNotes" placeholder="Como foi o contato, o que foi combinado, próximos passos">'+escapeHtml(initNotes)+'</textarea></div>' +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
           '<button class="btn btn-ghost" id="pCancel">cancelar</button>' +
@@ -3371,7 +3371,7 @@ function promptAddCheck(dateIso, category, onSaved){
           '<button class="modal-close" id="checkModalClose" aria-label="Fechar">✕</button></div>' +
         '<p style="font-size:12.5px; color:var(--ink-soft); margin:-8px 0 16px; text-transform:capitalize;">'+escapeHtml(dLabel)+' · '+catLabel+'</p>' +
         '<div class="field"><label for="cText">O que precisa ser feito</label>' +
-          '<input id="cText" type="text" placeholder="Ex: gravar vídeo da Domidona" /></div>' +
+          '<input id="cText" type="text" placeholder="O que você precisa fazer?" /></div>' +
         '<div class="modal-actions">' +
           '<button class="btn btn-ghost" id="cCancel">cancelar</button>' +
           '<button class="btn btn-primary" id="cSave">Adicionar</button>' +
@@ -4223,7 +4223,7 @@ function openJobModal(jobId, presetStatus){
           '<button class="modal-close" id="jobModalClose" aria-label="Fechar">✕</button></div>' +
 
         '<div class="field"><label for="jTitle">Título do trabalho</label>' +
-          '<input id="jTitle" type="text" placeholder="Ex: 3 vídeos para lançamento" value="'+escapeHtml(job?job.title:'')+'" /></div>' +
+          '<input id="jTitle" type="text" placeholder="Um nome pra você reconhecer esse trabalho" value="'+escapeHtml(job?job.title:'')+'" /></div>' +
 
         '<div class="field-row">' +
           '<div class="field"><label for="jBrand">Marca *</label>' +
@@ -4239,7 +4239,7 @@ function openJobModal(jobId, presetStatus){
           '<div class="field"><label for="jContentType">Tipo de conteúdo</label><select id="jContentType">'+contentOptions+'</select></div>' +
           '<div class="field"><label for="jNicho">Nicho</label>' +
             '<div style="display:flex; gap:8px;">' +
-              '<input id="jNicho" type="text" list="jNichoList" placeholder="Ex: Beleza, Moda..." value="'+escapeHtml(job&&job.nicho?job.nicho:'')+'" autocomplete="off" style="flex:1;" />' +
+              '<input id="jNicho" type="text" list="jNichoList" placeholder="Escolha da lista ou digite um nicho" value="'+escapeHtml(job&&job.nicho?job.nicho:'')+'" autocomplete="off" style="flex:1;" />' +
               '<datalist id="jNichoList">'+state.nichos.map(function(n){ return '<option value="'+escapeHtml(n)+'"></option>'; }).join('')+'</datalist>' +
             '</div>' +
           '</div>' +
@@ -4278,7 +4278,7 @@ function openJobModal(jobId, presetStatus){
           '<div class="field"><label for="jValue">Valor total combinado</label>' +
             '<div style="display:flex; gap:8px;">' +
               '<select id="jCurrency" style="flex:0 0 92px;">' + CURRENCIES.map(function(c){ return '<option value="'+c.code+'" '+((job&&job.currency?job.currency:'BRL')===c.code?'selected':'')+'>'+c.symbol+'</option>'; }).join('') + '</select>' +
-              '<input id="jValue" type="text" placeholder="Ex: 540 ou permuta" value="'+escapeHtml(job?job.value:'')+'" style="flex:1;" />' +
+              '<input id="jValue" type="text" placeholder="Valor combinado, ou escreva “permuta”" value="'+escapeHtml(job?job.value:'')+'" style="flex:1;" />' +
             '</div></div>' +
         '</div>' +
 
@@ -4302,7 +4302,7 @@ function openJobModal(jobId, presetStatus){
         '</div>' +
 
         '<div class="field"><label for="jNotes">Observações</label>' +
-          '<textarea id="jNotes" placeholder="Briefing, nicho, pendências...">'+escapeHtml(job?job.notes:'')+'</textarea></div>' +
+          '<textarea id="jNotes" placeholder="Briefing, combinados e pendências">'+escapeHtml(job?job.notes:'')+'</textarea></div>' +
 
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="jDelete" style="margin-right:auto;">excluir</button>') +
@@ -4500,11 +4500,11 @@ function openBrandModal(brandId, onSavedCallback){
         '<div class="modal-head"><h2 id="brandModalTitle">'+(isNew?'Nova marca':'Editar marca')+'</h2>' +
           '<button class="modal-close" id="brandModalClose" aria-label="Fechar">✕</button></div>' +
         '<div class="field"><label for="bName">Nome da marca</label>' +
-          '<input id="bName" type="text" placeholder="Ex: Loja da Ana" value="'+escapeHtml(brand?brand.name:'')+'" /></div>' +
+          '<input id="bName" type="text" placeholder="Nome da marca" value="'+escapeHtml(brand?brand.name:'')+'" /></div>' +
         '<div class="field"><label for="bContact">Contato</label>' +
           '<input id="bContact" type="text" placeholder="Email, telefone ou @ do Instagram" value="'+escapeHtml(brand?brand.contact:'')+'" /></div>' +
         '<div class="field"><label for="bNotes">Notas</label>' +
-          '<textarea id="bNotes" placeholder="Como te encontraram, preferências, histórico...">'+escapeHtml(brand?brand.notes:'')+'</textarea></div>' +
+          '<textarea id="bNotes" placeholder="Como vocês se conheceram, preferências da marca, histórico">'+escapeHtml(brand?brand.notes:'')+'</textarea></div>' +
         (brand ? '<p style="font-size:12.5px; color:var(--ink-faint); margin:-4px 0 16px;">'+brandJobs.length+' trabalho(s) vinculado(s) a essa marca.</p>' : '') +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="bDelete" style="margin-right:auto;">excluir marca</button>') +
@@ -4575,7 +4575,7 @@ function openPlatformModal(platformId){
         '<div class="modal-head"><h2 id="platModalTitle">'+(isNew?'Nova plataforma':'Editar plataforma')+'</h2>' +
           '<button class="modal-close" id="platModalClose" aria-label="Fechar">✕</button></div>' +
         '<div class="field"><label for="pName">Nome da plataforma</label>' +
-          '<input id="pName" type="text" placeholder="Ex: Destrava UGC" value="'+escapeHtml(platform?platform.name:'')+'" /></div>' +
+          '<input id="pName" type="text" placeholder="Nome da plataforma ou canal" value="'+escapeHtml(platform?platform.name:'')+'" /></div>' +
         (platform ? '<p style="font-size:12.5px; color:var(--ink-faint); margin:-4px 0 16px;">'+count+' trabalho(s) nessa plataforma.</p>' : '') +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="pDelete" style="margin-right:auto;">excluir</button>') +
@@ -4749,7 +4749,7 @@ function openProductModal(productId, presetStatus){
         '<div class="modal-head"><h2 id="prodModalTitle">'+(isNew?'Novo produto':'Editar produto')+'</h2>' +
           '<button class="modal-close" id="prodModalClose" aria-label="Fechar">✕</button></div>' +
         '<div class="field"><label for="prName">Nome do produto</label>' +
-          '<input id="prName" type="text" placeholder="Ex: Kit skincare, fone bluetooth..." value="'+escapeHtml(product?product.name:'')+'" /></div>' +
+          '<input id="prName" type="text" placeholder="Qual produto você recebeu?" value="'+escapeHtml(product?product.name:'')+'" /></div>' +
         '<div class="field"><label for="prBrand">Marca *</label>' +
           '<input id="prBrand" type="text" list="prBrandList" placeholder="Digite o nome — se for nova, criamos pra você" value="'+escapeHtml(currentBrand?currentBrand.name:'')+'" autocomplete="off" />' +
           '<datalist id="prBrandList">'+brandDatalistOptions+'</datalist></div>' +
@@ -4759,7 +4759,7 @@ function openProductModal(productId, presetStatus){
           '<div class="field"><label for="prExpected">Previsão de chegada</label><input id="prExpected" type="date" value="'+(product&&product.expectedDate?product.expectedDate:'')+'" /></div>' +
         '</div>' +
         '<div class="field"><label for="prNotes">Observações</label>' +
-          '<textarea id="prNotes" placeholder="Código de rastreio, observações...">'+escapeHtml(product?product.notes:'')+'</textarea></div>' +
+          '<textarea id="prNotes" placeholder="Código de rastreio, estado do produto, observações">'+escapeHtml(product?product.notes:'')+'</textarea></div>' +
         '<div class="modal-actions">' +
           (isNew ? '' : '<button class="btn btn-danger-text" id="prDelete" style="margin-right:auto;">excluir</button>') +
           '<button class="btn btn-ghost" id="prCancel">cancelar</button>' +
@@ -5114,7 +5114,7 @@ function renderContracts(){
           return '<code style="background:var(--magenta-tint);padding:1px 6px;border-radius:6px;" title="'+escapeHtml(f[1])+'">{'+f[0]+'}</code>';
         }).join(' ') + '</div>';
       }).join('') +
-      '<div style="margin-top:6px;">Números saem com extenso, ex: {videos} vira "2 (dois)". Valores saem no formato 540,00, então escreva "R$ {valor}" no seu contrato.</div>' +
+      '<div style="margin-top:6px;">Números saem com extenso, ex: {videos} vira "2 (dois)". Valores saem no formato 1.500,00, então escreva "R$ {valor}" no seu contrato.</div>' +
     '</div></details>';
   html += '<input type="file" id="contractTemplateInput" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none;"/>';
   html += '</div></div>';
@@ -5125,11 +5125,11 @@ function renderContracts(){
   } else {
     html += '<div class="table-wrap" style="padding:22px 24px;">' +
       '<div class="field-row">' +
-        '<div class="field"><label for="cBrandName">Marca contratante</label><input id="cBrandName" type="text" placeholder="Ex: Aéva cosmetics" /></div>' +
+        '<div class="field"><label for="cBrandName">Marca contratante</label><input id="cBrandName" type="text" placeholder="Nome ou razão social da marca" /></div>' +
         '<div class="field"><label for="cBrandDoc">CNPJ/CPF da marca</label><input id="cBrandDoc" type="text" placeholder="00.000.000/0000-00" /></div>' +
       '</div>' +
       '<div class="field-row">' +
-        '<div class="field"><label for="cBrandAddress">Endereço da marca</label><input id="cBrandAddress" type="text" placeholder="Endereço completo" /></div>' +
+        '<div class="field"><label for="cBrandAddress">Endereço da marca</label><input id="cBrandAddress" type="text" placeholder="Rua, número, bairro, cidade e estado" /></div>' +
         '<div class="field"><label for="cBrandCep">CEP da marca</label><input id="cBrandCep" type="text" placeholder="00000-000" /></div>' +
       '</div>' +
       '<div class="field-row-3">' +
@@ -5139,11 +5139,11 @@ function renderContracts(){
       '</div>' +
       '<div class="field"><label for="cMaterialDays">Prazo para a marca enviar produtos/briefing (dias úteis)</label><input id="cMaterialDays" type="number" min="1" value="5" /></div>' +
       '<div class="field-row">' +
-        '<div class="field"><label for="cValue">Valor total (R$)</label><input id="cValue" type="text" placeholder="Ex: 540" /></div>' +
+        '<div class="field"><label for="cValue">Valor total (R$)</label><input id="cValue" type="text" placeholder="Valor total combinado com a marca" /></div>' +
         '<div class="field"><label for="cDate">Data do contrato</label><input id="cDate" type="date" value="'+isoDate(new Date())+'" /></div>' +
       '</div>' +
-      '<div class="field"><label for="cCity">Cidade do contrato</label><input id="cCity" type="text" placeholder="Ex: Votorantim" value="'+escapeHtml(prof.city||'')+'" /></div>' +
-      '<div class="field"><label for="cTrafficMonths">Tempo de uso em tráfego pago (meses) <span style="font-weight:400;color:var(--ink-faint);font-size:11px;">— aparece na cláusula 5.3 do contrato</span></label><input id="cTrafficMonths" type="number" min="1" value="4" placeholder="Ex: 4" /></div>' +
+      '<div class="field"><label for="cCity">Cidade do contrato</label><input id="cCity" type="text" placeholder="Cidade onde o contrato é assinado" value="'+escapeHtml(prof.city||'')+'" /></div>' +
+      '<div class="field"><label for="cTrafficMonths">Tempo de uso em tráfego pago (meses) <span style="font-weight:400;color:var(--ink-faint);font-size:11px;">— aparece na cláusula 5.3 do contrato</span></label><input id="cTrafficMonths" type="number" min="1" value="4" placeholder="Quantos meses a marca pode anunciar" /></div>' +
       '<div class="modal-actions" style="margin-top:8px;flex-wrap:wrap;">' +
         (tplIsDocx
           ? '<button class="btn btn-ghost" id="btnGenContractDefault">modelo padrão (PDF)</button><button class="btn btn-primary" id="btnGenContractDocx">Gerar no meu modelo (Word)</button>'
@@ -5224,8 +5224,8 @@ function openContractProfileModal(){
         '<div class="modal-head"><h2>Meus dados (contratada)</h2><button class="modal-close" id="profModalClose" aria-label="Fechar">✕</button></div>' +
         '<div class="field"><label for="cfName">Nome completo</label><input id="cfName" type="text" value="'+escapeHtml(prof.name||'')+'" /></div>' +
         '<div class="field-row">' +
-          '<div class="field"><label for="cfNationality">Nacionalidade</label><input id="cfNationality" type="text" placeholder="Ex: brasileira" value="'+escapeHtml(prof.nationality||'')+'" /></div>' +
-          '<div class="field"><label for="cfMaritalStatus">Estado civil</label><input id="cfMaritalStatus" type="text" placeholder="Ex: solteira" value="'+escapeHtml(prof.maritalStatus||'')+'" /></div>' +
+          '<div class="field"><label for="cfNationality">Nacionalidade</label><input id="cfNationality" type="text" placeholder="Como vai aparecer no contrato" value="'+escapeHtml(prof.nationality||'')+'" /></div>' +
+          '<div class="field"><label for="cfMaritalStatus">Estado civil</label><input id="cfMaritalStatus" type="text" placeholder="Como vai aparecer no contrato" value="'+escapeHtml(prof.maritalStatus||'')+'" /></div>' +
         '</div>' +
         '<div class="field"><label for="cfDocument">CNPJ ou CPF</label><input id="cfDocument" type="text" value="'+escapeHtml(prof.document||'')+'" /></div>' +
         '<div class="field-row">' +
@@ -5236,7 +5236,7 @@ function openContractProfileModal(){
           '<div class="field"><label for="cfPixKey">Chave PIX</label><input id="cfPixKey" type="text" value="'+escapeHtml(prof.pixKey||'')+'" /></div>' +
           '<div class="field"><label for="cfCity">Cidade (sede)</label><input id="cfCity" type="text" value="'+escapeHtml(prof.city||'')+'" /></div>' +
         '</div>' +
-        '<div class="field"><label for="cfForum">Foro (comarca)</label><input id="cfForum" type="text" placeholder="Ex: Votorantim, SP" value="'+escapeHtml(prof.forum||'')+'" /></div>' +
+        '<div class="field"><label for="cfForum">Foro (comarca)</label><input id="cfForum" type="text" placeholder="Cidade e estado, normalmente onde você mora" value="'+escapeHtml(prof.forum||'')+'" /></div>' +
         '<div class="modal-actions"><button class="btn btn-ghost" id="cfCancel">cancelar</button><button class="btn btn-primary" id="cfSave">Salvar dados</button></div>' +
       '</div>' +
     '</div>';
@@ -5272,7 +5272,7 @@ var CONTRACT_FIELDS = [
   {group:'Seus dados', fields:[['nome_contratada','seu nome completo'],['nacionalidade','ex: brasileira'],['estado_civil','ex: solteira'],['cpf_contratada','seu CPF/CNPJ'],['endereco_contratada','seu endereço'],['cep_contratada','seu CEP'],['pix','sua chave PIX']]},
   {group:'Marca', fields:[['marca','nome da marca'],['cnpj_marca','CNPJ/CPF da marca'],['endereco_marca','endereço da marca'],['cep_marca','CEP da marca']]},
   {group:'Entrega', fields:[['videos','qtd. de vídeos, ex: 2 (dois)'],['fotos','qtd. de fotos'],['prazo_entrega','dias úteis pra entregar'],['prazo_materiais','dias úteis pra marca enviar produtos'],['meses_trafego','meses de uso em anúncios']]},
-  {group:'Valores', fields:[['valor','valor total, ex: 540,00'],['valor_extenso','valor por extenso'],['sinal','50% de sinal'],['valor_final','50% final']]},
+  {group:'Valores', fields:[['valor','valor total, ex: 1.500,00'],['valor_extenso','valor por extenso'],['sinal','50% de sinal'],['valor_final','50% final']]},
   {group:'Fechamento', fields:[['cidade','cidade do contrato'],['data','data por extenso'],['foro','comarca do foro']]}
 ];
 // tira um CEP digitado dentro do endereço (o contrato já tem campo próprio de CEP)
@@ -6034,10 +6034,10 @@ function renderScripts(){
 
   // formulário
   html += '<div class="section"><div class="section-head"><h2>📝 Dados do roteiro</h2></div><div class="table-wrap" style="padding:18px 20px;">' +
-    '<div class="field"><label for="rtTitle">Título do roteiro</label><input id="rtTitle" type="text" placeholder="Ex: Vlog um dia na minha vida — Dreams Nutrition" value="'+escapeHtml(d.title)+'" /></div>' +
+    '<div class="field"><label for="rtTitle">Título do roteiro</label><input id="rtTitle" type="text" placeholder="Nome do roteiro, aparece no topo do arquivo" value="'+escapeHtml(d.title)+'" /></div>' +
     '<div class="field-row-3">' +
       '<div class="field"><label for="rtCreator">Nome da creator</label><input id="rtCreator" type="text" value="'+escapeHtml(creatorDefault)+'" /></div>' +
-      '<div class="field"><label for="rtProduct">Produto</label><input id="rtProduct" type="text" placeholder="Ex: Verdurar" value="'+escapeHtml(d.product)+'" /></div>' +
+      '<div class="field"><label for="rtProduct">Produto</label><input id="rtProduct" type="text" placeholder="Produto que aparece no vídeo" value="'+escapeHtml(d.product)+'" /></div>' +
       '<div class="field"><label for="rtFormat">Formato</label><input id="rtFormat" type="text" list="rtFormatList" value="'+escapeHtml(d.format)+'" />' +
         '<datalist id="rtFormatList"><option value="Reels 9:16"><option value="TikTok"><option value="Stories"><option value="Vlog / Reels"><option value="Vídeo depoimento"><option value="Unboxing"></datalist></div>' +
     '</div>' +
@@ -6069,10 +6069,10 @@ function renderScripts(){
     '</div>' +
     '<details class="rt-details"'+((d.duration||d.size||d.productsMap||d.notes)?' open':'')+'><summary>📌 Rodapé (opcional): duração, tamanho, produtos, observações</summary>' +
       '<div class="field-row" style="margin-top:12px;">' +
-        '<div class="field"><label for="rtDuration">Duração</label><input id="rtDuration" type="text" placeholder="Ex: 45 a 60s" value="'+escapeHtml(d.duration)+'" /></div>' +
-        '<div class="field"><label for="rtSize">Tamanho usado</label><input id="rtSize" type="text" placeholder="Ex: 50ml" value="'+escapeHtml(d.size)+'" /></div>' +
+        '<div class="field"><label for="rtDuration">Duração</label><input id="rtDuration" type="text" placeholder="Tempo total do vídeo" value="'+escapeHtml(d.duration)+'" /></div>' +
+        '<div class="field"><label for="rtSize">Tamanho usado</label><input id="rtSize" type="text" placeholder="Tamanho ou versão do produto" value="'+escapeHtml(d.size)+'" /></div>' +
       '</div>' +
-      '<div class="field"><label for="rtProductsMap">Produtos inseridos</label><input id="rtProductsMap" type="text" placeholder="Ex: Greemy (Cena 4) · Dreams Femme (Cena 5)" value="'+escapeHtml(d.productsMap)+'" /></div>' +
+      '<div class="field"><label for="rtProductsMap">Produtos inseridos</label><input id="rtProductsMap" type="text" placeholder="Quais produtos aparecem e em quais cenas" value="'+escapeHtml(d.productsMap)+'" /></div>' +
       '<div class="field"><label for="rtNotes">Obs. de briefing</label><textarea id="rtNotes" rows="2">'+escapeHtml(d.notes)+'</textarea></div>' +
     '</details>' +
     '<div class="modal-actions" style="margin-top:8px;flex-wrap:wrap;">' +
