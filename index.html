@@ -658,7 +658,7 @@
   .week-kanban{scrollbar-width:none; -ms-overflow-style:none;}
 
   .week-col{
-    flex:1 1 0; min-width:172px; max-width:240px;
+    flex:1 1 0; min-width:196px; max-width:260px;
     scroll-snap-align:start;
     display:flex; flex-direction:column;
     animation:weekColIn .22s ease both;
@@ -676,7 +676,7 @@
   }
   .week-col-body{
     background:rgba(255,255,255,0.45); border:1.5px dashed var(--line); border-radius:var(--radius-m);
-    padding:12px; min-height:160px; flex:1;
+    padding:10px 8px; min-height:160px; flex:1;
     display:flex; flex-direction:column; gap:16px;
     transition:background .15s ease, border-color .15s ease;
   }
@@ -689,9 +689,9 @@
   .week-cat-label.cat-personal{color:var(--sage-deep);}
   .check-list{display:flex; flex-direction:column; gap:7px;}
   .check-item{
-    display:flex; align-items:flex-start; gap:9px;
+    display:flex; align-items:flex-start; gap:8px; position:relative;
     background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-s);
-    padding:10px 11px; box-shadow:var(--shadow-soft);
+    padding:9px 10px; box-shadow:var(--shadow-soft);
     cursor:grab;
     transition:border-color .12s ease, opacity .12s ease, transform .12s ease, box-shadow .12s ease;
   }
@@ -713,11 +713,21 @@
     margin-top:1px;
   }
   .check-box.checked{background:var(--sage); border-color:var(--sage);}
-  .check-text{flex:1; font-size:13px; min-width:0; line-height:1.45; word-break:break-word;}
+  .check-text{
+    flex:1; font-size:13px; min-width:0; line-height:1.4; padding-right:12px;
+    word-break:normal; overflow-wrap:anywhere;
+    -webkit-hyphens:auto; hyphens:auto; hyphenate-limit-chars:7 3 3;
+    text-wrap:pretty;
+  }
   .check-item.checked .check-text{color:var(--ink-faint); text-decoration:line-through;}
   .check-del{
-    border:none; background:transparent; color:var(--ink-faint); font-size:13px; padding:2px;
-    flex-shrink:0; line-height:1; transition:color .12s ease;
+    border:none; background:transparent; color:var(--ink-faint); font-size:12px; padding:3px;
+    line-height:1; transition:color .12s ease, opacity .12s ease;
+    position:absolute; top:5px; right:5px;
+  }
+  @media (hover:hover){
+    .check-del{opacity:0;}
+    .check-item:hover .check-del, .check-del:focus-visible{opacity:1;}
   }
   .check-del:hover{color:var(--danger);}
   .week-add{
@@ -744,7 +754,7 @@
     .week-kanban{scroll-snap-type:x mandatory;}
   }
   @media (min-width:881px) and (max-width:1180px){
-    .week-col{min-width:152px;}
+    .week-col{min-width:180px;}
   }
   .mobile-bar{
     display:none; align-items:center; gap:12px; margin-bottom:18px;
