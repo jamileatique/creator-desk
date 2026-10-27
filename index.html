@@ -319,6 +319,30 @@
   .rt-imgbox span{color:#8A7A70; font-style:italic;}
   .rt-foot{margin:8px 0 0; font-size:11.5px;}
 
+
+  /* ---- relatório de importação de prints ---- */
+  .imp-box{padding:14px 16px; background:var(--magenta-tint); border-radius:var(--radius-s); margin-bottom:16px; font-size:13px;}
+  .imp-box.is-ok{background:var(--sage-tint);}
+  .imp-box.is-warn{background:var(--amber-tint);}
+  .imp-title{font-size:13.5px; font-weight:600; color:var(--magenta-deep); margin-bottom:8px;}
+  .imp-box.is-ok .imp-title{color:var(--sage-deep);}
+  .imp-box.is-warn .imp-title{color:var(--amber-deep);}
+  .imp-bar{background:var(--paper); border-radius:999px; height:7px; overflow:hidden;}
+  .imp-bar div{height:100%; background:var(--magenta); transition:width .3s;}
+  .imp-box.is-ok .imp-bar div{background:var(--sage);}
+  .imp-box.is-warn .imp-bar div{background:var(--amber);}
+  .imp-sum{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-weight:600;}
+  .imp-sum .ok{color:var(--sage-deep);} .imp-sum .dup{color:var(--ink-soft);} .imp-sum .fail{color:var(--danger);}
+  .imp-stop{margin:10px 0 0; color:var(--danger);}
+  .imp-list{margin-top:10px; background:var(--paper); border-radius:var(--radius-s); padding:8px 10px;}
+  .imp-list-t{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); cursor:pointer; margin-bottom:4px;}
+  .imp-row{display:flex; gap:10px; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line); font-size:12.5px;}
+  .imp-row:first-of-type{border-top:none;}
+  .imp-file{color:var(--ink); font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; flex:0 1 45%;}
+  .imp-why{color:var(--ink-soft); text-align:right; flex:1;}
+  .imp-row.fail .imp-why{color:var(--danger);}
+  .imp-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px;}
+  @media (max-width:700px){ .imp-row{flex-direction:column; gap:2px;} .imp-why{text-align:left;} .imp-file{flex:none;} }
   /* ---- finanças ---- */
   .fin-switch{display:inline-flex; gap:4px; padding:4px; border-radius:999px; background:var(--lilac); border:1px solid var(--line); margin:0 0 22px;}
   .fin-switch-btn{font:inherit; font-size:13.5px; font-weight:600; padding:8px 16px; border-radius:999px; border:none; background:transparent; color:var(--ink-soft); cursor:pointer;}
@@ -2059,36 +2083,74 @@ function processMultiplePrints(files){
   // múltiplos: processa em fila e cadastra automaticamente sem abrir modal
   var total = files.length;
   var done = 0;
-  var errors = 0;
-  var added = 0;
+  var report = []; // {file, status:'ok'|'dup'|'fail'|'skip', name, reason}
+  var stopped = null;
   var igPlatform = state.platforms.find(function(p){ return p.name.toLowerCase()==='instagram'; });
 
   function updateProgress(){
     if(!resultDiv) return;
-    var pct = Math.round((done/total)*100);
     var finished = done===total;
-    resultDiv.innerHTML =
-      '<div style="padding:14px 16px; background:'+(finished?'var(--sage-tint)':'var(--magenta-tint)')+'; border-radius:var(--radius-s); margin-bottom:16px;">' +
-        '<div style="font-size:13.5px; color:'+(finished?'var(--sage-deep)':'var(--magenta-deep)')+'; font-weight:600; margin-bottom:8px;">' +
-          (finished ? '✓ Pronto! ' : '📸 Processando ') + done+'/'+total+' prints...' +
-        '</div>' +
-        '<div style="background:var(--paper); border-radius:999px; height:7px; overflow:hidden;">' +
-          '<div style="width:'+pct+'%; height:100%; background:'+(finished?'var(--sage)':'var(--magenta)')+'; transition:width .3s;"></div>' +
-        '</div>' +
-        (finished ? '<div style="margin-top:10px; font-size:13px;">'+added+' prospecções criadas'+(errors>0?' · '+errors+' não identificadas ou duplicadas':'')+'</div>' : '') +
-      '</div>';
+    var pct = Math.round((done/total)*100);
+    var ok = report.filter(function(r){ return r.status==='ok'; });
+    var dup = report.filter(function(r){ return r.status==='dup'; });
+    var fail = report.filter(function(r){ return r.status==='fail' || r.status==='skip'; });
+    var allGood = finished && !fail.length;
+    var h = '<div class="imp-box '+(finished?(allGood?'is-ok':'is-warn'):'')+'">' +
+      '<div class="imp-title">' + (finished ? (allGood ? '✓ Pronto! ' : '⚠️ Importação concluída com avisos · ') : '📸 Processando ') + done+'/'+total+' prints</div>' +
+      '<div class="imp-bar"><div style="width:'+pct+'%"></div></div>';
+    if(finished){
+      h += '<div class="imp-sum"><span class="ok">✓ '+ok.length+' criadas</span>' +
+        (dup.length?'<span class="dup">↺ '+dup.length+' já existiam</span>':'') +
+        (fail.length?'<span class="fail">✕ '+fail.length+' não foram</span>':'') + '</div>';
+      if(stopped) h += '<p class="imp-stop">Parei a importação: <strong>'+escapeHtml(stopped)+'</strong> Resolva isso e tente de novo os prints que faltaram.</p>';
+      if(fail.length){
+        h += '<div class="imp-list"><div class="imp-list-t">Prints que não foram</div>' + fail.map(function(r){
+          return '<div class="imp-row fail"><span class="imp-file">'+escapeHtml(r.file)+'</span><span class="imp-why">'+escapeHtml(r.reason)+'</span></div>';
+        }).join('') + '</div>';
+      }
+      if(dup.length){
+        h += '<details class="imp-list"><summary class="imp-list-t">Já estavam na prospecção ('+dup.length+')</summary>' + dup.map(function(r){
+          return '<div class="imp-row dup"><span class="imp-file">'+escapeHtml(r.file)+'</span><span class="imp-why">'+escapeHtml(r.name)+'</span></div>';
+        }).join('') + '</details>';
+      }
+      if(ok.length){
+        h += '<details class="imp-list"><summary class="imp-list-t">Criadas ('+ok.length+')</summary>' + ok.map(function(r){
+          return '<div class="imp-row ok"><span class="imp-file">'+escapeHtml(r.file)+'</span><span class="imp-why">'+escapeHtml(r.name)+'</span></div>';
+        }).join('') + '</details>';
+      }
+      h += '<div class="imp-actions">' +
+        (fail.length ? '<button class="btn btn-sm" id="impRetry">↻ Tentar de novo os que não foram</button>' : '') +
+        '<button class="btn btn-sm btn-ghost" id="impClose">fechar</button></div>';
+    }
+    h += '</div>';
+    resultDiv.innerHTML = h;
+    if(finished){
+      var rb = document.getElementById('impRetry');
+      if(rb) rb.addEventListener('click', function(){
+        var retryFiles = report.filter(function(r){ return r.status==='fail' || r.status==='skip'; }).map(function(r){ return r.fileObj; });
+        processMultiplePrints(retryFiles);
+      });
+      var cb = document.getElementById('impClose');
+      if(cb) cb.addEventListener('click', function(){ resultDiv.innerHTML = ''; });
+    }
   }
 
   // fila estritamente sequencial — evita race condition
   function processNext(index){
     if(index >= total){ updateProgress(); return; }
-    extractInstagramData(files[index], function(parsed){
+    if(stopped){
+      for(var k = index; k < total; k++){ report.push({file:files[k].name, fileObj:files[k], status:'skip', reason:'Não processado (importação interrompida).'}); done++; }
+      updateProgress(); return;
+    }
+    var file = files[index];
+    extractInstagramData(file, function(parsed, err){
       done++;
-      if(parsed && !parsed.error && (parsed.brandName||parsed.handle)){
+      if(parsed){
         var alreadyExists = state.prospects.find(function(pr){
           return (parsed.handle && pr.contact && pr.contact.toLowerCase()===parsed.handle.toLowerCase()) ||
-                 (parsed.brandName && pr.brandName.toLowerCase()===parsed.brandName.toLowerCase());
+                 (parsed.brandName && pr.brandName && pr.brandName.toLowerCase()===parsed.brandName.toLowerCase());
         });
+        var label = (parsed.brandName||'') + (parsed.handle ? ' ' + parsed.handle : '');
         if(!alreadyExists){
           state.prospects.push({
             id: uid(),
@@ -2105,16 +2167,17 @@ function processMultiplePrints(files){
             state.nichos.push(parsed.nicho);
             saveNichos();
           }
-          added++;
+          report.push({file:file.name, fileObj:file, status:'ok', name:label.trim()});
+          saveProspects();
+          renderProspectKanban();
         } else {
-          errors++;
+          report.push({file:file.name, fileObj:file, status:'dup', name:label.trim()+' → já cadastrada como "'+alreadyExists.brandName+'"'});
         }
       } else {
-        errors++;
+        report.push({file:file.name, fileObj:file, status:'fail', reason: err ? err.reason : 'Erro desconhecido.'});
+        if(err && err.fatal) stopped = err.reason;
       }
-      saveProspects();
       updateProgress();
-      renderProspectKanban();
       processNext(index+1);
     });
   }
@@ -2123,11 +2186,27 @@ function processMultiplePrints(files){
   processNext(0);
 }
 
-function extractInstagramData(file, callback){
+/* traduz erros da IA/Worker em mensagens claras.
+   fatal = não adianta tentar os outros prints (ex.: sem chave, sem login, sem crédito) */
+function friendlyAiError(status, data){
+  var msg = data && (typeof data.error === 'string' ? data.error : (data.error && data.error.message)) || '';
+  var low = String(msg).toLowerCase();
+  if(low.indexOf('credit balance') !== -1 || low.indexOf('billing') !== -1) return {reason:'Sua conta da Anthropic está sem créditos.', fatal:true};
+  if(status === 401 || low.indexOf('api key') !== -1 || low.indexOf('x-api-key') !== -1) return {reason: msg && typeof data.error === 'string' ? msg : 'API Key inválida ou não configurada.', fatal:true};
+  if(status === 429) return {reason:'Muitos prints de uma vez, a IA pediu uma pausa.', retry:true};
+  if(status === 529 || status === 503 || low.indexOf('overloaded') !== -1) return {reason:'A IA está sobrecarregada no momento.', retry:true};
+  if(status === 413) return {reason:'Imagem muito grande.'};
+  if(status >= 500) return {reason:'Erro no servidor da IA.', retry:true};
+  return {reason: msg || ('Erro inesperado (código ' + status + ').')};
+}
+
+function extractInstagramData(file, callback, attempt){
+  attempt = attempt || 1;
   var reader = new FileReader();
   reader.onload = function(e){
     var base64 = e.target.result.split(',')[1];
     var mediaType = file.type || 'image/jpeg';
+    var httpStatus = 0;
     apiFetch({
       model: 'claude-sonnet-4-6',
       max_tokens: 500,
@@ -2139,17 +2218,31 @@ function extractInstagramData(file, callback){
         ]
       }]
     })
-    .then(function(r){ return r.json(); })
+    .then(function(r){ httpStatus = r.status; return r.json().catch(function(){ return {}; }); })
     .then(function(data){
-      if(data && data.result !== undefined){ callback(data.result); return; } // resposta do Worker
-      var text = (data.content && data.content[0]) ? (data.content[0].text||'') : '';
+      if(httpStatus && (httpStatus < 200 || httpStatus >= 300)){
+        var fe = friendlyAiError(httpStatus, data);
+        if(fe.retry && attempt < 2){ setTimeout(function(){ extractInstagramData(file, callback, attempt + 1); }, 4000); return; }
+        callback(null, fe);
+        return;
+      }
       var parsed = null;
-      try{ var m = text.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }catch(ex){}
-      callback(parsed);
+      if(data && data.result !== undefined){ parsed = data.result; } // resposta do Worker
+      else {
+        var text = (data.content && data.content[0]) ? (data.content[0].text||'') : '';
+        try{ var m = text.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }catch(ex){}
+      }
+      if(!parsed) return callback(null, {reason:'A IA não conseguiu ler esse print.'});
+      if(parsed.error) return callback(null, {reason:'Não parece um perfil do Instagram.'});
+      if(!parsed.brandName && !parsed.handle) return callback(null, {reason:'Não achei o nome nem o @ no print.'});
+      callback(parsed, null);
     })
-    .catch(function(){ callback(null); });
+    .catch(function(){
+      if(attempt < 2){ setTimeout(function(){ extractInstagramData(file, callback, attempt + 1); }, 3000); return; }
+      callback(null, {reason:'Falha de conexão. Confira sua internet.'});
+    });
   };
-  reader.onerror = function(){ callback(null); };
+  reader.onerror = function(){ callback(null, {reason:'Não consegui abrir esse arquivo.'}); };
   reader.readAsDataURL(file);
 }
 
@@ -2157,9 +2250,9 @@ function extractInstagramFromImage(file){
   var resultDiv = document.getElementById('prospectImportResult');
   if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--magenta-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--magenta-deep); margin-bottom:16px;">📸 Lendo o print com IA... aguarde.</div>';
 
-  extractInstagramData(file, function(parsed){
-    if(!parsed || parsed.error){
-      if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--danger-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--danger); margin-bottom:16px;">Não consegui identificar um perfil do Instagram nesse print. Tente com a tela do perfil mais completa.</div>';
+  extractInstagramData(file, function(parsed, err){
+    if(!parsed){
+      if(resultDiv) resultDiv.innerHTML = '<div style="padding:12px 16px; background:var(--danger-tint); border-radius:var(--radius-s); font-size:13.5px; color:var(--danger); margin-bottom:16px;">✕ <strong>'+escapeHtml(file.name)+'</strong>: '+escapeHtml(err ? err.reason : 'não consegui ler esse print.')+'</div>';
       return;
     }
     if(resultDiv) resultDiv.innerHTML = '';
