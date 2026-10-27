@@ -2141,6 +2141,7 @@ function extractInstagramData(file, callback){
     })
     .then(function(r){ return r.json(); })
     .then(function(data){
+      if(data && data.result !== undefined){ callback(data.result); return; } // resposta do Worker
       var text = (data.content && data.content[0]) ? (data.content[0].text||'') : '';
       var parsed = null;
       try{ var m = text.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }catch(ex){}
@@ -6565,11 +6566,16 @@ function apiFetch(body){
     ? BACKEND_URL + '/api/extract-instagram'
     : BACKEND_URL + '/api/assistant';
 
-  var headers = {
-    'Content-Type':'application/json',
-    'X-User-Api-Key': getApiKey()     // chave da própria usuária
-  };
-  return fetch(endpoint, { method:'POST', headers:headers, body:JSON.stringify(body) });
+  // A chave NÃO vai junto: o app manda só o login (token do Firebase)
+  // e o Worker busca a chave da própria creator no Firestore.
+  var tokenPromise = (cloudUser && typeof cloudUser.getIdToken === 'function')
+    ? cloudUser.getIdToken().catch(function(){ return ''; })
+    : Promise.resolve('');
+  return tokenPromise.then(function(token){
+    var headers = { 'Content-Type':'application/json' };
+    if(token) headers['Authorization'] = 'Bearer ' + token;
+    return fetch(endpoint, { method:'POST', headers:headers, body:JSON.stringify(body) });
+  });
 }
 
 /* ── Auth token helper ──────────────────────────────────── */
